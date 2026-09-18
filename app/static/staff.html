@@ -899,7 +899,7 @@
     let nizomDutiesCatalog = [];
 
     if (!token) {
-      window.location.href = '/login';
+      window.location.href = pageUrl('/login');
     }
 
     // 1. Core Tab Router with URL Hash and LocalStorage Persistence
@@ -1106,7 +1106,7 @@
       localStorage.removeItem('roffice_fullname');
       localStorage.removeItem('roffice_user_id');
       localStorage.removeItem('roffice_must_change_password');
-      window.location.href = '/login';
+      window.location.href = pageUrl('/login');
     }
 
     function toggleSidebar() {
