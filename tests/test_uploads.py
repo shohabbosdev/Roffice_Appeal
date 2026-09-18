@@ -36,6 +36,16 @@ async def test_file_upload_flow(client: AsyncClient, test_db):
     assert bad_resp.status_code == 400
     assert "Faqat quyidagi formatdagi fayllar" in bad_resp.json()["detail"]
 
+    # 3.1. Soxta fayl: nomi .pdf, lekin ichi oddiy matn/HTML (400 - magic bytes xatosi)
+    fake_pdf = io.BytesIO(b"<html><script>alert(1)</script></html>")
+    fake_resp = await client.post(
+        "/api/v1/uploads",
+        headers=headers,
+        files={"file": ("soxta_hujjat.pdf", fake_pdf, "application/pdf")}
+    )
+    assert fake_resp.status_code == 400
+    assert "Buzilgan yoki soxta fayl" in fake_resp.json()["detail"]
+
     # 4. To'g'ri PDF faylni yuklash (200)
     pdf_content = b"%PDF-1.4 ... test pdf document content ..."
     pdf_file = io.BytesIO(pdf_content)

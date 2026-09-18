@@ -13,6 +13,7 @@ from app.models import Appeal, AppealStatus, User
 from app.services.telegram_service import TelegramService
 
 from app.services.appeal_service import AppealService
+from app.services.queue_service import QueueService
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,8 @@ _reminded_set: set = set()
 async def check_and_send_sla_reminders():
     """SLA muddati REMINDER_THRESHOLD_HOURS soatdan kam qolgan barcha
     ochiq murojaatlar uchun biriktirilgan xodimga Telegram eslatma yuboradi.
-    Shuningdek, 72 soat ichida tasdiqlanmagan murojaatlarni avtomatik yopadi."""
+    Shuningdek, 72 soat ichida tasdiqlanmagan murojaatlarni avtomatik yopadi va
+    kelinmagan o'tib ketgan elektron navbatlarni NO_SHOW holatiga o'tkazadi."""
     now = datetime.now(timezone.utc)
     threshold_dt = now + timedelta(hours=REMINDER_THRESHOLD_HOURS)
 
@@ -35,6 +37,11 @@ async def check_and_send_sla_reminders():
             closed_count = await AppealService.auto_close_expired(db)
             if closed_count > 0:
                 logger.info(f"72 soatlik muddat o'tgan {closed_count} ta murojaat avtomatik yopildi.")
+
+            # 2. Kelinmagan o'tib ketgan elektron navbatlarni NO_SHOW holatiga o'tkazish
+            no_show_count = await QueueService.auto_expire_no_show_appointments(db)
+            if no_show_count > 0:
+                logger.info(f"{no_show_count} ta o'tib ketgan navbat taloni NO_SHOW holatiga o'tkazildi.")
 
             # 2. SLA muddati tugayotgan arizalarni eslatish
             stmt = (

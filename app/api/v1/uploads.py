@@ -13,6 +13,34 @@ upload_path = Path(settings.UPLOAD_DIR)
 upload_path.mkdir(parents=True, exist_ok=True)
 
 
+def validate_file_signature(content: bytes, ext: str) -> bool:
+    """Faylning ichki binar imzosi (Magic Bytes) e'lon qilingan kengaytmaga mos kelishini tekshiradi."""
+    if len(content) < 4:
+        return False
+
+    # PDF: %PDF (0x25 0x50 0x44 0x46)
+    if ext == ".pdf":
+        return content.startswith(b"%PDF")
+
+    # PNG: \x89PNG\r\n\x1a\n
+    if ext == ".png":
+        return content.startswith(b"\x89PNG\r\n\x1a\n")
+
+    # JPEG / JPG: \xff\xd8\xff
+    if ext in [".jpg", ".jpeg"]:
+        return content.startswith(b"\xff\xd8\xff")
+
+    # DOCX: PK\x03\x04 (Zip container)
+    if ext == ".docx":
+        return content.startswith(b"PK\x03\x04")
+
+    # DOC: \xd0\xcf\x11\xe0 (OLE Compound Document)
+    if ext == ".doc":
+        return content.startswith(b"\xd0\xcf\x11\xe0")
+
+    return True
+
+
 @router.post("", summary="Hujjat yoki tasdiqlovchi faylni serverga yuklash")
 async def upload_file(
     file: UploadFile = File(...),
@@ -42,6 +70,13 @@ async def upload_file(
         raise HTTPException(
             status_code=400,
             detail=f"Fayl hajmi 10 MB dan oshmasligi kerak (joriy hajm: {file_size / (1024 * 1024):.1f} MB)."
+        )
+
+    # Magic Bytes (Binar imzo) validatsiyasi - soxta fayllarni to'sish
+    if not validate_file_signature(content, ext_lower):
+        raise HTTPException(
+            status_code=400,
+            detail=f"Fayl tarkibi ko'rsatilgan formatga ({ext_lower}) mos kelmadi. Buzilgan yoki soxta fayl yuklash taqiqlanadi."
         )
 
     # Xavfsiz unikal fayl nomi

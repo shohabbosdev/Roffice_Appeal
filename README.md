@@ -240,6 +240,14 @@ Loyiha ustida olib borilgan chuqur texnik audit natijasida quyidagi kamchiliklar
 11. **Telegram Webhook va Interaktiv Bog'lanish:**
     - `/api/v1/telegram/webhook` endpointi joriy etilib, ishlab chiqarish muhitida Telegram Bot yangilanishlarini real vaqtda qabul qilish imkoniyati yaratildi.
     - Talabalar `/start` bosganda kontaktini yuborishi, tizim uni JBNUU HEMIS API orqali tekshirib, xabarnomalarga avtomatik ulashi ta'minlandi.
+12. **Elektron Navbatda Anti-Abuse va Double-Booking Himoyasi:**
+    - Bitta talaba ayni bir sana va xizmat bo'yicha faqat 1 ta faol navbat olishi mumkinligi qat'iy tekshiriladi (suiiste'mol qilishlarning oldi olindi).
+    - Ayni bir vaqt oralig'ini bir vaqtning o'zida bir nechta foydalanuvchi band qilib qo'yishiga qarshi DB darajasidagi indekslar va HTTP 409 himoyasi mustahkamlandi.
+    - Talaba kelolmagan holatda o'z navbatini bekor qilishi (`cancel_appointment`) va slotni boshqalarga bo'shatishi ta'minlandi.
+13. **Navbatga Kelmaslik (No-Show) Avtomatizatsiyasi:**
+    - O'tib ketgan sanalardagi kelinmagan talonlar fon vazifasi (`auto_expire_no_show_appointments`) orqali avtomatik ravishda `NO_SHOW` holatiga o'tkazilib, statistika sofligi ta'minlanadi.
+14. **Kiberxavfsizlik: Fayllarning Magic Bytes (Binar Imzo) Validatsiyasi:**
+    - Yuklanayotgan fayllarning faqat `.pdf` kengaytmasiga ishonmasdan, ularning haqiqiy binar imzosi (`%PDF`, `\x89PNG`, `\xff\xd8\xff`, `PK`) tekshiriladigan bo'ldi (soxta skriptlar va Stored XSS tahdidlari to'liq bartaraf etildi).
 
 ---
 

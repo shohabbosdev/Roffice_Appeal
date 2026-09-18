@@ -228,7 +228,21 @@ class QueueService:
                     detail="Tanlangan vaqt oralig'i o'tib ketgan. Iltimos, joriy vaqtdan keyingi bo'sh vaqtni tanlang."
                 )
 
-        # Check double-booking for the same slot
+        # 5. Anti-Abuse: Bitta talaba ayni bir sana va xizmat bo'yicha faqat 1 ta faol navbatga ega bo'lishi mumkin
+        student_active_stmt = select(Appointment).where(
+            Appointment.student_id == student_id,
+            Appointment.appointment_date == appointment_date,
+            Appointment.service_id == service_id,
+            Appointment.status.in_([AppointmentStatus.BOOKED, AppointmentStatus.CHECKED_IN])
+        )
+        student_active = (await db.execute(student_active_stmt)).scalars().first()
+        if student_active:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Sizda ushbu sana uchun mazkur xizmat bo'yicha allaqachon faol navbat taloni mavjud (#{student_active.ticket_code}, vaqti: {student_active.time_slot})."
+            )
+
+        # 6. Check double-booking for the same slot
         stmt = select(Appointment).where(
             Appointment.appointment_date == appointment_date,
             Appointment.service_id == service_id,
@@ -303,3 +317,49 @@ class QueueService:
         await db.commit()
         await db.refresh(appointment)
         return appointment
+
+    @classmethod
+    async def cancel_appointment(
+        cls,
+        db: AsyncSession,
+        appointment_id: int,
+        student_id: int
+    ) -> Appointment:
+        """Talaba kelolmagan taqdirda o'z navbatini bekor qiladi va slot bo'shaydi."""
+        appointment = await db.get(Appointment, appointment_id)
+        if not appointment:
+            raise HTTPException(status_code=404, detail="Navbat taloni topilmadi.")
+        if appointment.student_id != student_id:
+            raise HTTPException(status_code=403, detail="Faqat o'z navbat talonini bekor qilish mumkin.")
+        if appointment.status != AppointmentStatus.BOOKED:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Faqat kutilayotgan navbatni bekor qilish mumkin (joriy holat: {appointment.status.value})."
+            )
+
+        appointment.status = AppointmentStatus.CANCELLED
+        await db.commit()
+        await db.refresh(appointment)
+        return appointment
+
+    @classmethod
+    async def auto_expire_no_show_appointments(cls, db: AsyncSession) -> int:
+        """O'tib ketgan sanalardagi kelinmagan (BOOKED) navbatlarni NO_SHOW holatiga o'tkazish."""
+        tashkent_tz = timezone(timedelta(hours=5))
+        now_local = datetime.now(tashkent_tz)
+        today_str = now_local.strftime("%Y-%m-%d")
+
+        stmt = select(Appointment).where(
+            Appointment.status == AppointmentStatus.BOOKED,
+            Appointment.appointment_date < today_str
+        )
+        expired_appointments = (await db.execute(stmt)).scalars().all()
+        count = len(expired_appointments)
+        for app in expired_appointments:
+            app.status = AppointmentStatus.NO_SHOW
+            app.notes = (app.notes or "") + " [Avto-yopildi: Talaba belgilangan kunda kelmadi (No-Show)]"
+
+        if count > 0:
+            await db.commit()
+        return count
+

@@ -172,16 +172,19 @@ async def cancel_appointment(
     db: AsyncSession = Depends(get_db)
 ):
     """Talaba yoki xodim tomonidan navbat bekor qilinadi."""
-    appointment = await db.get(Appointment, appointment_id)
-    if not appointment:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Navbat topilmadi.")
-
-    if current_user.role == UserRole.STUDENT and appointment.student_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Siz faqat o'z navbatingizni bekor qila olasiz.")
-
-    appointment.status = AppointmentStatus.CANCELLED
-    await db.commit()
-    await db.refresh(appointment)
+    if current_user.role == UserRole.STUDENT:
+        appointment = await QueueService.cancel_appointment(
+            db=db,
+            appointment_id=appointment_id,
+            student_id=current_user.id
+        )
+    else:
+        appointment = await db.get(Appointment, appointment_id)
+        if not appointment:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Navbat topilmadi.")
+        appointment.status = AppointmentStatus.CANCELLED
+        await db.commit()
+        await db.refresh(appointment)
 
     result = await db.execute(
         select(Appointment).options(selectinload(Appointment.service)).where(Appointment.id == appointment.id)

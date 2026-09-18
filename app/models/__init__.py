@@ -3,7 +3,7 @@ from enum import Enum
 from typing import Optional, List
 from sqlalchemy import (
     Column, Integer, BigInteger, String, Boolean, DateTime, ForeignKey, 
-    Text, Float, Enum as SQLEnum, JSON
+    Text, Float, Enum as SQLEnum, JSON, Index
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.core.database import Base
@@ -212,6 +212,11 @@ class Appointment(Base):
 
     student = relationship("User", foreign_keys=[student_id], back_populates="appointments")
     service = relationship("Service", back_populates="appointments")
+
+    __table_args__ = (
+        Index("ix_appointments_date_service_slot", "appointment_date", "service_id", "time_slot"),
+        Index("ix_appointments_student_date", "student_id", "appointment_date", "service_id"),
+    )
 
 
 # 7. Audit Log Model
