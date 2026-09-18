@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registrator ofisi — O'zMU Jizzax filiali</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --surface: #111827;
+      --surface-card: #1f2937;
+      --surface-hover: #263346;
+      --border: #374151;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-subtle: rgba(99, 102, 241, 0.12);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --radius: 12px;
+      --sidebar-width: 270px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Main App Layout */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* Left Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      flex-shrink: 0;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 50;
+      transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .sidebar-header {
+      padding: 1.25rem 1.25rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo-badge {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), #8b5cf6);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 19px;
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .brand-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 0.725rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .sidebar-nav {
+      padding: 1rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .sidebar-section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 0.5rem 0.75rem 0.25rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      font-weight: 600;
+      text-align: left;
+      background: transparent;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      width: 100%;
+    }
+
+    .nav-item:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .nav-item.active {
+      color: #ffffff;
+      background: var(--primary-subtle);
+      border-color: rgba(99, 102, 241, 0.35);
+    }
+
+    .nav-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      stroke: currentColor;
+    }
+
+    .nav-item.active .nav-icon {
+      stroke: #818cf8;
+    }
+
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(11, 15, 25, 0.35);
+    }
+
+    .sidebar-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.725rem;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.12);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .sidebar-docs-link {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: var(--surface-card);
+      transition: all 0.15s ease;
+    }
+
+    .sidebar-docs-link:hover {
+      color: var(--text);
+      border-color: #6b7280;
+    }
+
+    /* Main Area */
+    .main-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 100vh;
+    }
+
+    /* Topbar */
+    .topbar {
+      background: rgba(17, 24, 39, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      padding: 0.875rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .topbar-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mobile-toggle {
+      display: none;
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      color: var(--text);
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 45;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-online {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-dot {
+      width: 8px;
+      height: 8px;
+      background: #34d399;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      padding: 2rem;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Tab Panes */
+    .tab-pane {
+      display: none;
+    }
+
+    .tab-pane.active {
+      display: block;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .btn-outline:hover {
+      background: var(--surface-card);
+      border-color: var(--text-muted);
+    }
+
+    .btn-sm {
+      padding: 5px 12px;
+      font-size: 0.75rem;
+    }
+
+    /* Cards and Grids */
+    .grid {
+      display: grid;
+      gap: 1.5rem;
+    }
+
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      transition: border-color 0.2s;
+    }
+
+    .card:hover {
+      border-color: #4b5563;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    /* Profile Banner */
+    .profile-banner {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .profile-info h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .profile-meta {
+      display: flex;
+      gap: 10px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      background: var(--surface-card);
+      padding: 2px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.75rem;
+    }
+
+    .tag-highlight {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+      font-weight: 600;
+    }
+
+    .tag-success {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      font-weight: 600;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #d1d5db;
+    }
+
+    .form-control {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 12px;
+      color: white;
+      font-size: 0.85rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+    }
+
+    textarea.form-control {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    /* Alerts */
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .alert-warning {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .alert-info {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #818cf8;
+    }
+
+    /* Electronic Ticket Card */
+    .ticket-card {
+      background: linear-gradient(135deg, #1e1b4b, #1e293b);
+      border: 2px dashed var(--primary);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      position: relative;
+      margin-top: 1rem;
+    }
+
+    .ticket-code {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #818cf8;
+      letter-spacing: 2px;
+      margin: 0.5rem 0;
+    }
+
+    .ticket-window {
+      font-size: 1.1rem;
+      color: #34d399;
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+
+    .ticket-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      border-top: 1px dashed var(--border);
+      padding-top: 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Progress bar */
+    .progress-bar-bg {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      height: 8px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+
+    .progress-bar-fill {
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      height: 100%;
+      border-radius: 9999px;
+      transition: width 0.5s ease-in-out;
+    }
+
+    .slot-btn {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .slot-btn:hover {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+    }
+
+    .slot-btn.selected {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    /* Modern Switch Toggle */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #374151;
+      border: 1px solid #4b5563;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 9999px;
+    }
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #f9fafb;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    }
+    input:checked + .toggle-slider {
+      background-color: var(--primary);
+      border-color: var(--primary);
+    }
+    input:checked + .toggle-slider:before {
+      transform: translateX(22px);
+    }
+    .toggle-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+    .toggle-card:hover {
+      border-color: #6b7280;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 1rem 2rem;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: var(--surface);
+    }
+
+    /* Responsive Breakpoint */
+    @media (max-width: 900px) {
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        transform: translateX(-100%);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .sidebar-overlay.active {
+        display: block;
+      }
+      .mobile-toggle {
+        display: inline-flex;
+      }
+      .topbar {
+        padding: 0.75rem 1rem;
+      }
+      .content-area {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-layout">
+
+    <!-- Mobile Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <!-- Left Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="logo-badge">R</div>
+          <div>
+            <div class="brand-title">Registrator ofisi</div>
+            <div class="brand-sub">O'zMU Jizzax filiali</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section-title">Asosiy menyu</div>
+
+      <nav class="sidebar-nav">
+        <!-- Talaba portali -->
+        <button class="nav-item active" data-tab="talaba" onclick="switchTab('talaba')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+          <span>Talaba portali</span>
+        </button>
+
+        <!-- Kelib hal etish -->
+        <button class="nav-item" data-tab="navbat" onclick="switchTab('navbat')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+            <path d="M13 5v2m0 4v2m0 4v2"/>
+          </svg>
+          <span>Kelib hal etish</span>
+        </button>
+
+        <!-- Xodim va boshliq ish stoli -->
+        <button class="nav-item" data-tab="xodim" onclick="switchTab('xodim')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="20" height="14" x="2" y="7" rx="2" ry="2"/>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+          <span>Xodim va boshliq ish stoli</span>
+        </button>
+
+        <!-- Xodimlar KPI doskasi -->
+        <button class="nav-item" data-tab="kpi" onclick="switchTab('kpi')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" x2="18" y1="20" y2="10"/>
+            <line x1="12" x2="12" y1="20" y2="4"/>
+            <line x1="6" x2="6" y1="20" y2="14"/>
+          </svg>
+          <span>Xodimlar KPI doskasi</span>
+        </button>
+
+        <!-- Bayramlar taqvimi -->
+        <button class="nav-item" data-tab="kalendar" onclick="switchTab('kalendar')">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
+            <line x1="16" x2="16" y1="2" y2="6"/>
+            <line x1="8" x2="8" y1="2" y2="6"/>
+            <line x1="3" x2="21" y1="10" y2="10"/>
+          </svg>
+          <span>Bayramlar taqvimi</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="sidebar-badge">
+          <div class="badge-dot"></div>
+          <span>Ish vaqti: 09:00 - 17:00</span>
+        </div>
+        <a href="/docs" target="_blank" class="sidebar-docs-link">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          <span>Swagger API</span>
+          <svg style="width: 14px; height: 14px; margin-left: auto; stroke: var(--text-muted);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="mobile-toggle" onclick="toggleSidebar()" aria-label="Menyu">
+            <svg style="width: 20px; height: 20px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="4" x2="20" y1="12" y2="12"/>
+              <line x1="4" x2="20" y1="6" y2="6"/>
+              <line x1="4" x2="20" y1="18" y2="18"/>
+            </svg>
+          </button>
+          <div class="topbar-title" id="page-heading">Talaba portali</div>
+        </div>
+        <div class="topbar-actions">
+          <div class="badge badge-online">
+            <div class="badge-dot"></div>
+            <span>Dushanba-Shanba faol</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content Area -->
+      <main class="content-area">
+
+        <!-- TAB 1: TALABA PORTALI -->
+        <div id="tab-talaba" class="tab-pane active">
+          <div class="profile-banner">
+            <div class="profile-info">
+              <h3 id="student-name">QODIROV ZOXIDJON TOHIR O‘G‘LI</h3>
+              <div class="profile-meta">
+                <span class="tag">HEMIS: <strong id="student-id">401251200032</strong></span>
+                <span class="tag">Fakultet: <strong id="student-fac">Magistratura</strong></span>
+                <span class="tag">Guruh: <strong id="student-grp">M07-25</strong></span>
+                <span class="tag">Mutaxassislik: <strong id="student-spec">Dasturiy injiniring</strong></span>
+                <span class="tag tag-highlight" id="student-eduform">Ta'lim shakli: Kunduzgi</span>
+              </div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-outline btn-sm" onclick="switchDemoUser('kunduzgi')">Zoxidjon (kunduzgi)</button>
+              <button class="btn btn-outline btn-sm" onclick="switchDemoUser('sirtqi')">Azamat (sirtqi)</button>
+            </div>
+          </div>
+
+          <div class="grid grid-2">
+            <!-- Murojaat yo'llash -->
+            <div class="card">
+              <div class="card-title">
+                <span>Onlayn murojaat yo'llash</span>
+                <span class="tag tag-success">24/7 qabul</span>
+              </div>
+              <p class="card-desc">Sirtqi va masofaviy ta'lim shakli talabalari uchun masofaviy rasmiylashtirish.</p>
+
+              <div id="appeal-restriction-alert" class="alert alert-warning" style="display: none;">
+                <svg style="width: 20px; height: 20px; flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/>
+                  <line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <div>
+                  <strong>Diqqat:</strong> Sizning ta'lim shaklingiz <strong>Kunduzgi</strong> bo'lgani sababli onlayn murojaat qabul qilinmaydi. Registrator ofisiga (104-xona) bevosita kelib murojaat qilishingiz yoki <strong>"Kelib hal etish"</strong> bo'limidan navbat olishingiz kerak!
+                </div>
+              </div>
+
+              <form id="appeal-form" onsubmit="submitAppeal(event)">
+                <div class="form-group">
+                  <label class="form-label">Xizmat turini tanlang:</label>
+                  <select id="service-select" class="form-control" required>
+                    <option value="">Yuklanmoqda...</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Murojaat mavzusi:</label>
+                  <input type="text" id="appeal-subject" class="form-control" placeholder="Masalan: Ma'lumotnoma berish so'rovi" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Batafsil matn / asoslantirish:</label>
+                  <textarea id="appeal-message" class="form-control" placeholder="Murojaatingiz matnini yozing..." required></textarea>
+                </div>
+                <button type="submit" id="appeal-submit-btn" class="btn btn-primary" style="width: 100%;">
+                  <span>Murojaatni yuborish</span>
+                </button>
+              </form>
+
+              <div id="appeal-result-box" style="display: none; margin-top: 1rem;"></div>
+            </div>
+
+            <!-- Murojaatlar tarixi -->
+            <div class="card">
+              <div class="card-title">
+                <span>Mening murojaatlarim</span>
+                <button class="btn btn-outline btn-sm" onclick="loadStudentAppeals()">
+                  <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                  </svg>
+                  <span>Yangilash</span>
+                </button>
+              </div>
+              <p class="card-desc">Holat, ijrochi va SLA qizil/sariq/yashil ko'rsatkichi.</p>
+              <div id="student-appeals-list">
+                <p style="color: var(--text-muted); font-size: 0.85rem;">Murojaatlar yuklanmoqda...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: ELEKTRON NAVBAT (KELIB HAL ETISH) -->
+        <div id="tab-navbat" class="tab-pane">
+          <div class="card" style="max-width: 720px; margin: 0 auto;">
+            <div class="card-title">
+              <span>Kelib / uchrashib hal etish (elektron navbat)</span>
+              <span class="tag tag-success">104-xona qabuli</span>
+            </div>
+            <p class="card-desc">Registrator ofisida navbat kutmasdan, o'zingizga qulay 15 daqiqalik vaqtga talon oling.</p>
+
+            <div class="form-group">
+              <label class="form-label">Xizmat turini tanlang:</label>
+              <select id="queue-service-select" class="form-control" onchange="loadAvailableSlots()">
+                <option value="">Tanlang...</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tashrif sanasini tanlang (dushanba-shanba):</label>
+              <input type="date" id="queue-date" class="form-control" onchange="loadAvailableSlots()">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Bo'sh 15 daqiqalik vaqt oralig'i:</label>
+              <div id="slots-container" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px;">
+                <p style="color: var(--text-muted); font-size: 0.8rem;">Sana va xizmatni tanlang...</p>
+              </div>
+            </div>
+
+            <button class="btn btn-primary" style="width: 100%; margin-top: 1rem;" onclick="bookQueueTicket()">
+              <span>Elektron talon olish</span>
+            </button>
+
+            <!-- Ticket display -->
+            <div id="ticket-display" class="ticket-card" style="display: none;">
+              <p style="font-size: 0.8rem; color: #a5b4fc; text-transform: uppercase; font-weight: 700;">Elektron navbat taloni</p>
+              <div class="ticket-code" id="ticket-code-val">TALON-A-101</div>
+              <div class="ticket-window" id="ticket-window-val">104-xona, 1-darcha (front-ofis)</div>
+              <div class="ticket-details">
+                <div>Sana: <strong id="ticket-date-val">-</strong></div>
+                <div>Vaqt: <strong id="ticket-time-val">-</strong></div>
+              </div>
+              <p style="margin-top: 1rem; font-size: 0.75rem; color: #94a3b8;">Belgilangan vaqtdan 5 daqiqa oldin 104-xonaga yetib keling.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: XODIM & BOSHLIQ ISH STOLI -->
+        <div id="tab-xodim" class="tab-pane">
+
+          <!-- Boshliq / Admin: Ta'lim shakllari bo'yicha onlayn murojaat cheklovlari sozlamasi -->
+          <div class="card" style="margin-bottom: 1.5rem;" id="admin-policy-section">
+            <div class="card-title">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+                <span>Ta'lim shakllari bo'yicha onlayn murojaat cheklovlari</span>
+              </div>
+              <span class="tag tag-highlight">Admin boshqaruvi</span>
+            </div>
+            <p class="card-desc">Universitetning qaysi ta'lim shakli (kunduzgi, sirtqi, masofaviy, kechki) talabalari masofaviy onlayn murojaat yo'llashi mumkinligini boshqaring. O'chirilgan ta'lim shakllari faqat "Kelib hal etish" orqali navbat oladi.</p>
+
+            <div id="policy-toggles-container" class="grid grid-2" style="margin-top: 1rem;">
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Yuklanmoqda...</p>
+            </div>
+
+            <div id="policy-toast" style="display: none; margin-top: 1rem;" class="alert alert-info"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span>Kelib tushgan murojaatlar monitoringi</span>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn btn-outline btn-sm" onclick="loginAsStaff('malika')">Front xodim (Malika)</button>
+                <button class="btn btn-outline btn-sm" onclick="loginAsStaff('head')">Boshliq (Akrom Vohidov)</button>
+                <button class="btn btn-outline btn-sm" onclick="loginAsStaff('prorektor')">Prorektor (Sh. Rahimov)</button>
+              </div>
+            </div>
+            <p class="card-desc" id="current-staff-badge">Joriy rol: Boshliq (barcha murojaatlarni ko'rish va yo'naltirish)</p>
+
+            <div id="staff-appeals-table" style="margin-top: 1rem;">
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Yuklanmoqda...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: KPI DOSKASI -->
+        <div id="tab-kpi" class="tab-pane">
+          <div class="card">
+            <div class="card-title">
+              <span>Registrator ofisi xodimlari KPI reytingi (2026-09)</span>
+              <span class="tag tag-highlight">Oylik standart: 150 ball</span>
+            </div>
+            <p class="card-desc">Har bir xodim bajargan murojaatlari, talabalar baholari va jarimalar asosida avtomatlashtirilgan hisob-kitob.</p>
+            <div id="kpi-cards" class="grid grid-2" style="margin-top: 1rem;">
+              <p style="color: var(--text-muted); font-size: 0.85rem;">KPI ma'lumotlari olinmoqda...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: BAYRAMLAR KALENDARI -->
+        <div id="tab-kalendar" class="tab-pane">
+          <div class="card">
+            <div class="card-title">
+              <span>2026-yilgi rasmiy bayramlar va dam olish kunlari</span>
+              <span class="tag">SLA va navbat muzlatiladigan kunlar</span>
+            </div>
+            <p class="card-desc">Ushbu kunlarda murojaat ijro vaqti muzlaydi va elektron navbat berilmaydi.</p>
+            <div id="holidays-list" class="grid grid-3" style="margin-top: 1rem;">
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Yuklanmoqda...</p>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- Footer -->
+      <footer>
+        Registrator ofisi axborot tizimi • O'zMU Jizzax filiali • Oliy ta'lim vazirligi 73-sonli buyrug'i asosida
+      </footer>
+
+    </div>
+
+  </div>
+
+  <script>
+    let currentToken = "";
+    let currentUser = null;
+    let selectedSlot = "";
+    let allServices = [];
+    let currentPolicy = null;
+
+    // Switch Tabs
+    function switchTab(tabId) {
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      
+      const targetBtn = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+      if (targetBtn) targetBtn.classList.add('active');
+
+      const targetPane = document.getElementById('tab-' + tabId);
+      if (targetPane) targetPane.classList.add('active');
+
+      const titles = {
+        'talaba': "Talaba portali",
+        'navbat': "Kelib hal etish (elektron navbat)",
+        'xodim': "Xodim va boshliq ish stoli",
+        'kpi': "Xodimlar KPI doskasi",
+        'kalendar': "Bayramlar taqvimi"
+      };
+      const heading = document.getElementById('page-heading');
+      if (heading && titles[tabId]) heading.innerText = titles[tabId];
+
+      closeSidebar();
+
+      if (tabId === 'kpi') loadKPIOverview();
+      if (tabId === 'kalendar') loadHolidays();
+      if (tabId === 'xodim') {
+        loadStaffAppeals();
+        loadEducationPolicy();
+      }
+    }
+
+    // Sidebar Mobile Toggle
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('open');
+      overlay.classList.toggle('active');
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      if (sidebar) sidebar.classList.remove('open');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    // Default init
+    window.addEventListener('DOMContentLoaded', async () => {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      if (d.getDay() === 0) d.setDate(d.getDate() + 1); // Yakshanba kunini o'tkazib yuborish
+      document.getElementById('queue-date').value = d.toISOString().split('T')[0];
+
+      await loadEducationPolicy();
+      await loadServices();
+      await switchDemoUser('kunduzgi');
+      loadHolidays();
+    });
+
+    // Education Form Policy API
+    async function loadEducationPolicy() {
+      const container = document.getElementById('policy-toggles-container');
+      try {
+        const resp = await fetch('/api/v1/appeals/policy/education-forms');
+        const data = await resp.json();
+        currentPolicy = data;
+        renderPolicyToggles(data);
+        if (currentUser) {
+          checkStudentFormRestriction();
+        }
+      } catch (e) {
+        if (container) container.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">Siyosatni yuklab bo\'lmadi.</p>';
+      }
+    }
+
+    function renderPolicyToggles(policy) {
+      const container = document.getElementById('policy-toggles-container');
+      if (!container) return;
+      container.innerHTML = '';
+      policy.items.forEach(item => {
+        const isChecked = item.allowed ? 'checked' : '';
+        const badgeClass = item.allowed ? 'tag-success' : 'tag-highlight';
+        const badgeText = item.allowed ? "Onlayn ruxsat berilgan" : "Cheklangan (Kelib hal etish)";
+        
+        container.innerHTML += `
+          <div class="toggle-card">
+            <div style="flex: 1;">
+              <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+                <strong style="font-size: 0.95rem;">${item.title}</strong>
+                <span class="tag ${badgeClass}" id="badge-${item.code}">${badgeText}</span>
+              </div>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">${item.description}</p>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="toggle-${item.code}" ${isChecked} onchange="toggleEducationForm('${item.code}')">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        `;
+      });
+    }
+
+    async function toggleEducationForm(code) {
+      if (!currentPolicy) return;
+      const checkbox = document.getElementById('toggle-' + code);
+      const isAllowed = checkbox.checked;
+
+      let newAllowed = [...currentPolicy.allowed_forms];
+      if (isAllowed && !newAllowed.includes(code)) {
+        newAllowed.push(code);
+      } else if (!isAllowed && newAllowed.includes(code)) {
+        newAllowed = newAllowed.filter(x => x !== code);
+      }
+
+      // Always authenticate as Head/Admin for policy change
+      const loginResp = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: "akrom_head", password: "HeadPass123!" })
+      });
+      const loginData = await loginResp.json();
+      const adminToken = loginData.access_token;
+
+      try {
+        const resp = await fetch('/api/v1/appeals/policy/education-forms', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + adminToken
+          },
+          body: JSON.stringify({ allowed_forms: newAllowed })
+        });
+        if (resp.ok) {
+          currentPolicy = await resp.json();
+          renderPolicyToggles(currentPolicy);
+
+          const toast = document.getElementById('policy-toast');
+          toast.className = 'alert alert-info';
+          toast.style.display = 'flex';
+          toast.innerHTML = `✅ Sozlama saqlandi: <strong>${code}</strong> ta'lim shakliga onlayn murojaat ${isAllowed ? 'ruxsat berildi' : 'cheklandi'}!`;
+          setTimeout(() => { toast.style.display = 'none'; }, 4000);
+
+          checkStudentFormRestriction();
+        } else {
+          const err = await resp.json();
+          alert(err.detail || "Siyosatni o'zgartirib bo'lmadi");
+          checkbox.checked = !isAllowed;
+        }
+      } catch (e) {
+        alert("Ulanish xatosi: " + e);
+        checkbox.checked = !isAllowed;
+      }
+    }
+
+    function checkStudentFormRestriction() {
+      if (!currentUser) return;
+      const eduForm = (currentUser.education_form || "Kunduzgi").toLowerCase();
+      let isAllowed = false;
+      if (currentPolicy && currentPolicy.allowed_forms) {
+        isAllowed = currentPolicy.allowed_forms.some(f => eduForm.includes(f));
+      } else {
+        isAllowed = !eduForm.includes('kunduzgi');
+      }
+
+      const alertBox = document.getElementById('appeal-restriction-alert');
+      const submitBtn = document.getElementById('appeal-submit-btn');
+      const formTag = document.getElementById('student-eduform');
+
+      if (!isAllowed) {
+        alertBox.style.display = 'flex';
+        formTag.className = 'tag tag-highlight';
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.5';
+        submitBtn.querySelector('span').innerText = `${currentUser.education_form || "Ushbu"} ta'lim shakli uchun onlayn murojaat cheklangan`;
+      } else {
+        alertBox.style.display = 'none';
+        formTag.className = 'tag tag-success';
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '1';
+        submitBtn.querySelector('span').innerText = "Murojaatni yuborish";
+      }
+    }
+
+    // Switch demo user
+    async function switchDemoUser(type) {
+      let loginData = {};
+      if (type === 'kunduzgi') {
+        loginData = { hemis_login: "401251200032", password: "(Zetmax0011)" };
+      } else {
+        loginData = { hemis_login: "student_azamat", password: "StudentPass123!" };
+      }
+
+      try {
+        const resp = await fetch('/api/v1/auth/hemis-login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(loginData)
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          currentToken = data.access_token;
+          await fetchUserProfile();
+          loadStudentAppeals();
+        }
+      } catch (e) {
+        console.error("Login xatoligi:", e);
+      }
+    }
+
+    async function fetchUserProfile() {
+      const resp = await fetch('/api/v1/auth/me', {
+        headers: { 'Authorization': 'Bearer ' + currentToken }
+      });
+      if (resp.ok) {
+        currentUser = await resp.json();
+        document.getElementById('student-name').innerText = currentUser.full_name;
+        document.getElementById('student-id').innerText = currentUser.hemis_student_id || currentUser.username;
+        document.getElementById('student-fac').innerText = currentUser.faculty || "Axborot texnologiyalari";
+        document.getElementById('student-grp').innerText = currentUser.group_name || "M07-25";
+        document.getElementById('student-spec').innerText = currentUser.specialty || "Dasturiy injiniring";
+
+        const eduForm = currentUser.education_form || "Kunduzgi";
+        const formTag = document.getElementById('student-eduform');
+        formTag.innerText = "Ta'lim shakli: " + eduForm;
+
+        checkStudentFormRestriction();
+      }
+    }
+
+    // Load Services
+    async function loadServices() {
+      const resp = await fetch('/api/v1/services');
+      allServices = await resp.json();
+      const select1 = document.getElementById('service-select');
+      const select2 = document.getElementById('queue-service-select');
+      select1.innerHTML = '<option value="">Xizmatni tanlang...</option>';
+      select2.innerHTML = '<option value="">Xizmatni tanlang...</option>';
+
+      allServices.forEach(s => {
+        const opt = `<option value="${s.id}">${s.title} (${s.kpi_points} ball, SLA: ${s.sla_hours} soat)</option>`;
+        select1.innerHTML += opt;
+        select2.innerHTML += opt;
+      });
+      if (allServices.length > 0) {
+        select2.value = allServices[0].id;
+        loadAvailableSlots();
+      }
+    }
+
+    // Submit Appeal
+    async function submitAppeal(e) {
+      e.preventDefault();
+      const serviceId = document.getElementById('service-select').value;
+      const subject = document.getElementById('appeal-subject').value;
+      const message = document.getElementById('appeal-message').value;
+      const resBox = document.getElementById('appeal-result-box');
+
+      try {
+        const resp = await fetch('/api/v1/appeals', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + currentToken
+          },
+          body: JSON.stringify({
+            service_id: parseInt(serviceId),
+            subject: subject,
+            message: message
+          })
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          resBox.className = 'alert alert-info';
+          resBox.innerHTML = `Murojaat qabul qilindi! <strong>Talon: #${res.ticket_number}</strong><br>SLA ijro muddati: ${new Date(res.sla_deadline_at).toLocaleString('uz')}`;
+          resBox.style.display = 'block';
+          loadStudentAppeals();
+          document.getElementById('appeal-form').reset();
+        } else {
+          resBox.className = 'alert alert-warning';
+          resBox.innerHTML = res.detail || "Xatolik yuz berdi";
+          resBox.style.display = 'block';
+        }
+      } catch (err) {
+        alert("Xatolik yuz berdi: " + err);
+      }
+    }
+
+    // Load student appeals
+    async function loadStudentAppeals() {
+      const list = document.getElementById('student-appeals-list');
+      try {
+        const resp = await fetch('/api/v1/appeals', {
+          headers: { 'Authorization': 'Bearer ' + currentToken }
+        });
+        const data = await resp.json();
+        if (!data || data.length === 0) {
+          list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Hozircha faol murojaatlar yo\'q.</p>';
+          return;
+        }
+        list.innerHTML = '';
+        data.forEach(app => {
+          let badgeClass = 'tag-highlight';
+          if (app.status === 'completed') badgeClass = 'tag-success';
+          list.innerHTML += `
+            <div style="background: var(--surface-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <strong style="color: #818cf8;">#${app.ticket_number}</strong>
+                <span class="tag ${badgeClass}">${app.status.toUpperCase()}</span>
+              </div>
+              <p style="font-size: 0.85rem; font-weight: 600; margin: 4px 0;">${app.subject}</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted);">${app.service ? app.service.title : ''}</p>
+              ${app.status === 'resolved' ? `
+                <div style="margin-top: 8px; display: flex; gap: 8px;">
+                  <button class="btn btn-primary btn-sm" onclick="confirmAppeal(${app.id})">Tasdiqlash (5★)</button>
+                  <button class="btn btn-outline btn-sm" style="color: #f87171;" onclick="disputeAppeal(${app.id})">Hal bo'lmadi (e'tiroz)</button>
+                </div>
+              ` : ''}
+            </div>
+          `;
+        });
+      } catch (e) {
+        list.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">Yuklashda xatolik.</p>';
+      }
+    }
+
+    // Confirm & Dispute
+    async function confirmAppeal(id) {
+      await fetch(`/api/v1/appeals/${id}/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+        body: JSON.stringify({ rating: 5, rating_comment: "Tez va a'lo darajada bajarildi" })
+      });
+      loadStudentAppeals();
+    }
+
+    async function disputeAppeal(id) {
+      const reason = prompt("E'tiroz sababini yozing:");
+      if (!reason) return;
+      await fetch(`/api/v1/appeals/${id}/dispute`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+        body: JSON.stringify({ dispute_reason: reason })
+      });
+      loadStudentAppeals();
+    }
+
+    // Load available slots
+    async function loadAvailableSlots() {
+      const serviceId = document.getElementById('queue-service-select').value;
+      const dateVal = document.getElementById('queue-date').value;
+      const container = document.getElementById('slots-container');
+
+      if (!serviceId || !dateVal) return;
+
+      container.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-muted);">Slotlar olinmoqda...</p>';
+      try {
+        const resp = await fetch(`/api/v1/appointments/available-slots?service_id=${serviceId}&appointment_date=${dateVal}`);
+        const slots = await resp.json();
+        if (!slots || slots.length === 0) {
+          container.innerHTML = '<p style="color: #fbbf24; font-size: 0.8rem;">Ushbu kunga navbatlar mavjud emas (dam olish yoki bayram kuni).</p>';
+          return;
+        }
+        container.innerHTML = '';
+        slots.forEach((s, idx) => {
+          const btn = document.createElement('button');
+          btn.className = 'slot-btn' + (idx === 0 ? ' selected' : '');
+          btn.innerText = s;
+          btn.onclick = () => {
+            document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedSlot = s;
+          };
+          container.appendChild(btn);
+        });
+        selectedSlot = slots[0];
+      } catch (e) {
+        container.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">Yuklab bo\'lmadi.</p>';
+      }
+    }
+
+    // Book ticket
+    async function bookQueueTicket() {
+      const serviceId = document.getElementById('queue-service-select').value;
+      const dateVal = document.getElementById('queue-date').value;
+      if (!selectedSlot) {
+        alert("Iltimos, vaqt oralig'ini tanlang.");
+        return;
+      }
+
+      try {
+        const resp = await fetch('/api/v1/appointments/book', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+          body: JSON.stringify({
+            service_id: parseInt(serviceId),
+            appointment_date: dateVal,
+            time_slot: selectedSlot
+          })
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          const box = document.getElementById('ticket-display');
+          document.getElementById('ticket-code-val').innerText = res.ticket_code;
+          document.getElementById('ticket-window-val').innerText = res.window_number;
+          document.getElementById('ticket-date-val').innerText = res.appointment_date;
+          document.getElementById('ticket-time-val').innerText = res.time_slot;
+          box.style.display = 'block';
+          loadAvailableSlots();
+        } else {
+          alert(res.detail || "Xatolik yuz berdi");
+        }
+      } catch (e) {
+        alert("Ulanish xatosi: " + e);
+      }
+    }
+
+    // Staff Login
+    async function loginAsStaff(role) {
+      let u = "akrom_head", p = "HeadPass123!";
+      let badge = "Joriy rol: Boshliq (Akrom Vohidov)";
+      if (role === 'malika') {
+        u = "malika_front"; p = "StaffPass123!";
+        badge = "Joriy rol: Front xodim (Malika Karimova, 1-darcha)";
+      } else if (role === 'prorektor') {
+        u = "prorektor_edu"; p = "ProrektorPass123!";
+        badge = "Joriy rol: Prorektor (Sherzod Rahimov)";
+      }
+
+      const resp = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u, password: p })
+      });
+      const data = await resp.json();
+      if (resp.ok) {
+        currentToken = data.access_token;
+        document.getElementById('current-staff-badge').innerText = badge;
+        loadStaffAppeals();
+      }
+    }
+
+    async function loadStaffAppeals() {
+      const container = document.getElementById('staff-appeals-table');
+      try {
+        const resp = await fetch('/api/v1/appeals', {
+          headers: { 'Authorization': 'Bearer ' + currentToken }
+        });
+        const data = await resp.json();
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Murojaatlar mavjud emas.</p>';
+          return;
+        }
+        let html = '<div style="display: grid; gap: 8px;">';
+        data.forEach(app => {
+          html += `
+            <div style="background: var(--surface-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <strong style="color: #818cf8;">#${app.ticket_number}</strong>
+                  <span style="margin-left: 8px; font-weight: 600;">${app.subject}</span>
+                </div>
+                <span class="tag tag-highlight">${app.status.toUpperCase()}</span>
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0;">${app.message}</p>
+              <div style="display: flex; gap: 8px; margin-top: 8px;">
+                ${app.status === 'new' ? `<button class="btn btn-primary btn-sm" onclick="assignToMe(${app.id})">Menga biriktirish</button>` : ''}
+                ${(app.status === 'assigned' || app.status === 'in_progress') ? `<button class="btn btn-primary btn-sm" onclick="resolveAppealStaff(${app.id})">Javob berish / ijro</button>` : ''}
+                ${app.status === 'disputed' ? `<button class="btn btn-primary btn-sm" style="background: #f59e0b;" onclick="escalateToProrektor(${app.id})">Prorektorga eskalatsiya qilish</button>` : ''}
+              </div>
+            </div>
+          `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">Yuklab bo\'lmadi.</p>';
+      }
+    }
+
+    async function assignToMe(id) {
+      await fetch(`/api/v1/appeals/${id}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+        body: JSON.stringify({ staff_id: 4 })
+      });
+      loadStaffAppeals();
+    }
+
+    async function resolveAppealStaff(id) {
+      const text = prompt("Ijro javobi matnini kiriting:");
+      if (!text) return;
+      await fetch(`/api/v1/appeals/${id}/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+        body: JSON.stringify({ resolution_text: text })
+      });
+      loadStaffAppeals();
+    }
+
+    async function escalateToProrektor(id) {
+      const note = prompt("Prorektor uchun izoh:");
+      if (!note) return;
+      await fetch(`/api/v1/appeals/${id}/escalate-prorektor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+        body: JSON.stringify({ head_note: note })
+      });
+      loadStaffAppeals();
+    }
+
+    // Load KPI
+    async function loadKPIOverview() {
+      const container = document.getElementById('kpi-cards');
+      try {
+        const resp = await fetch('/api/v1/kpi/overview?period=2026-09', {
+          headers: { 'Authorization': 'Bearer ' + currentToken }
+        });
+        const data = await resp.json();
+        if (!data || data.length === 0) {
+          container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">KPI ma\'lumotlari topilmadi.</p>';
+          return;
+        }
+        container.innerHTML = '';
+        data.forEach(k => {
+          container.innerHTML += `
+            <div class="card" style="background: var(--surface-card);">
+              <div class="card-title">
+                <span>Xodim ID: ${k.employee_id}</span>
+                <span class="tag tag-success">${k.kpi_percentage}%</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill" style="width: ${Math.min(100, k.kpi_percentage)}%;"></div>
+              </div>
+              <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                <div>To'plangan: <strong>${k.completed_points} ball</strong></div>
+                <div>Maqsad: <strong>${k.target_points} ball</strong></div>
+                <div>Bajarilgan murojaatlar: <strong>${k.total_appeals_completed}</strong></div>
+                <div>Qabullar soni: <strong>${k.total_appointments_completed}</strong></div>
+                <div>O'rtacha baho: <strong>${k.average_rating} ★</strong></div>
+                <div>Jarima: <strong style="color: #f87171;">-${k.penalty_points} ball</strong></div>
+              </div>
+            </div>
+          `;
+        });
+      } catch (e) {
+        container.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">KPI yuklashda xatolik.</p>';
+      }
+    }
+
+    // Load Holidays
+    async function loadHolidays() {
+      const container = document.getElementById('holidays-list');
+      try {
+        const resp = await fetch('/api/v1/calendar/holidays');
+        const holidays = await resp.json();
+        container.innerHTML = '';
+        holidays.forEach(h => {
+          container.innerHTML += `
+            <div class="card" style="background: var(--surface-card); padding: 1rem;">
+              <span class="tag tag-highlight" style="font-size: 0.75rem;">${h.holiday_date}</span>
+              <p style="font-weight: 700; font-size: 0.9rem; margin-top: 6px;">${h.title}</p>
+              <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">SLA hisoblagichi to'xtatiladi</p>
+            </div>
+          `;
+        });
+      } catch (e) {
+        container.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">Yuklab bo\'lmadi.</p>';
+      }
+    }
+  </script>
+</body>
+</html>

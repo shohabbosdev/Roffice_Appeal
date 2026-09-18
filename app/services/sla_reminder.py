@@ -1,0 +1,118 @@
+"""
+SLA Deadline Reminder Service
+Fon vazifasi: har 15 daqiqada SLA muddati yaqinlashayotgan
+murojaatlar bo'yicha xodimga Telegram eslatma yuboradi.
+"""
+import asyncio
+import logging
+from datetime import datetime, timezone, timedelta
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from app.core.database import AsyncSessionLocal
+from app.models import Appeal, AppealStatus, User
+from app.services.telegram_service import TelegramService
+
+from app.services.appeal_service import AppealService
+
+logger = logging.getLogger(__name__)
+
+# Necha soat qolganida eslatma yuboriladi
+REMINDER_THRESHOLD_HOURS = 2
+# Bir murojaatga necha marta eslatma yuborilishi mumkin (shu sessiyada)
+_reminded_set: set = set()
+
+
+async def check_and_send_sla_reminders():
+    """SLA muddati REMINDER_THRESHOLD_HOURS soatdan kam qolgan barcha
+    ochiq murojaatlar uchun biriktirilgan xodimga Telegram eslatma yuboradi.
+    Shuningdek, 72 soat ichida tasdiqlanmagan murojaatlarni avtomatik yopadi."""
+    now = datetime.now(timezone.utc)
+    threshold_dt = now + timedelta(hours=REMINDER_THRESHOLD_HOURS)
+
+    async with AsyncSessionLocal() as db:
+        try:
+            # 1. 72 soatlik tasdiqlash muddati o'tgan murojaatlarni avtomatik yopish
+            closed_count = await AppealService.auto_close_expired(db)
+            if closed_count > 0:
+                logger.info(f"72 soatlik muddat o'tgan {closed_count} ta murojaat avtomatik yopildi.")
+
+            # 2. SLA muddati tugayotgan arizalarni eslatish
+            stmt = (
+                select(Appeal)
+                .options(selectinload(Appeal.service))
+                .where(
+                    Appeal.status.in_([
+                        AppealStatus.ASSIGNED,
+                        AppealStatus.IN_PROGRESS,
+                        AppealStatus.CLARIFICATION_NEEDED
+                    ]),
+                    Appeal.assigned_staff_id.isnot(None),
+                    Appeal.sla_deadline_at.isnot(None),
+                    Appeal.sla_deadline_at <= threshold_dt,
+                    Appeal.sla_deadline_at >= now  # Hali o'tmagan
+                )
+            )
+            result = await db.execute(stmt)
+            overdue_appeals = result.scalars().all()
+
+            current_active_ids = {a.id for a in overdue_appeals}
+            # Xotirani tozalash: faol bo'lmagan id larni set dan olib tashlash
+            global _reminded_set
+            _reminded_set = _reminded_set.intersection(current_active_ids)
+
+            for appeal in overdue_appeals:
+                # Bir sessiyada bir xil murojaatga qayta eslatma yubormaslik
+                if appeal.id in _reminded_set:
+                    continue
+
+                staff = await db.get(User, appeal.assigned_staff_id)
+                if not staff or not staff.telegram_chat_id:
+                    continue
+
+                deadline_local = appeal.sla_deadline_at
+                minutes_left = int((deadline_local - now).total_seconds() / 60)
+                hours_left = minutes_left // 60
+                mins_left = minutes_left % 60
+
+                time_str = f"{hours_left} soat {mins_left} daqiqa" if hours_left > 0 else f"{mins_left} daqiqa"
+
+                msg = (
+                    f"⚠️ <b>SLA muddati yaqinlashmoqda!</b>\n\n"
+                    f"Hurmatli {staff.full_name},\n"
+                    f"Sizga biriktirilgan murojaatni ijro etish muddati <b>{time_str}</b> ichida tugaydi:\n\n"
+                    f"• <b>Talon:</b> #{appeal.ticket_number}\n"
+                    f"• <b>Mavzu:</b> {appeal.subject}\n"
+                    f"• <b>Xizmat:</b> {appeal.service.title if appeal.service else '-'}\n"
+                    f"• <b>SLA muddati:</b> {deadline_local.strftime('%Y-%m-%d %H:%M')} UTC\n\n"
+                    f"<i>Iltimos, o'z vaqtida ijro etilib, natijani tizimga yuklang. "
+                    f"Muddatni o'tkazib yuborish KPI ko'rsatkichingizga salbiy ta'sir qiladi.</i>"
+                )
+
+                sent = await TelegramService.send_telegram_message(
+                    chat_id=staff.telegram_chat_id,
+                    text=msg
+                )
+                if sent:
+                    _reminded_set.add(appeal.id)
+                    logger.info(
+                        f"SLA eslatma yuborildi: murojaat #{appeal.ticket_number} "
+                        f"-> xodim {staff.full_name} (TG: {staff.telegram_chat_id})"
+                    )
+
+        except Exception as e:
+            logger.error(f"SLA reminder tekshirishda xatolik: {e}")
+
+
+async def run_sla_reminder_loop():
+    """Har 15 daqiqada SLA deadline eslatmalarini va avto-yopilishni tekshirib turuvchi fon vazifasi."""
+    logger.info("SLA Reminder va Auto-Close xizmati ishga tushirildi (har 15 daqiqada tekshiriladi).")
+    while True:
+        try:
+            await check_and_send_sla_reminders()
+        except asyncio.CancelledError:
+            logger.info("SLA Reminder xizmati to'xtatildi.")
+            break
+        except Exception as e:
+            logger.error(f"SLA reminder loop xatosi: {e}")
+        await asyncio.sleep(15 * 60)  # 15 daqiqa
+

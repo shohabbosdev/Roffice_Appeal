@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrator Ofisi Murojaatlar Ekotizimi - To'liq Batafsil Infografika</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+    @page {
+      size: A4 portrait;
+      margin: 6mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: #0f172a;
+      color: #1e293b;
+      display: flex;
+      justify-content: center;
+      padding: 15px;
+    }
+
+    .poster {
+      width: 210mm;
+      min-height: 297mm;
+      background: #ffffff;
+      padding: 10mm 12mm;
+      border-radius: 4px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* HEADER */
+    .header {
+      border-bottom: 2.5px solid #0284c7;
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-left h3 {
+      font-size: 8pt;
+      font-weight: 700;
+      color: #0284c7;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+    }
+    .header-left h1 {
+      font-size: 14pt;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.15;
+      margin-top: 2px;
+    }
+    .header-right {
+      text-align: right;
+      font-size: 7.5pt;
+      color: #64748b;
+      line-height: 1.3;
+      border-left: 2px solid #e2e8f0;
+      padding-left: 10px;
+    }
+    .header-right strong {
+      color: #0f172a;
+    }
+
+    /* SECTION CONTAINERS */
+    .section-block {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #0284c7;
+      border-radius: 8px;
+      padding: 7px 10px;
+      margin-bottom: 6.5px;
+    }
+    .section-block.purple { border-left-color: #7c3aed; }
+    .section-block.emerald { border-left-color: #059669; }
+    .section-block.amber { border-left-color: #d97706; }
+    .section-block.rose { border-left-color: #e11d48; }
+    .section-block.navy { border-left-color: #1e3a8a; }
+
+    .sec-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+    .sec-title {
+      font-size: 9pt;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .sec-badge {
+      font-size: 6.5pt;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: white;
+      background: #0284c7;
+      text-transform: uppercase;
+    }
+    .sec-badge.purple { background: #7c3aed; }
+    .sec-badge.emerald { background: #059669; }
+    .sec-badge.amber { background: #d97706; }
+    .sec-badge.rose { background: #e11d48; }
+
+    /* INNER GRID ITEMS */
+    .grid-row {
+      display: grid;
+      gap: 6px;
+    }
+    .grid-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid-4 { grid-template-columns: repeat(4, 1fr); }
+    .grid-2 { grid-template-columns: repeat(2, 1fr); }
+
+    .card-item {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 5px 7px;
+      font-size: 7.5pt;
+    }
+    .card-item .item-title {
+      font-weight: 700;
+      color: #0f172a;
+      margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 7.8pt;
+    }
+    .card-item .item-desc {
+      color: #475569;
+      font-size: 6.8pt;
+      line-height: 1.25;
+    }
+    .tag {
+      display: inline-block;
+      font-size: 6pt;
+      font-weight: 700;
+      padding: 1px 4px;
+      border-radius: 3px;
+      margin-top: 3px;
+    }
+    .tag-blue { background: #e0f2fe; color: #0369a1; }
+    .tag-green { background: #dcfce7; color: #15803d; }
+    .tag-amber { background: #fef3c7; color: #b45309; }
+    .tag-red { background: #fee2e2; color: #b91c1c; }
+    .tag-purple { background: #f3e8ff; color: #6b21a8; }
+
+    /* TIMELINE CONNECTOR */
+    .connector-line {
+      text-align: center;
+      font-size: 8pt;
+      color: #94a3b8;
+      font-weight: 800;
+      line-height: 0.8;
+      margin: 1px 0;
+    }
+
+    /* FOOTER */
+    .footer {
+      border-top: 1.5px solid #e2e8f0;
+      padding-top: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 7pt;
+      color: #64748b;
+    }
+    .footer strong { color: #0f172a; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .poster { box-shadow: none; width: 100%; min-height: 100vh; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="poster">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <h3>Universitet Registrator Ofisi (Registrar's Office)</h3>
+      <h1>RAQAMLI MUROJAATLAR VA IJRO INTIZOMI EKOTIZIMI</h1>
+    </div>
+    <div class="header-right">
+      <strong>Metodologik asos:</strong> ITIL 4, AACRAO, ISO 9001<br>
+      <strong>Texnologik poydevor:</strong> FastAPI + PostgreSQL + Redis + Bot<br>
+      <strong>Qamrov:</strong> Sirtqi va Masofaviy ta'lim shakllari
+    </div>
+  </div>
+
+  <!-- BLOK 1 -->
+  <div class="section-block">
+    <div class="sec-head">
+      <div class="sec-title">
+        <span class="sec-badge">1-BOSQICH</span>
+        <span>TALABA KIRISHI, HEMIS INTEGRATSIYASI VA XAVFSIZLIK FILTRLARI</span>
+      </div>
+      <span style="font-size:7pt; color:#64748b; font-weight:600;">Veb-portal va Telegram Bot sinxronligi</span>
+    </div>
+    <div class="grid-row grid-4">
+      <div class="card-item">
+        <div class="item-title">🔑 HEMIS OAuth Kirish</div>
+        <div class="item-desc">Talaba login-paroli bilan kiradi. Tizimda <strong>2 kunlik JWT-seans</strong> yaratiladi. F.I.SH., talaba ID, fakultet, kurs avtomat olinadi.</div>
+        <span class="tag tag-blue">Insoniy xatolik 0%</span>
+      </div>
+      <div class="card-item">
+        <div class="item-title">📅 Da'vo Muddati Filtri</div>
+        <div class="item-desc">Eski davrga doir asossiz arizalar avtomat cheklanadi (masalan, bahoga e'tiroz faqat 5 ish kunida qabul qilinadi).</div>
+        <span class="tag tag-amber">Statute of Limitations</span>
+      </div>
+      <div class="card-item">
+        <div class="item-title">🚫 Anti-Spam / Anti-Flood</div>
+        <div class="item-desc">Ayni bir mavzuda ko'rib chiqilayotgan faol murojaati bor talabaga yangi takroriy ariza ochish taqiqlanadi.</div>
+        <span class="tag tag-red">Tirbandlikka to'siq</span>
+      </div>
+      <div class="card-item">
+        <div class="item-title">↩️ O'z Arizasini Bekor Qilish</div>
+        <div class="item-desc">Xodim arizani ochib ko'rmaguncha talaba arizani bekor qila oladi (masalasi o'z-o'zidan hal bo'lsa xodim vaqti tejaladi).</div>
+        <span class="tag tag-green">Self-Service</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector-line">▼</div>
+
+  <!-- BLOK 2 -->
+  <div class="section-block purple">
+    <div class="sec-head">
+      <div class="sec-title">
+        <span class="sec-badge purple">2-BOSQICH</span>
+        <span>MUROJAAT TOIFALARI VA ISH VAQTI (SLA) TAYMER HISOBI</span>
+      </div>
+      <span style="font-size:7pt; color:#7c3aed; font-weight:700;">24/7 qabul ➔ Rasmiy ish soatlarida ijro</span>
+    </div>
+    <div class="grid-row grid-3">
+      <div class="card-item">
+        <div class="item-title">⚡ 1-Toifa: Tezkor (24 soat)</div>
+        <div class="item-desc">O'qish joyidan ma'lumotnoma (spravka), HEMIS parolini tiklash, standart arizalar. <strong>Mas'ul: Front bo'limi.</strong></div>
+        <span class="tag tag-green">Ijro: 1 ish kuni</span>
+      </div>
+      <div class="card-item">
+        <div class="item-title">📑 2-Toifa: O'rta (72 soat)</div>
+        <div class="item-desc">To'lov-shartnoma hisoblari, kredit-modul ma'lumotlari, dars jadvalidagi nomuvofiqliklar, transkript.</div>
+        <span class="tag tag-blue">Ijro: 3 ish kuni</span>
+      </div>
+      <div class="card-item">
+        <div class="item-title">🏛 3-Toifa: Murakkab (5-7 kun)</div>
+        <div class="item-desc">Akademik ta'til, o'qishni ko'chirish/tiklash, fan farqlari, komissiya ko'rib chiqadigan apellyatsiyalar.</div>
+        <span class="tag tag-purple">Ijro: 5–7 ish kuni</span>
+      </div>
+    </div>
+    <div style="background:#f1f5f9; border-radius:5px; padding:4px 8px; margin-top:5px; display:flex; justify-content:space-between; align-items:center; font-size:7pt;">
+      <div><strong>⏰ Aqlli Ish Soatlari (Business Hours):</strong> Taymer faqat 09:00–18:00 (Dushanba-Juma) yuradi. Kechasi, shanba-yakshanba va bayramlarda taymer muzlaydi.</div>
+      <div style="color:#0284c7; font-weight:700;">💬 Dam olish kunida talabaga avtomatik psixologik xabarnoma boradi</div>
+    </div>
+  </div>
+
+  <div class="connector-line">▼</div>
+
+  <!-- BLOK 3 -->
+  <div class="section-block emerald">
+    <div class="sec-head">
+      <div class="sec-title">
+        <span class="sec-badge emerald">3-BOSQICH</span>
+        <span>OFIS BOSHLIG'I TAQSIMOTI VA ICHKI VAZIFALAR TIZIMI</span>
+      </div>
+      <span style="font-size:7pt; color:#059669; font-weight:700;">Front va Backend o'rtasida shaffof taqsimot</span>
+    </div>
+    <div class="grid-row grid-4">
+      <div class="card-item">
+        <div class="item-title">👔 Boshliq Taqsimoti</div>
+        <div class="item-desc">Boshliq arizani ko'rib yo'naltiradi. 12 soatda eslatma, 24 soatda avtomatik navbatdagi bo'sh xodimga (Fail-Safe) o'tadi.</div>
+        <span class="tag tag-amber">Taqsimlash SLA: 24h</span>
+      </div>
+      <div class="card-item">
+        <div class="item-title">👥 Front Bo'limi</div>
+        <div class="item-desc">Mijozlar bilan bevosita ishlovchi xodimlar: operativ spravkalar, ariza blankalarini qabul qilish, tushuntirish berish.</div>
+        <span class="tag tag-blue">Operativ darcha</span>
+      </div>
+      <div class="card-item">
+        <div class="item-title">⚙️ Backend Bo'limi</div>
+        <div class="item-desc">Ichki akademik mutaxassislar: HEMIS baholarini to'g'rilash, buyruqlar, transkript, fan farqlari va qarzdorliklar.</div>
+        <span class="tag tag-purple">Baza va Buyruqlar</span>
+      </div>
+      <div class="card-item">
+        <div class="item-title">🏓 Ping-Pong Cheklovi</div>
+        <div class="item-desc">Xodim boshqasiga faqat 1 marta qayta yo'naltira oladi. Agar rad etilsa, ariza Boshliqqa "Ichki nizo" bo'lib qulflanadi.</div>
+        <span class="tag tag-red">Futbol qilish yo'q</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector-line">▼</div>
+
+  <!-- BLOK 4 -->
+  <div class="section-block amber">
+    <div class="sec-head">
+      <div class="sec-title">
+        <span class="sec-badge amber">4-BOSQICH</span>
+        <span>TAYMERLAR, PAUZA VA SVETOFOR INTIZOM NAZORATI</span>
+      </div>
+      <span style="font-size:7pt; color:#b45309; font-weight:700;">Xodimni asossiz jarimadan himoyalovchi pauzalar</span>
+    </div>
+    <div class="grid-row grid-3">
+      <div class="card-item" style="border-top:3px solid #10b981;">
+        <div class="item-title">Yashil (0–50%)</div>
+        <div class="item-desc">Me'yordagi ijro jarayoni. Xodim arizani qabul qilgan va o'rganmoqda.</div>
+      </div>
+      <div class="card-item" style="border-top:3px solid #f59e0b;">
+        <div class="item-title">Sariq (50–80%)</div>
+        <div class="item-desc">Muddatning 80% o'tganda xodimning Telegram botiga shoshiltiruvchi signal boradi.</div>
+      </div>
+      <div class="card-item" style="border-top:3px solid #ef4444;">
+        <div class="item-title">Qizil (100%+ OVERDUE)</div>
+        <div class="item-desc">Kechikdi! Xodimning KPI dan jarima balli chegiriladi va Boshliqqa favqulodda xabar boradi.</div>
+      </div>
+    </div>
+    <div class="grid-row grid-2" style="margin-top:5px;">
+      <div class="card-item" style="background:#fefce8; border-color:#fef08a;">
+        <div class="item-title">Chala Ariza (Request Clarification)</div>
+        <div class="item-desc">Talaba ma'lumotni to'liq bermagan bo'lsa, xodim tushuntirish so'raydi. <strong>Taymer to'xtatiladi</strong>, talaba javob bergach qayta yuradi.</div>
+      </div>
+      <div class="card-item" style="background:#f0fdf4; border-color:#bbf7d0;">
+        <div class="item-title">⏸️ Tashqi Bog'liqlik (Pending External)</div>
+        <div class="item-desc">Ariza dekanat yoki kafedra xulosasini talab qilsa, status o'zgaradi va <strong>xodimning taymeri muzlatiladi</strong>. Xodim nohaq ayblanmaydi.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector-line">▼</div>
+
+  <!-- BLOK 5 -->
+  <div class="section-block rose">
+    <div class="sec-head">
+      <div class="sec-title">
+        <span class="sec-badge rose">5-BOSQICH</span>
+        <span>72 SOATLIK TASDIQLASH SEANSI VA KORRUPSIYAGA QARSHI BAHOLASH</span>
+      </div>
+      <span style="font-size:7pt; color:#e11d48; font-weight:700;">QR-kodli yuridik hujjat va Telegram eslatmalari</span>
+    </div>
+    <div style="background:#fff1f2; border:1px solid #fecdd3; border-radius:5px; padding:4px 8px; margin-bottom:5px; font-size:7.2pt; color:#9f1239; display:flex; justify-content:space-between;">
+      <span><strong>📄 Natija:</strong> Xodim QR-kod va Hash bilan himoyalangan rasmiy PDF biriktiradi.</span>
+      <span><strong>⏱️ Taymer:</strong> 72 soatlik tasdiqlash boshlanadi (24 va 48-soatlarda bot eslatma beradi).</span>
+    </div>
+    <div class="grid-row grid-3">
+      <div class="card-item" style="border-left:3px solid #10b981;">
+        <div class="item-title" style="color:#059669;">✅ 1. Hal Bo'ldi (Baholash)</div>
+        <div class="item-desc">Talaba tasdiqlaydi va 1–5 yulduzcha qo'yadi. <strong>Korrupsiyaga qarshi:</strong> Xodim kim qanday baholaganini ko'ra olmaydi (bosim o'tkazolmaydi). 1-2 ballga majburiy sabab yoziladi.</div>
+        <span class="tag tag-green">RESOLVED</span>
+      </div>
+      <div class="card-item" style="border-left:3px solid #64748b;">
+        <div class="item-title" style="color:#475569;">⏱️ 2. Avtomatik Yopilish</div>
+        <div class="item-desc">Agar talaba 72 soat davomida javob bermasa, tizim arizani o'zi yopadi. Bu xodim ustidan sun'iy qarzdorlik osilib qolishini to'xtatadi.</div>
+        <span class="tag tag-blue">AUTO_CLOSED</span>
+      </div>
+      <div class="card-item" style="border-left:3px solid #ef4444;">
+        <div class="item-title" style="color:#b91c1c;">❌ 3. E'tiroz (Eskalatsiya)</div>
+        <div class="item-desc">Talaba "Hal bo'lmadi" desa, <strong>xodimga qaytmaydi</strong>! To'g'ridan-to'g'ri Ofis Boshlig'iga (Tier-2) boradi. Kelishuv bo'lmasa Prorektorga (Tier-3) o'tadi.</div>
+        <span class="tag tag-red">DISPUTE_ESCALATED</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div><strong>Birlashtirilgan arizalar:</strong> Master Ticket (Guruhli 30+ arizani 1 ta javob bilan yopish)</div>
+    <div><strong>To'liq Audit:</strong> Har bir soniya, izoh va harakat bazada saqlanadi</div>
+    <div>Toshkent, 2026-yil</div>
+  </div>
+
+</div>
+
+</body>
+</html>

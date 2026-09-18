@@ -1,0 +1,194 @@
+{
+  "title": "UNIVERSITETDA SIRTQI VA MASOFAVIY TA'LIM SHAKLI TALABALARI MUROJAATLARI BILAN ISHLASH, IJRO INTIZOMINI TA'MINLASH VA REGISTRATOR OFISI FAOLIYATINI RAQAMLASHTIRISH METODOLOGIYASI TO'G'RISIDA TAHLILIY BILDIRISHNOMA",
+  "subtitle": "Zamonaviy ITIL 4, AACRAO va ISO 9001 xalqaro standartlari asosida Registrator ofisi (Registrar's Office) axborot tizimining arxitekturasi, ish vaqti (SLA) qoidalari, bahsli vaziyatlarni hal etish va korrupsiyaga qarshi himoya mexanizmlari konsepsiyasi",
+  "meta": {
+    "org": "O'ZBEKISTON RESPUBLIKASI OLIY TA'LIM, FAN VA INNOVATSIYALAR VAZIRLIGI",
+    "recipient": "UNIVERSITET RAHBARIYATIGA VA REGISTRATOR OFISI BOSHLIG'IGA",
+    "author_title": "Tuzuvchi (Loyiha muallifi va tizim arxitektori): _______________________ (Imzo)",
+    "date_str": "Toshkent shahri, 2026-yil"
+  },
+  "sla_table": [
+    ["Murojaat toifasi", "Murojaat mazmuni va turi", "Belgilangan ijro muddati", "Mas'ul bo'linma"],
+    ["1-toifa (Tezkor)", "Ma'lumotnoma (spravka), HEMIS parolini tiklash, standart arizalar", "1 ish kuni (24 ish soati)", "Front bo'limi"],
+    ["2-toifa (O'rta murakkablikdagi)", "To'lov-shartnoma hisoblari, kredit ma'lumotlari, dars jadvali, transkript", "3 ish kuni (72 ish soati)", "Front / Backend"],
+    ["3-toifa (Murakkab / Kollegial)", "Akademik ta'til, ko'chirish/tiklash, fan farqlari, bahodan apellyatsiya", "5-7 ish kuni", "Backend / Fakultet komissiyasi"]
+  ],
+  "sections": [
+    {
+      "number": "1",
+      "title": "1. LOYIHANING MAQSADI VA MAVJUD VAZIYATNING CHUQUR TAHLILI",
+      "subsections": [
+        {
+          "title": "1.1. Sirtqi va masofaviy ta'lim oluvchilarning o'ziga xos xususiyatlari",
+          "paragraphs": [
+            "Bugungi kunda universitetimizda sirtqi va masofaviy ta'lim shakllarida tahsil olayotgan talabalar sonining ortishi ta'lim xizmatlarini ko'rsatish tizimiga yangi talablarni qo'ymoqda. Kunduzgi ta'lim talabalaridan farqli o'laroq, sirtqi va masofaviy ta'lim talabalari respublikamizning turli viloyatlarida istiqomat qiladi, ko'pchiligi doimiy ish joyiga ega va universitet binosiga faqat laboratoriya-imtihon sessiyalari davridagina tashrif buyuradi.",
+            "Shu sababli, ularning Registrator ofisiga (Registrar's Office) bo'lgan kundalik ehtiyojlari — o'qish joyidan ma'lumotnoma (spravka) olish, to'lov-shartnomalarni tekshirish, akademik transkript va fan qarzdorliklarini aniqlash, HEMIS tizimiga kirish ma'lumotlarini tiklash, dars jadvallari va imtihon qaydnomalariga oid arizalari — doimiy masofaviy aloqani talab etadi."
+          ]
+        },
+        {
+          "title": "1.2. Amaldagi an'anaviy yondashuvning kamchiliklari va xavflari",
+          "paragraphs": [
+            "Mavjud amaliyot tahlili shuni ko'rsatmoqdaki, talabalarning murojaatlari ko'p hollarda tarqoq, tartibga solinmagan kanallar (shaxsiy telefon qo'ng'iroqlari, Telegram guruh va shaxsiy chatlar, og'zaki iltimoslar) orqali amalga oshirilmoqda. Bu esa quyidagi jiddiy tizimli muammolarni keltirib chiqarmoqda:",
+            "• Murojaatlarning yo'qolishi va qayd etilmasligi: Yagona elektron reestr mavjud emasligi sababli xodimlar o'zlariga kelgan arizalarni unutib qo'ymoqda yoki e'tibordan chetda qoldirmoqda.",
+            "• Sun'iy kechikishlar va sansalorlik: Murojaatni ko'rib chiqish bo'yicha qat'iy vaqt mezonlari (SLA) joriy etilmagan. Talaba o'z arizasining qaysi bosqichda ekanini bilmay, kunlab yoki haftalab sarson bo'lmoqda.",
+            "• Vazifalar taqsimotidagi noaniqlik (Front va Backend o'rtasidagi ziddiyat): Registrator ofisidagi bevosita talaba bilan ishlovchi (Front) hamda ichki akademik baza va buyruqlar bilan ishlovchi (Backend) xodimlar o'rtasida murojaatlarni bir-biriga yuklash (ping-pong) holatlari yuzaga kelmoqda.",
+            "• Korrupsion xatarlar va subyektiv munosabat: Xizmat ko'rsatish tezligi shaxsiy tanish-bilishchilikka bog'liq bo'lib qolmoqda, xodimlarning faoliyatini xolisona baholovchi raqamli ko'rsatkichlar (KPI) mavjud emas.",
+            "• Rahbariyat nazoratining cheklanganligi: Ofis boshlig'i va universitet rahbariyati ayni vaqtda qancha murojaat kelib tushgani, ularning nechtasi o'z vaqtida hal etilgani yoki qaysi xodim sust ishlayotgani haqida real vaqt rejimida statistik ma'lumotga ega emas."
+          ]
+        },
+        {
+          "title": "1.3. Loyihaning strategik maqsadi",
+          "paragraphs": [
+            "Taqdim etilayotgan axborot tizimining tub maqsadi — Registrator ofisi faoliyatini 100% raqamlashtirish, universitetning HEMIS axborot tizimi bilan to'liq integratsiyalashgan yagona Veb-portal va interaktiv Telegram Bot ekotizimini yaratish, har bir murojaatning hayotiy siklini qat'iy reglamentlash hamda xalqaro sifat menejmenti talablariga mos keluvchi shaffof, adolatli va xolis xizmat ko'rsatish muhitini yaratishdan iborat."
+          ]
+        }
+      ]
+    },
+    {
+      "number": "2",
+      "title": "2. TIZIM ISHTIROKCHILARI, ROLLARI VA VAKOLATLAR IERARXIYASI (RBAC)",
+      "subsections": [
+        {
+          "title": "2.1. Foydalanuvchi rollarining vazifalar taqsimoti",
+          "paragraphs": [
+            "Tizimda axborot xavfsizligi, ma'lumotlar yaxlitligi va xizmat mas'uliyatini ta'minlash maqsadida 5 ta mustaqil rol joriy etiladi:",
+            "1. Talaba (Sirtqi va Masofaviy): Universitet HEMIS tizimidagi talabalik profili orqali xavfsiz autentifikatsiyadan o'tadi (tizimda 2 kunlik xavfsiz JWT-seans yaratiladi). Talaba qulay veb-forma orqali kerakli kategoriyani tanlab, matn va fayllarni biriktirgan holda murojaat yo'llaydi. Telegram bot orqali har bir o'zgarishdan tezkor bildirishnoma oladi. Xizmat ko'rsatilgach, natijani tasdiqlaydi yoki asosli e'tiroz bildiradi hamda xodim faoliyatini 1 dan 5 gacha baholaydi.",
+            "2. Registrator ofisi boshlig'i (Taqsimlovchi, Nazoratchi va Hakam): Kelib tushgan murojaatlarni veb-panel va bot orqali ko'radi. Ularni yo'nalishiga qarab tegishli bo'limga (Front yoki Backend) hamda muayyan xodimga yo'naltiradi. Muddatidan kechikayotgan (qizil ro'yxatdagi) arizalarni monitoring qiladi. Talabalar e'tiroz bildirgan ziddiyatli holatlarni hakam sifatida ko'rib chiqadi va xodimlar faoliyati bo'yicha KPI hisobotlarini tahlil qiladi.",
+            "3. Front bo'limi xodimi (Operativ xizmat mutaxassisi): Talaba bilan bevosita va tezkor hal etiladigan masalalar bo'yicha ishlaydi. O'qish joyidan ma'lumotnoma (spravka) berish, arizalarning to'g'ri to'ldirilganligini tekshirish, HEMIS parolini tiklash, rasmiy konsultatsiya berish va birlamchi tushuntirish ishlarini olib boradi.",
+            "4. Backend bo'limi xodimi (Akademik-ma'muriy mutaxassis): Tizimli va ichki akademik masalalar bilan shug'ullanadi. Akademik baholarni HEMIS bazasida tekshirish va to'g'rilash (asoslantirilgan bayonnomalar asosida), transkript shakllantirish, fan farqlari va akademik qarzdorliklarni hisoblash, to'lov-shartnoma va dars jadvallari bilan bog'liq chuqur ma'muriy arizalarni hal etadi.",
+            "5. O'quv ishlari bo'yicha Prorektor / Appellatsiya komissiyasi (Tier-3 Oliy instansiya): Ofis boshlig'i va talaba o'rtasida konsensusga kelinmagan, murakkab huquqiy yoki akademik e'tirozlar bo'yicha qat'iy va yakuniy (oxirgi) qaror qabul qiluvchi oliy instansiya."
+          ]
+        }
+      ]
+    },
+    {
+      "number": "3",
+      "title": "3. MUROJAATNING HAYOTIY SIKLI VA IJRO MUDDATLARI (SLA) BOSHQARUVI",
+      "subsections": [
+        {
+          "title": "3.1. Murojaatlarning 3 toifali klassifikatsiyasi va me'yoriy muddatlari",
+          "paragraphs": [
+            "Barcha murojaatlarning xarakteri va talab etiladigan resurslari turlicha bo'lganligi sababli, dunyo tajribasiga muvofiq quyidagi 3 toifali muddat (SLA) joriy etiladi:",
+            "• 1-toifa (Tezkor murojaatlar): O'qish joyidan tasdiqnoma/ma'lumotnoma berish, HEMIS login-parolini tiklash, standart arizalar. Ijro muddati: 1 ish kuni (24 ish soati). Mas'ul: Front bo'limi.",
+            "• 2-toifa (O'rta murakkablikdagi murojaatlar): To'lov-shartnoma hisob-kitoblari, kredit-modul ma'lumotlari, dars jadvalidagi nomuvofiqliklar, akademik transkript shakllantirish. Ijro muddati: 3 ish kuni (72 ish soati). Mas'ul: Front va Backend bo'limlari.",
+            "• 3-toifa (Murakkab / Kollegial murojaatlar): Akademik ta'til rasmiylashtirish, o'qishni ko'chirish va qayta tiklash, fan farqlarini belgilash, imtihon bahosiga e'tiroz (apellyatsiya). Ijro muddati: 5–7 ish kuni. Mas'ul: Backend bo'limi va tegishli fakultet komissiyasi.",
+            "Eslatma: Ofis boshlig'i arizani xodimga yo'naltirayotgan paytda tavsiya etilgan muddatni ko'radi, biroq zarurat tug'ilganda (obyektiv holatlarni inobatga olgan holda) muddatni qo'lda kalendardan o'zgartirish vakolatiga ega bo'ladi."
+          ]
+        },
+        {
+          "title": "3.2. 24/7 rejim va Ish vaqti (Business Hours) taymer hisoblash mantig'i",
+          "paragraphs": [
+            "Tizim talabalar uchun arizalarni qabul qilish bo'yicha tunu-kun (24/7) ochiq bo'ladi. Biroq, davlat mehnat qonunchiligi va ichki mehnat tartibiga asosan Registrator ofisi xodimlarining ish vaqti Dushanba–Juma kunlari soat 09:00 dan 18:00 gacha (13:00–14:00 tushlik tanaffusi) etib belgilangan. Shanba, yakshanba va rasmiy bayram kunlari dam olish kunlari hisoblanadi.",
+            "Shu munosabat bilan dasturiy ta'minotda 'Aqlli ish soatlari taymeri' (Business Hours SLA Clock) ishga tushiriladi:",
+            "• Vaqtning muzlashi: Talaba juma kuni soat 20:00 da yoki yakshanba kuni ariza yuborgan taqdirda, ijro muddati shanba va yakshanba kunlari hisoblanmaydi (taymer to'xtab turadi). Taymer dushanba kuni soat 09:00 dan boshlab hisoblana boshlaydi.",
+            "• Avtomatik tushuntirish xabari: Dam olish kuni yoki ish vaqtidan tashqarida murojaat yuborilganida, tizim talabaga darhol bildirishnoma beradi: 'Murojaatingiz tizimda muvaffaqiyatli qabul qilindi (#ID-raqam). Registrator ofisining ish vaqti dushanba-juma 09:00-18:00. Arizangiz navbatdagi ish kuni soat 09:00 dan boshlab ijroga olinadi'. Bu talabalarda asossiz kutish va norozilikning oldini oladi."
+          ]
+        },
+        {
+          "title": "3.3. Intizom nazorati va 'Svetofor' mexanizmi",
+          "paragraphs": [
+            "Ijro intizomini vizual va avtomatik nazorat qilish uchun 3 bosqichli holat joriy qilinadi:",
+            "• Yashil holat (0–50%): Belgilangan muddatning yarmi. Ish odatiy maromda davom etmoqda.",
+            "• Sariq holat (50–80%): Muddat tugashiga oz vaqt qolganida xodimning shaxsiy Telegram botiga qat'iy eslatma yuboriladi.",
+            "• Qizil holat (OVERDUE — 100%+): Ijro muddati o'tib ketgan taqdirda, murojaat qizil rangga aylanadi, xodimning shaxsiy KPI reytingidan jarima ochko chegiriladi va bir vaqtning o'zida Ofis Boshlig'iga favqulodda xabar yuboriladi. Boshliq arizani darhol boshqa mas'ulga o'tkazish imkoniga ega bo'ladi."
+          ]
+        },
+        {
+          "title": "3.4. Boshliqning taqsimlash muddati va avtomatik yo'naltirish (Fail-Safe)",
+          "paragraphs": [
+            "Agar murojaat kelib tushsa-yu, lekin Ofis Boshlig'i xizmat safari yoki majlislarda bo'lganligi sababli uni 12 soat ichida xodimlarga taqsimlamasa, Boshliq botiga ogohlantiruvchi qizil xabar boradi. 24 soat o'tgach esa, tizim arizani to'xtatib qo'ymaslik uchun uni tegishli kategoriya bo'yicha bo'sh turgan navbatdagi xodimga avtomatik taqsimlaydi va Boshliqqa bu haqda hisobot qoldiradi."
+          ]
+        }
+      ]
+    },
+    {
+      "number": "4",
+      "title": "4. YAKUNIY TASDIQLASH SEANSI (3 KUNLIK QOIDA), E'TIROZLAR VA KORRUPSIYAGA QARSHI TIZIM",
+      "subsections": [
+        {
+          "title": "4.1. 72 soatlik tasdiqlash seansi va qaror qabul qilish zanjiri",
+          "paragraphs": [
+            "Xodim o'ziga biriktirilgan vazifani bajarib, tizimga javob matni yoki rasmiy faylni yuklaganidan so'ng, ariza to'g'ridan-to'g'ri yopilmaydi. Talaba uchun 72 soatlik (3 sutkalik) faol tasdiqlash oynasi ochiladi:",
+            "• A holat (Talaba ijobiy tasdiqlashi): Talaba olingan natijadan qanoatlansa, botdagi '[ ✅ Hal bo'ldi ]' tugmasini bosadi va 1 dan 5 gacha yulduzcha bilan xodimga baho beradi. Murojaat 'Bajarildi' (RESOLVED) maqomida to'liq yopiladi.",
+            "• B holat (Avtomatik yopilish — Auto-Close): Agar talaba 72 soat ichida hech qanday tugmani bosmasa (tizim 24 va 48-soatlarda eslatma yuboradi), murojaat avtomatik ravishda 'Tizim tomonidan qabul qilindi' (AUTO_CLOSED) maqomida yopiladi. Bu xodim ustidan sun'iy qarzdorlik osilib qolishini bartaraf etadi.",
+            "• V holat (Talaba e'tirozi — Escalation): Agar talaba '[ ❌ Hal bo'lmadi ]' tugmasini bossa, tizim majburiy tarzda norozilik sababini va zarur bo'lsa skrinshotni kiritishni talab qiladi. Ziddiyatli holatning oldini olish maqsadida ariza xodimning o'ziga qaytarilmaydi, balki to'g'ridan-to'g'ri Ofis Boshlig'iga 'Eskalatsiya' sifatida boradi. Boshliq xodimning kamchiligini aniqlasa, intizomiy chora ko'radi va vazifani boshqa xodimga yuklaydi; agar talaba noo'rin talab qo'ygan bo'lsa, qonuniy asoslantirilgan yakuniy javob berib, arizani yopadi."
+          ]
+        },
+        {
+          "title": "4.2. Xodimlarni baholash va korrupsiyaga qarshi himoya",
+          "paragraphs": [
+            "Talabalar tomonidan qo'yilgan baholar xodimlarning oylik moddiy rag'batlantirish (KPI) reytingiga to'g'ridan-to'g'ri ta'sir ko'rsatadi. Biroq, xodimlar tomonidan talabaga bosim o'tkazilishi (masalan, telefon qilib 'menga 5 baho bosing' deb talab qilish) xavfini yo'qotish uchun quyidagi qat'iy himoya choralari ko'riladi:",
+            "1. Muloqotning izolyatsiyasi: Xodim va talaba o'rtasidagi barcha yozishmalar faqat axborot tizimi ichida qayd etiladi, shaxsiy aloqa vositalari orqali aralashuv taqiqlanadi.",
+            "2. Shaxsiyatsizlashtirilgan baholash: Xodim o'z panelida faqat o'zining umumiy o'rtacha ballini va umumiy reytingini ko'radi. Qaysi aniq talaba necha baho qo'yganligi faqat Ofis Boshlig'i va Rektoratga ochiq bo'ladi.",
+            "3. Salbiy bahoning asoslanishi: Talaba 1 yoki 2 ball qo'yganida tizim kamchilik sababini majburiy so'raydi. Bu esa bir tomondan talabaning asossiz o'ch olish niyatidagi yomon bahosini fosh etsa, ikkinchi tomondan xodimning xizmat ko'rsatishdagi nuqsonlarini rahbariyatga ko'rsatib beradi."
+          ]
+        }
+      ]
+    },
+    {
+      "number": "5",
+      "title": "5. XALQARO STANDARTLAR (ITIL 4, AACRAO) ASOSIDAGI 8 TA MURAKKAB VAZIYAT (EDGE CASES) YECHIMI",
+      "subsections": [
+        {
+          "title": "5.1. Xalqaro amaliyotda sinovdan o'tgan algoritmlar",
+          "paragraphs": [
+            "Dunyo universitetlarining Registrator ofislari tajribasida eng ko'p yuzaga keladigan va ko'p hollarda nizolarga olib keladigan 8 ta nozik vaziyat quyidagi xalqaro mezonlar asosida tizimda oldindan bartaraf etiladi:",
+            "1. Xodimlar o'rtasida arizani 'futbol qilish' (Internal Ping-Pong): Xodim murojaatni boshqa bo'limga faqat 1 marta qayta yo'naltira oladi. Agar ikkinchi xodim ham uni rad etsa, tizim arizani xodimlar o'rtasida sarson qilmasdan, avtomatik ravishda Ofis Boshlig'iga 'Ichki nizo' maqomi bilan qulflaydi. Boshliq mas'ul ijrochini biriktiradi va bu qaror qat'iy hisoblanadi.",
+            "2. Bog'liq (tashqi) jarayonlar va ofis vakolatidan tashqari holatlar (Pending External Review): Masalan, akademik bahoni to'g'rilash dekanat yoki fan kafedrasi xulosasini talab qiladi. Registrator ofisi buni o'zboshimchalik bilan bajara olmaydi. Tizimda 'Tashqi xulosa kutilmoqda' maqomi tanlanganda, ofis xodimining shaxsiy SLA taymeri muzlatiladi va talabaga ariza dekanatga yuborilganligi bildiriladi. Bu ofis xodimining asossiz jarimaga tortilishini oldini oladi.",
+            "3. Chala va tushunarsiz murojaatlar (Request Clarification): Talaba arizada qaysi fan yoki qaysi davr ekanligini ko'rsatmasa, xodim 'Tushuntirish talab qilish' tugmasini bosadi. Talaba to'liq ma'lumotni kiritguniga qadar ijro taymeri vaqtincha to'xtatiladi.",
+            "4. Guruhli va ommaviy murojaatlar (Parent-Child / Master Ticket): Masalan, butun bir guruh (30 nafar talaba) bitta dars jadvalidagi xatolik bo'yicha 30 ta ariza yozsa, xodim 30 marta bir xil javob yozmaydi. Boshliq ularni 1 ta 'Asosiy ariza' ostida birlashtiradi. Bitta rasmiy javob barcha 30 ta talabaga bir zumda yuboriladi va tizim yuklamasi tejaladi.",
+            "5. Da'vo muddati o'tgan arizalar (Statute of Limitations): O'tgan o'quv yilidagi baho yoki to'lov bo'yicha bir necha oy o'tib yozilgan arizalar qabul qilinmaydi. Nizomda belgilangan muddat (masalan, apellyatsiya uchun 5 ish kuni) o'tgan bo'lsa, tizim ariza topshirish bosqichidayoq me'yoriy asosni ko'rsatib, jarayonni to'xtatadi.",
+            "6. Cheksiz bahslarga barham berish (3-bosqichli oliy instansiya): Talaba xodimdan ham, Boshliqdan ham norozi bo'lgan hollarda murojaat 3-bosqich — O'quv ishlari bo'yicha Prorektorga (yoki komissiyaga) yuboriladi. Prorektorning yakuniy rezolyutsiyasi qat'iy hisoblanadi va shu bilan masala to'liq arxivlanadi.",
+            "7. Hujjatlarning haqiqiyligini ta'minlash (QR-kod orqali verifikatsiya): Masofaviy talabalarga beriladigan elektron ma'lumotnoma va transkriptlar unikal QR-kod va verifikatsiya havolasi bilan generatsiya qilinadi. Uchinchi tomonlar (ish beruvchi, davlat organlari) QR-kod orqali hujjatning asl nusxasini universitet serveridan tekshira oladi (Photoshop orqali qalbaki hujjat tayyorlash butunlay yo'q qilinadi).",
+            "8. Talabaning arizani bekor qilishi (Self-Service Withdrawal) va Kiberxavfsizlik: Talaba xatoni tushunib arizani qaytarib olishi mumkin (toki xodim ishga olmagan bo'lsa). Tizimga yuklanadigan fayllar faqat xavfsiz formatlarda (PDF, JPG, PNG, DOCX) qabul qilinadi va virusli xurujlar xavfi bartaraf etiladi."
+          ]
+        }
+      ]
+    },
+    {
+      "number": "6",
+      "title": "6. TIZIMNING TEXNIK ARXITEKTURASI VA HEMIS INTEGRATSIYASI",
+      "subsections": [
+        {
+          "title": "6.1. Dasturiy ta'minot arxitekturasi",
+          "paragraphs": [
+            "Tizim eng zamonaviy va xavfsiz axborot texnologiyalari asosida barpo etiladi:",
+            "• Backend tizimi: FastAPI (Python) — asinxron ishlash qobiliyati, ma'lumotlar strukturasining yuqori aniqlikdagi validatsiyasi (Pydantic v2) va yuqori yuklamalarda barqaror ishlash kafolati.",
+            "• Ma'lumotlar bazasi: PostgreSQL — arizalar, audit loglari (kim qachon nima qildi), xodimlar harakati tarixi va munosabatlar relyatsiyasini mustahkam saqlash uchun.",
+            "• Fon vazifalari va taymerlar: Redis va Celery / APScheduler — 24/7 rejimdagi SLA hisob-kitoblari, 72 soatlik eslatmalar va dam olish kunlarini nazorat qilish.",
+            "• Foydalanuvchi interfeyslari: Talabalar uchun veb-portal va rasmiy Telegram Bot; Xodimlar va Boshliq uchun to'liq tahliliy Veb Dashboard boshqaruv paneli."
+          ]
+        },
+        {
+          "title": "6.2. HEMIS axborot tizimi bilan integratsiya tartibi",
+          "paragraphs": [
+            "Talaba tizimga universitetning rasmiy HEMIS tizimi login va paroli orqali kiradi. Autentifikatsiya muvaffaqiyatli bo'lgach, tizimda 2 kunlik xavfsiz token (JWT) shakllantiriladi.",
+            "HEMIS API orqali talabaning to'liq ismi-sharifi, talabalik ID raqami, ta'lim shakli (sirtqi yoki masofaviy), fakulteti, yo'nalishi va kursi avtomatik yuklab olinadi. Bu orqali talabaning o'z ma'lumotlarini qo'lda xato kiritishi yoki begona shaxs nomidan ariza topshirishi 100% istisno qilinadi."
+          ]
+        }
+      ]
+    },
+    {
+      "number": "7",
+      "title": "7. KUTILAYOTGAN NATIJALAR, IJOBIY SAMARADORLIK VA XULOSA",
+      "subsections": [
+        {
+          "title": "7.1. Tizimni joriy etishdan kutiladigan aniq natijalar",
+          "paragraphs": [
+            "Ushbu raqamli tizim amaliyotga tatbiq etilishi natijasida quyidagi strategik natijalarga erishiladi:",
+            "1. Xizmat ko'rsatish samaradorligi 3–5 barobarga oshadi, ortiqcha qog'ozbozlik va telefon orqali ziddiyatlarga chek qo'yiladi.",
+            "2. Talabalar e'tirozlari va noroziliklari 80% gacha kamayadi, har bir murojaatning harakati talabaning kaftida (Telegram botda) ko'rinib turadi.",
+            "3. Xodimlarning haqiqiy ish unumdorligi (KPI) shaffof, adolatli va xolis raqamlar asosida rahbariyatga muntazam taqdim etiladi.",
+            "4. Universitetning xalqaro akkreditatsiya va sifat menejmenti talablari (ISO 9001) bo'yicha reyting ko'rsatkichlari sezilarli darajada yuksaladi."
+          ]
+        },
+        {
+          "title": "7.2. Rahbariyatdan so'ralayotgan qarorlar",
+          "paragraphs": [
+            "Mazkur konsepsiyada bayon etilgan mexanizmlarni hayotga tatbiq etish uchun Registrator ofisining yangi faoliyat reglamenti, murojaatlarni ko'rib chiqishning vaqt mezonlari (SLA jadvali) hamda mazkur axborot tizimining texnik topshirig'ini (TOR) tasdiqlashingizni so'raymiz."
+          ]
+        }
+      ]
+    }
+  ]
+}

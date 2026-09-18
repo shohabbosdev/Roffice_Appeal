@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Xodim va rahbariyat ish stoli — Registrator ofisi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-emerald-600 selection:text-white">
+
+  <!-- Mobile Overlay -->
+  <div id="sidebar-overlay" onclick="closeSidebar()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 hidden lg:hidden"></div>
+
+  <div class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between z-50 transition-transform duration-200 -translate-x-full lg:translate-x-0">
+      
+      <div>
+        <!-- Brand Header -->
+        <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+          <div class="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center font-extrabold text-white text-base shadow-md shadow-emerald-500/20">
+            R
+          </div>
+          <div>
+            <h1 class="text-sm font-bold text-white tracking-tight">Registrator ofisi</h1>
+            <p class="text-[11px] text-slate-400">Xodim va rahbariyat portali</p>
+          </div>
+        </div>
+
+        <div class="px-4 pt-4 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          Ish stoli menyusi
+        </div>
+
+        <!-- Navigation Menu -->
+        <nav class="px-3 space-y-1">
+          <button
+            onclick="switchStaffTab('appeals')"
+            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-white bg-emerald-600 shadow-sm transition cursor-pointer"
+            data-tab="appeals"
+            id="nav-appeals-btn"
+          >
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+            <span>Murojaatlar monitoringi</span>
+          </button>
+
+          <button
+            onclick="switchStaffTab('services')"
+            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            data-tab="services"
+            id="nav-services-btn"
+          >
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+            </svg>
+            <span>Mening xizmatlarim</span>
+          </button>
+
+          <button
+            onclick="switchStaffTab('queue')"
+            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            data-tab="queue"
+            id="nav-queue-btn"
+          >
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+            </svg>
+            <span>Darcha qabuli (navbat)</span>
+          </button>
+
+          <button
+            onclick="switchStaffTab('policy')"
+            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            data-tab="policy"
+            id="nav-policy-btn"
+          >
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span>Ta'lim shakli cheklovlari</span>
+          </button>
+
+          <button
+            onclick="switchStaffTab('users')"
+            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            data-tab="users"
+            id="nav-users-btn"
+          >
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+            <span>Xodimlar va rollar</span>
+          </button>
+
+          <button
+            onclick="switchStaffTab('kpi')"
+            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            data-tab="kpi"
+            id="nav-kpi-btn"
+          >
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+            <span>Xodimlar KPI reytingi</span>
+          </button>
+
+          <button
+            onclick="switchStaffTab('calendar')"
+            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            data-tab="calendar"
+            id="nav-calendar-btn"
+          >
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span>Bayramlar taqvimi</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Logout in Sidebar -->
+      <div class="p-3 border-t border-slate-800">
+        <button
+          onclick="handleLogout()"
+          class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+          <span>Tizimdan chiqish</span>
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col min-w-0">
+
+      <!-- Topbar -->
+      <header class="h-16 border-b border-slate-800 bg-slate-900/60 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30 flex-wrap gap-2">
+        <div class="flex items-center gap-3">
+          <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+          <h2 id="page-heading" class="text-base font-bold text-white tracking-tight">Murojaatlar monitoringi</h2>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Notification Bell -->
+          <button
+            id="notification-btn"
+            onclick="toggleBrowserNotifications()"
+            title="Brauzer bildirishnomalari holati"
+            class="px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 transition cursor-pointer flex items-center gap-2 text-xs"
+          >
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+            </svg>
+            <span id="notif-indicator" class="w-2 h-2 rounded-full bg-slate-500"></span>
+            <span class="hidden sm:inline text-[11px]" id="notif-label">Bildirishnomalar</span>
+          </button>
+
+          <!-- Current User Profile & Security -->
+          <div class="flex items-center gap-2">
+            <div class="text-right hidden sm:block">
+              <div id="header-user-fullname" class="text-xs font-bold text-white truncate max-w-[150px]">Yuklanmoqda...</div>
+              <div id="header-user-dept" class="text-[10px] text-slate-400 truncate max-w-[150px]">-</div>
+            </div>
+            
+            <span id="current-role-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              Xodim
+            </span>
+
+            <span id="header-telegram-status" class="hidden sm:inline-flex items-center px-2 py-1 rounded-full text-[11px] font-medium border border-slate-800 text-slate-400">
+              TG ulanmagan
+            </span>
+
+            <button
+              onclick="openCredentialsModal()"
+              class="px-2.5 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5"
+              title="Shaxsiy login va maxfiy parolni o'zgartirish"
+            >
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+              <span>Xavfsizlik</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Content -->
+      <main class="flex-1 p-6 max-w-6xl w-full mx-auto space-y-6">
+
+        <!-- Telegram Bot Reminder Banner -->
+        <div id="telegram-reminder-banner" class="hidden p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-slate-900 to-blue-950/80 border border-emerald-500/30 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.52 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z"/>
+              </svg>
+            </div>
+            <div>
+              <h4 class="text-xs font-bold text-white tracking-tight flex items-center gap-2">
+                <span>Xodim Telegram bildirishnomalarini yoqing</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Tavsiya etiladi</span>
+              </h4>
+              <p class="text-xs text-slate-300 mt-0.5 leading-relaxed">
+                Sizga yangi murojaatlar biriktirilganda yoki ijro muddati yaqinlashganda Telegram orqali tezkor xabarlarni qabul qiling.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 self-end sm:self-auto flex-shrink-0">
+            <a id="telegram-connect-btn" href="#" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer shadow-md shadow-emerald-600/20">
+              <span>Botga ulanish</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </a>
+            <button onclick="dismissTelegramReminder()" class="p-2 text-slate-400 hover:text-slate-200 text-xs transition cursor-pointer" title="Keyinroq">
+              ✕
+            </button>
+          </div>
+          </div>
+        </div>
+
+        <!-- TAB 1: MUROJAATLAR MONITORINGI & IJRO -->
+        <div id="tab-appeals" class="tab-pane block space-y-5">
+          <!-- Stats Row -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="appeals-stats-row">
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 space-y-1">
+              <div class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Jami kelib tushgan</div>
+              <div id="stat-total" class="text-2xl font-extrabold text-white">—</div>
+            </div>
+            <div class="bg-slate-900/80 border border-blue-500/20 rounded-2xl p-4 space-y-1">
+              <div class="text-[10px] uppercase tracking-wider text-blue-400 font-bold">Yangi / Kutayotgan</div>
+              <div id="stat-new" class="text-2xl font-extrabold text-blue-400">—</div>
+            </div>
+            <div class="bg-slate-900/80 border border-amber-500/20 rounded-2xl p-4 space-y-1">
+              <div class="text-[10px] uppercase tracking-wider text-amber-400 font-bold">Ijroda</div>
+              <div id="stat-inprogress" class="text-2xl font-extrabold text-amber-400">—</div>
+            </div>
+            <div class="bg-slate-900/80 border border-emerald-500/20 rounded-2xl p-4 space-y-1">
+              <div class="text-[10px] uppercase tracking-wider text-emerald-400 font-bold">Bajarildi</div>
+              <div id="stat-done" class="text-2xl font-extrabold text-emerald-400">—</div>
+            </div>
+          </div>
+
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 class="text-lg font-bold text-white tracking-tight">Kelib tushgan murojaatlar oqimi</h3>
+              <p class="text-xs text-slate-400">Murojaatlarni ijroga qabul qilish, ko'rib chiqish va rasmiy javob berish</p>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <select id="appeals-filter-status" onchange="loadStaffAppeals()" class="bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500 cursor-pointer">
+                <option value="">Barcha holatlar</option>
+                <option value="new">Yangi</option>
+                <option value="assigned">Biriktirilgan</option>
+                <option value="in_progress">Ijroda</option>
+                <option value="clarification_needed">Ma'lumot so'ralgan</option>
+                <option value="resolved">Yakunlangan</option>
+                <option value="disputed">E'tiroz</option>
+                <option value="escalated_prorektor">Prorektor</option>
+              </select>
+              <button onclick="loadStaffAppeals()" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                Yangilash
+              </button>
+            </div>
+          </div>
+
+          <div id="staff-appeals-list" class="space-y-3">
+            <div class="p-8 text-center text-xs text-slate-500 border border-slate-800/80 rounded-2xl bg-slate-900/40">
+              Murojaatlar yuklanmoqda...
+            </div>
+          </div>
+        </div>
+
+
+
+        <!-- TAB 2: MENING XIZMATLARIM & BO'LIM REESTRI -->
+        <div id="tab-services" class="tab-pane hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 class="text-lg font-bold text-white tracking-tight">Bo'lim va biriktirilgan xizmatlar</h3>
+              <p class="text-xs text-slate-400">Xodim biriktirilgan bo'lim yoki sektor bo'yicha ko'rsatiladigan rasmiy xizmatlar ro'yxati</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button id="add-service-btn" onclick="openAddServiceModal()" class="hidden px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition cursor-pointer">
+                Yangi xizmat qo'shish
+              </button>
+              <button onclick="loadMyServices()" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer">
+                Yangilash
+              </button>
+            </div>
+          </div>
+
+          <!-- Employee Department Info Card -->
+          <div id="my-dept-card" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Biriktirilgan bo'lim / sektor</span>
+                <h4 id="my-dept-name" class="text-base font-bold text-white mt-0.5">Yuklanmoqda...</h4>
+              </div>
+              <span id="my-dept-window" class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                1-darcha
+              </span>
+            </div>
+            <p id="my-dept-desc" class="text-xs text-slate-400 leading-relaxed">
+              Ushbu sektor talabalarning rasmiy hujjatlari va murojaatlarini qabul qiladi.
+            </p>
+          </div>
+
+          <!-- Assigned Services List -->
+          <div class="space-y-3">
+            <h4 class="text-sm font-bold text-white tracking-tight">Sektor xizmatlari reyestri</h4>
+            <div id="my-services-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-8 text-center text-xs text-slate-500 col-span-2 border border-slate-800/80 rounded-2xl bg-slate-900/40">
+                Xizmatlar yuklanmoqda...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: TA'LIM SHAKLLARI CHEKLOVLARI (ADMIN/BOSHLIQ) -->
+        <div id="tab-policy" class="tab-pane hidden space-y-6">
+          <div>
+            <h3 class="text-lg font-bold text-white tracking-tight">Ta'lim shakli bo'yicha onlayn murojaat siyosati</h3>
+            <p class="text-xs text-slate-400">Universitetning qaysi ta'lim shakli talabalari masofaviy murojaat yo'llay olishini boshqaring. O'chirilgan ta'lim shakli talabalari faqat "Kelib hal etish" darchasidan navbat oladi.</p>
+          </div>
+
+          <div id="policy-toast" class="hidden p-3.5 rounded-xl text-xs font-medium border"></div>
+
+          <div id="policy-toggles-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <p class="text-xs text-slate-500">Yuklanmoqda...</p>
+          </div>
+        </div>
+
+        <!-- TAB 4: DARCHA QABULI (NAVAT) -->
+        <div id="tab-queue" class="tab-pane hidden space-y-6">
+          <div>
+            <h3 class="text-lg font-bold text-white tracking-tight">Darcha qabul navbati</h3>
+            <p class="text-xs text-slate-400">Elektron talon orqali tashrif buyurgan talabalarni qabul qilish va xizmatni yakunlash</p>
+          </div>
+
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl bg-slate-950 border border-slate-800">
+              <div>
+                <span class="inline-block px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">TALON-TK-101</span>
+                <span class="font-semibold text-white text-sm ml-2">Qodirov Zoxidjon Tohir o'g'li</span>
+                <p class="text-xs text-slate-400 mt-1">Xizmat: Talabalik to'g'risida ma'lumotnoma berish • 1-darcha</p>
+              </div>
+              <div class="text-xs text-slate-400 font-mono">10:15 — 10:30</div>
+            </div>
+
+            <div class="flex gap-2">
+              <button onclick="alert('Talaba qabulga chaqirildi. Darcha displeyida e\'lon berildi.')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer">
+                Chaqirish
+              </button>
+              <button onclick="alert('Qabul yakunlandi. Xodimga 3 KPI balli qo\'shildi.')" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-200 text-xs font-medium transition cursor-pointer">
+                Qabulni yakunlash
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: XODIMLAR VA ROLLAR BIRIKTIRISH (ADMIN / BOSHLIQ) -->
+        <div id="tab-users" class="tab-pane hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h3 class="text-lg font-bold text-white tracking-tight">Xodimlarni boshqarish va rollar biriktirish</h3>
+              <p class="text-xs text-slate-400">Admin profilidan xodimlarga yangi rollar berish va bir martalik 8 belgili parol bilan yangi xodim qo'shish</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="toggleAddStaffForm()" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition cursor-pointer">
+                Yangi xodim qo'shish
+              </button>
+              <button onclick="loadStaffUsers()" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer">
+                Yangilash
+              </button>
+            </div>
+          </div>
+
+          <div id="users-toast" class="hidden p-3.5 rounded-xl text-xs font-medium border"></div>
+
+          <!-- Create Staff Form -->
+          <div id="add-staff-form-wrap" class="hidden bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-sm font-bold text-white">Yangi xodimni ro'yxatdan o'tkazish</h4>
+                <p class="text-xs text-slate-400">Tizim xodim uchun 8 belgili bir martalik vaqtinchalik parol yaratadi</p>
+              </div>
+              <button type="button" onclick="toggleAddStaffForm()" class="text-slate-400 hover:text-white text-xs">Yopish</button>
+            </div>
+
+            <form onsubmit="handleCreateStaff(event)" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">F.I.SH.</label>
+                  <input type="text" id="new-staff-name" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Dilshod Ergashev" required>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Foydalanuvchi logini</label>
+                  <input type="text" id="new-staff-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="dilshod_staff" required>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Dastlabki rol</label>
+                  <select id="new-staff-role" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                    <option value="front_staff">Front-ofis darcha xodimi</option>
+                    <option value="back_staff">Back-ofis ijrochi xodim</option>
+                    <option value="office_head">Registrator ofisi boshlig'i</option>
+                    <option value="vice_rector">O'quv ishlari bo'yicha prorektor</option>
+                    <option value="admin">Tizim administratori</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Biriktirilgan bo'lim / sektor</label>
+                  <select id="new-staff-department" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500">
+                    <option value="">Bo'limni tanlang (ixtiyoriy)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Elektron pochta (ixtiyoriy)</label>
+                  <input type="email" id="new-staff-email" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="xodim@jbnuu.uz">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Telefon raqami (ixtiyoriy)</label>
+                  <input type="text" id="new-staff-phone" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="+998901234567">
+                </div>
+              </div>
+
+              <!-- Nizom Duties Selection -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nizomiy xizmat vazifalari (KPI mezonlari)</label>
+                <textarea id="new-staff-duties" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Xizmat vazifalarini kiriting yoki Nizom katalogidan tanlang"></textarea>
+                <div class="mt-1 flex gap-2">
+                  <button type="button" onclick="loadNizomDutiesForCreate()" class="text-[11px] text-blue-400 hover:text-blue-300 underline">
+                    Nizom katalogidan avtomatik to'ldirish
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex gap-2 pt-2">
+                <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition cursor-pointer">
+                  Xodimni yaratish (Parol generatsiya qilish)
+                </button>
+                <button type="button" onclick="toggleAddStaffForm()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer">
+                  Bekor qilish
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Staff Table -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-slate-950/80 border-b border-slate-800 text-slate-400 font-semibold">
+                  <tr>
+                    <th class="p-3.5">ID</th>
+                    <th class="p-3.5">Xodim F.I.SH.</th>
+                    <th class="p-3.5">Login</th>
+                    <th class="p-3.5">Joriy rol</th>
+                    <th class="p-3.5">Nizomiy vazifalari</th>
+                    <th class="p-3.5 text-right">Amallar</th>
+                  </tr>
+                </thead>
+                <tbody id="staff-users-table-body" class="divide-y divide-slate-800/60">
+                  <tr>
+                    <td colspan="6" class="p-8 text-center text-slate-500">Xodimlar ro'yxati yuklanmoqda...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 6: KPI REYTINGI -->
+        <div id="tab-kpi" class="tab-pane hidden space-y-6">
+          <div>
+            <h3 class="text-lg font-bold text-white tracking-tight">Xodimlar KPI reytingi</h3>
+            <p class="text-xs text-slate-400">Ko'rib chiqilgan murojaatlar, xizmat ko'rsatish tezligi va baholar asosidagi monitoring</p>
+          </div>
+
+          <div id="kpi-cards" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <p class="text-xs text-slate-500">KPI ma'lumotlari yuklanmoqda...</p>
+          </div>
+        </div>
+
+        <!-- TAB 7: BAYRAMLAR TAQVIMI -->
+        <div id="tab-calendar" class="tab-pane hidden space-y-6">
+          <div>
+            <h3 class="text-lg font-bold text-white tracking-tight">Bayramlar va dam olish kunlari</h3>
+            <p class="text-xs text-slate-400">Ushbu kunlarda murojaat ijro muddati (SLA) muzlaydi va qabul to'xtatiladi</p>
+          </div>
+
+          <div id="holidays-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <p class="text-xs text-slate-500">Yuklanmoqda...</p>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- Footer -->
+      <footer class="border-t border-slate-800 py-4 text-center text-xs text-slate-400">
+        Registrator ofisi axborot tizimi • O'zMU Jizzax filiali • Oliy ta'lim vazirligi 73-sonli buyrug'i asosida
+      </footer>
+
+    </div>
+
+  </div>
+
+  <!-- MODAL: MANDATORY FIRST-LOGIN PASSWORD CHANGE -->
+  <div id="first-login-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-lg">
+          !
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-white tracking-tight">Dastlabki kirish: Parolni o'zgartirish</h3>
+          <p class="text-xs text-slate-400">Xavfsizlik talabi</p>
+        </div>
+      </div>
+
+      <div class="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-300 leading-relaxed">
+        Sizga administrator tomonidan 8 belgili bir martalik vaqtinchalik parol berilgan. Tizimdan foydalanishni boshlashdan avval o'zingizning yangi xavfsiz parolingizni o'rnatishingiz shart.
+      </div>
+
+      <div id="first-login-alert" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
+
+      <form onsubmit="handleFirstLoginPasswordChange(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Amaldagi (bir martalik) parol</label>
+          <input type="password" id="fl-current-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi login (ixtiyoriy)</label>
+          <input type="text" id="fl-new-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Bo'sh qoldirilsa joriy login saqlanadi">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi maxfiy parol (kamida 6 belgi)</label>
+          <input type="password" id="fl-new-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi parolni tasdiqlang</label>
+          <input type="password" id="fl-confirm-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+        </div>
+
+        <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer shadow-lg shadow-emerald-600/20">
+          Parolni saqlash va tizimga o'tish
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SELF-PROFILE / SECURITY (CHANGE USERNAME & PASSWORD) -->
+  <div id="self-profile-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+            </svg>
+          </div>
+          <h3 class="text-sm font-bold text-white tracking-tight">Xavfsizlik va parol sozlamalari</h3>
+        </div>
+        <button onclick="closeCredentialsModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+      </div>
+
+      <div id="self-cred-alert" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
+
+      <form onsubmit="handleSelfCredentialUpdate(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Amaldagi maxfiy parol</label>
+          <input type="password" id="self-current-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi foydalanuvchi logini (ixtiyoriy)</label>
+          <input type="text" id="self-new-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Joriy login o'rniga yangisi">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi parol (kamida 6 belgi)</label>
+          <input type="password" id="self-new-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="O'zgartirish kerak bo'lsa kiriting">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi parolni takrorlang</label>
+          <input type="password" id="self-confirm-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Yangi parolni takrorlang">
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition cursor-pointer">
+            O'zgarishlarni saqlash
+          </button>
+          <button type="button" onclick="closeCredentialsModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer">
+            Bekor qilish
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: TEMPORARY PASSWORD GENERATED (AFTER ADMIN CREATES STAFF) -->
+  <div id="temp-password-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-lg">
+          ✓
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-white tracking-tight">Yangi xodim ro'yxatdan o'tkazildi</h3>
+          <p class="text-xs text-slate-400">Bir martalik vaqtinchalik parol berildi</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-300 leading-relaxed">
+        Xodim tizimga kirishi uchun quyidagi login va 8 belgili bir martalik parolni taqdim eting:
+      </p>
+
+      <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+        <div class="flex justify-between text-xs">
+          <span class="text-slate-400">Login:</span>
+          <span id="temp-username-val" class="font-mono font-bold text-white">xodim_login</span>
+        </div>
+        <div class="flex justify-between items-center text-xs pt-1 border-t border-slate-800">
+          <span class="text-slate-400">Bir martalik parol:</span>
+          <div class="flex items-center gap-2">
+            <span id="temp-password-val" class="font-mono font-bold text-emerald-400 text-sm tracking-wider">aB3#9xKq</span>
+            <button onclick="copyTempPassword()" class="px-2 py-0.5 rounded bg-emerald-600/20 hover:bg-emerald-600 text-[10px] text-emerald-300 hover:text-white transition cursor-pointer">
+              Nusxa olish
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl text-[11px] text-blue-300">
+        Xodim birinchi marta tizimga kirganida, ushbu parolni o'zining shaxsiy maxfiy paroliga o'zgartirmaguncha boshqa amallarni bajara olmaydi.
+      </div>
+
+      <button onclick="closeTempPasswordModal()" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer">
+        Tushunarli va yopish
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL: NIZOM DUTIES & KPI POINTS AWARD -->
+  <div id="kpi-award-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight">Xodimning nizomiy xizmat vazifalari va KPI balli</h3>
+          <p id="kpi-modal-staff-name" class="text-xs text-slate-400 font-semibold mt-0.5">Xodim nomi</p>
+        </div>
+        <button onclick="closeKpiAwardModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+      </div>
+
+      <!-- Assigned Duties List -->
+      <div class="space-y-2">
+        <label class="block text-xs font-semibold text-slate-300">Biriktirilgan nizomiy vazifalar</label>
+        <div id="kpi-modal-duties-list" class="p-3.5 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-300 leading-relaxed space-y-1">
+          Vazifalar ro'yxati...
+        </div>
+      </div>
+
+      <!-- KPI Award Form -->
+      <form onsubmit="handleAwardKpiPoints(event)" class="space-y-3 pt-2 border-t border-slate-800">
+        <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Vazifa ijrosi uchun KPI balli yozish</h4>
+        <input type="hidden" id="kpi-target-employee-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Bajarilgan xizmat vazifasi</label>
+          <input type="text" id="kpi-duty-title" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Masalan: Transkript va ma'lumotnomalar o'z vaqtida berildi" required>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Rag'batlantirish balli</label>
+            <input type="number" id="kpi-duty-points" min="1" max="25" value="5" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Sana / Davr</label>
+            <input type="text" id="kpi-duty-period" readonly class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-400" value="Joriy oy (2026-09)">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Izoh / Asos</label>
+          <textarea id="kpi-duty-reason" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Nizom bo'yicha namunali xizmat ko'rsatilganligi to'g'risida"></textarea>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer">
+            KPI ballini berish
+          </button>
+          <button type="button" onclick="closeKpiAwardModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer">
+            Yopish
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: RESOLVE APPEAL (chiroyli modal, prompt() o'rniga) -->
+  <div id="resolve-appeal-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-tight">Murojaatga rasmiy javob berish</h3>
+            <p id="resolve-modal-ticket" class="text-xs text-slate-400 mt-0.5">Talon: #—</p>
+          </div>
+        </div>
+        <button onclick="closeResolveModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+      </div>
+
+      <div id="resolve-modal-info" class="p-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-300 space-y-1">
+        <div><span class="text-slate-500">Mavzu:</span> <span id="resolve-info-subject">—</span></div>
+        <div><span class="text-slate-500">Xizmat:</span> <span id="resolve-info-service">—</span></div>
+      </div>
+
+      <div id="resolve-modal-alert" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
+
+      <form onsubmit="handleResolveSubmit(event)" class="space-y-3">
+        <input type="hidden" id="resolve-appeal-id">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            Rasmiy ijro javobi matni <span class="text-rose-400">*</span>
+          </label>
+          <textarea
+            id="resolve-resolution-text"
+            rows="4"
+            required
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none"
+            placeholder="Murojaatni ko'rib chiqdik. Hujjat/ma'lumotnoma tayyorlandi va..."></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Fayl havolasi (ixtiyoriy)</label>
+          <input type="url" id="resolve-file-url" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="https://drive.google.com/...">
+        </div>
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer shadow-md shadow-emerald-600/20">
+            Javobni yuklash va yakunlash
+          </button>
+          <button type="button" onclick="closeResolveModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer">
+            Bekor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ESCALATE TO PROREKTOR -->
+  <div id="escalate-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-amber-500/30 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight">Prorektorga eskalatsiya</h3>
+          <p class="text-xs text-slate-400 mt-0.5">Murojaat yuqori rahbariyatga yo'naltiriladi</p>
+        </div>
+        <button onclick="closeEscalateModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="handleEscalateSubmit(event)" class="space-y-3">
+        <input type="hidden" id="escalate-appeal-id">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Prorektor uchun izoh <span class="text-rose-400">*</span></label>
+          <textarea id="escalate-note" rows="3" required
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-amber-500 resize-none"
+            placeholder="Murojaat qanday ko'rib chiqildi va nima uchun prorektor qaroriga muhtoj ekanligi..."></textarea>
+        </div>
+        <div class="flex gap-2">
+          <button type="submit" class="flex-1 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs transition cursor-pointer">
+            Prorektorga yo'naltirish
+          </button>
+          <button type="button" onclick="closeEscalateModal()" class="px-4 py-2 rounded-xl border border-slate-800 text-slate-300 text-xs font-medium transition cursor-pointer">
+            Bekor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REQUEST CLARIFICATION FROM STUDENT -->
+  <div id="clarify-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-blue-500/30 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight">Talabadan ma'lumot so'rash</h3>
+          <p class="text-xs text-slate-400 mt-0.5">SLA taymeri to'xtatiladi, talabadan javob kutiladi</p>
+        </div>
+        <button onclick="closeClarifyModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+      </div>
+      <form onsubmit="handleClarifySubmit(event)" class="space-y-3">
+        <input type="hidden" id="clarify-appeal-id">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Savol / So'rov matni <span class="text-rose-400">*</span></label>
+          <textarea id="clarify-message" rows="3" required
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"
+            placeholder="Murojaatingizni to'liq ko'rib chiqish uchun quyidagi ma'lumot talab etiladi..."></textarea>
+        </div>
+        <div class="flex gap-2">
+          <button type="submit" class="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition cursor-pointer">
+            So'rovni yuborish
+          </button>
+          <button type="button" onclick="closeClarifyModal()" class="px-4 py-2 rounded-xl border border-slate-800 text-slate-300 text-xs font-medium transition cursor-pointer">
+            Bekor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let token = localStorage.getItem('roffice_token');
+    let userRole = localStorage.getItem('roffice_role') || "office_head";
+    let currentUser = null;
+    let currentPolicy = null;
+    let departmentsList = [];
+    let nizomDutiesCatalog = [];
+
+    if (!token) {
+      window.location.href = '/login';
+    }
+
+    // 1. Core Tab Router with URL Hash and LocalStorage Persistence
+    function switchStaffTab(tabId, updateHash = true) {
+      document.querySelectorAll('.nav-item').forEach(b => {
+        b.className = 'nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer';
+        const svg = b.querySelector('svg');
+        if (svg) svg.className = 'w-4 h-4 text-slate-400';
+      });
+
+      const activeBtn = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+      if (activeBtn) {
+        activeBtn.className = 'nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-white bg-emerald-600 shadow-sm transition cursor-pointer';
+        const svg = activeBtn.querySelector('svg');
+        if (svg) svg.className = 'w-4 h-4 text-white';
+      }
+
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+      const activePane = document.getElementById('tab-' + tabId);
+      if (activePane) activePane.classList.remove('hidden');
+
+      const titles = {
+        'appeals': "Murojaatlar monitoringi",
+        'services': "Bo'lim va xizmatlar reyestri",
+        'policy': "Ta'lim shakli cheklovlari",
+        'queue': "Darcha qabuli (elektron navbat)",
+        'users': "Xodimlarni boshqarish va rollar biriktirish",
+        'kpi': "Xodimlar KPI reytingi",
+        'calendar': "Bayramlar taqvimi"
+      };
+      const heading = document.getElementById('page-heading');
+      if (heading && titles[tabId]) heading.innerText = titles[tabId];
+
+      if (updateHash) {
+        window.location.hash = '#' + tabId;
+        localStorage.setItem('roffice_staff_tab', tabId);
+      }
+
+      closeSidebar();
+
+      if (tabId === 'appeals') loadStaffAppeals();
+      if (tabId === 'services') loadMyServices();
+      if (tabId === 'policy') loadEducationPolicy();
+      if (tabId === 'users') loadStaffUsers();
+      if (tabId === 'kpi') loadKPIOverview();
+      if (tabId === 'calendar') loadHolidays();
+    }
+
+    window.addEventListener('hashchange', () => {
+      const h = window.location.hash.replace('#', '');
+      if (h) switchStaffTab(h, false);
+    });
+
+    // 2. Notification System
+    function initNotifications() {
+      const btn = document.getElementById('notification-btn');
+      const ind = document.getElementById('notif-indicator');
+      const lbl = document.getElementById('notif-label');
+
+      if (!("Notification" in window)) {
+        if (btn) btn.style.display = 'none';
+        return;
+      }
+
+      if (Notification.permission === 'granted') {
+        if (ind) ind.className = 'w-2 h-2 rounded-full bg-emerald-400';
+        if (lbl) lbl.innerText = "Xabarlar faol";
+      } else if (Notification.permission === 'denied') {
+        if (ind) ind.className = 'w-2 h-2 rounded-full bg-rose-400';
+        if (lbl) lbl.innerText = "Cheklangan";
+      } else {
+        if (ind) ind.className = 'w-2 h-2 rounded-full bg-amber-400 animate-pulse';
+        if (lbl) lbl.innerText = "Yoqish";
+      }
+    }
+
+    async function toggleBrowserNotifications() {
+      if (!("Notification" in window)) {
+        alert("Sizning brauzeringiz bildirishnomalarni qo'llab-quvvatlamaydi.");
+        return;
+      }
+
+      const permission = await Notification.requestPermission();
+      initNotifications();
+
+      if (permission === 'granted') {
+        new Notification("Registrator ofisi axborot tizimi", {
+          body: "Bildirishnomalar muvaffaqiyatli yoqildi. Yangi murojaatlar haqida sizga xabar beriladi.",
+          icon: "/favicon.ico"
+        });
+      }
+    }
+
+    // 3. Current User and Role Info
+    async function loadCurrentUserProfile() {
+      try {
+        const resp = await fetch('/api/v1/users/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resp.status === 401) {
+          handleLogout();
+          return;
+        }
+        currentUser = await resp.json();
+        userRole = currentUser.role;
+        localStorage.setItem('roffice_role', userRole);
+
+        document.getElementById('header-user-fullname').innerText = currentUser.full_name;
+        document.getElementById('current-role-badge').innerText = roleNameMap[currentUser.role] || currentUser.role;
+        document.getElementById('current-role-badge').className = `inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${roleBadgeColor[currentUser.role] || 'bg-slate-800'}`;
+
+        applyRolePermissions(currentUser.role);
+
+        // Telegram holatini tekshirish
+        const tgHeaderEl = document.getElementById('header-telegram-status');
+        const tgBannerEl = document.getElementById('telegram-reminder-banner');
+
+        if (currentUser.telegram_chat_id) {
+          if (tgBannerEl) tgBannerEl.classList.add('hidden');
+          if (tgHeaderEl) {
+            const uName = currentUser.telegram_username ? `@${currentUser.telegram_username}` : 'Ulangan';
+            tgHeaderEl.className = 'hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-400';
+            tgHeaderEl.innerText = `✓ TG: ${uName}`;
+          }
+        } else {
+          try {
+            const tgResp = await fetch('/api/v1/auth/telegram-info', {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (tgResp.ok) {
+              const tgInfo = await tgResp.json();
+              const connectBtn = document.getElementById('telegram-connect-btn');
+              if (connectBtn) connectBtn.href = tgInfo.deep_link;
+              if (tgHeaderEl) {
+                tgHeaderEl.innerHTML = `<a href="${tgInfo.deep_link}" target="_blank" class="text-blue-400 hover:underline">TG ulash</a>`;
+              }
+              if (tgBannerEl && !sessionStorage.getItem('roffice_dismiss_staff_tg')) {
+                tgBannerEl.classList.remove('hidden');
+              }
+            }
+          } catch (tge) {
+            console.error("Telegram info yuklashda xatolik:", tge);
+          }
+        }
+
+        // Check if mandatory first login password change is needed
+        if (currentUser.must_change_password) {
+          document.getElementById('first-login-modal').classList.remove('hidden');
+        }
+      } catch (e) {
+        console.error("Profil yuklash xatosi:", e);
+      }
+    }
+
+    function dismissTelegramReminder() {
+      sessionStorage.setItem('roffice_dismiss_staff_tg', 'true');
+      const b = document.getElementById('telegram-reminder-banner');
+      if (b) b.classList.add('hidden');
+    }
+
+    function applyRolePermissions(role) {
+      const policyBtn = document.getElementById('nav-policy-btn');
+      const kpiBtn = document.getElementById('nav-kpi-btn');
+      const calendarBtn = document.getElementById('nav-calendar-btn');
+      const queueBtn = document.getElementById('nav-queue-btn');
+      const usersBtn = document.getElementById('nav-users-btn');
+      const addServiceBtn = document.getElementById('add-service-btn');
+
+      if (role === 'front_staff') {
+        if (policyBtn) policyBtn.style.display = 'none';
+        if (kpiBtn) kpiBtn.style.display = 'flex';
+        if (calendarBtn) calendarBtn.style.display = 'none';
+        if (queueBtn) queueBtn.style.display = 'flex';
+        if (usersBtn) usersBtn.style.display = 'none';
+        if (addServiceBtn) addServiceBtn.classList.add('hidden');
+      } else if (role === 'back_staff') {
+        if (policyBtn) policyBtn.style.display = 'none';
+        if (kpiBtn) kpiBtn.style.display = 'flex';
+        if (calendarBtn) calendarBtn.style.display = 'none';
+        if (queueBtn) queueBtn.style.display = 'none';
+        if (usersBtn) usersBtn.style.display = 'none';
+        if (addServiceBtn) addServiceBtn.classList.add('hidden');
+      } else if (role === 'vice_rector') {
+        if (policyBtn) policyBtn.style.display = 'none';
+        if (kpiBtn) kpiBtn.style.display = 'flex';
+        if (calendarBtn) calendarBtn.style.display = 'flex';
+        if (queueBtn) queueBtn.style.display = 'none';
+        if (usersBtn) usersBtn.style.display = 'none';
+        if (addServiceBtn) addServiceBtn.classList.add('hidden');
+      } else {
+        // Office head & admin
+        if (policyBtn) policyBtn.style.display = 'flex';
+        if (kpiBtn) kpiBtn.style.display = 'flex';
+        if (calendarBtn) calendarBtn.style.display = 'flex';
+        if (queueBtn) queueBtn.style.display = 'flex';
+        if (usersBtn) usersBtn.style.display = 'flex';
+        if (addServiceBtn) addServiceBtn.classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('roffice_token');
+      localStorage.removeItem('roffice_role');
+      localStorage.removeItem('roffice_fullname');
+      localStorage.removeItem('roffice_user_id');
+      localStorage.removeItem('roffice_must_change_password');
+      window.location.href = '/login';
+    }
+
+    function toggleSidebar() {
+      const s = document.getElementById('sidebar');
+      const o = document.getElementById('sidebar-overlay');
+      s.classList.toggle('-translate-x-full');
+      o.classList.toggle('hidden');
+    }
+
+    function closeSidebar() {
+      const s = document.getElementById('sidebar');
+      const o = document.getElementById('sidebar-overlay');
+      s.classList.add('-translate-x-full');
+      o.classList.add('hidden');
+    }
+
+    // 4. TAB: MENING XIZMATLARIM
+    async function loadMyServices() {
+      const container = document.getElementById('my-services-list');
+      try {
+        const resp = await fetch('/api/v1/services/my-services', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await resp.json();
+
+        if (data.department) {
+          document.getElementById('my-dept-name').innerText = data.department.name;
+          document.getElementById('header-user-dept').innerText = data.department.name;
+          document.getElementById('my-dept-window').innerText = data.department.window_number || "Darcha belgilanmagan";
+        } else {
+          document.getElementById('my-dept-name').innerText = "Umumiy registrator ofisi boshqaruvi";
+          document.getElementById('header-user-dept').innerText = "Markaziy ma'muriyat";
+          document.getElementById('my-dept-window').innerText = "Markaziy";
+        }
+
+        if (!data.services || data.services.length === 0) {
+          container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 col-span-2 border border-slate-800/80 rounded-2xl bg-slate-900/40">Ushbu bo\'limga biriktirilgan xizmatlar mavjud emas.</div>';
+          return;
+        }
+
+        container.innerHTML = data.services.map(s => `
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-xs font-bold text-emerald-400">${s.code}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                ${s.is_paid ? s.fee_amount + " so'm" : "Bepul xizmat"}
+              </span>
+            </div>
+            <div>
+              <h5 class="text-sm font-bold text-white">${s.title}</h5>
+              <p class="text-xs text-slate-400 mt-1">${s.description || 'Nizom bo\'yicha standart ta\'lim xizmati'}</p>
+            </div>
+            <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+              <span>SLA muddati: <strong class="text-white">${s.sla_hours} soat</strong></span>
+              <span>Darcha: <strong class="text-white">${s.requires_in_person ? "Kelib hal etish" : "Onlayn"}</strong></span>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        container.innerHTML = '<div class="p-8 text-center text-xs text-rose-400 col-span-2">Xizmatlarni yuklab bo\'lmadi.</div>';
+      }
+    }
+
+    // 5. FIRST LOGIN PASSWORD CHANGE
+    async function handleFirstLoginPasswordChange(e) {
+      e.preventDefault();
+      const cur = document.getElementById('fl-current-password').value;
+      const newU = document.getElementById('fl-new-username').value.trim() || null;
+      const newP = document.getElementById('fl-new-password').value;
+      const conf = document.getElementById('fl-confirm-password').value;
+      const alertBox = document.getElementById('first-login-alert');
+
+      if (newP !== conf) {
+        alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
+        alertBox.innerText = "Yangi parol va tasdiqlovchi parol bir-biriga mos kelmadi.";
+        return;
+      }
+
+      try {
+        const resp = await fetch('/api/v1/users/me/credentials', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            current_password: cur,
+            new_username: newU,
+            new_password: newP
+          })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          token = data.access_token;
+          localStorage.setItem('roffice_token', token);
+          localStorage.setItem('roffice_must_change_password', 'false');
+          document.getElementById('first-login-modal').classList.add('hidden');
+          alert("Parolingiz muvaffaqiyatli o'zgartirildi. Tizimga xush kelibsiz!");
+          loadCurrentUserProfile();
+        } else {
+          alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
+          alertBox.innerText = data.detail || "Parolni o'zgartirishda xatolik yuz berdi.";
+        }
+      } catch (err) {
+        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+      }
+    }
+
+    // 6. VOLUNTARY CREDENTIALS MODAL
+    function openCredentialsModal() {
+      document.getElementById('self-profile-modal').classList.remove('hidden');
+      document.getElementById('self-cred-alert').classList.add('hidden');
+    }
+
+    function closeCredentialsModal() {
+      document.getElementById('self-profile-modal').classList.add('hidden');
+    }
+
+    async function handleSelfCredentialUpdate(e) {
+      e.preventDefault();
+      const cur = document.getElementById('self-current-password').value;
+      const newU = document.getElementById('self-new-username').value.trim() || null;
+      const newP = document.getElementById('self-new-password').value.trim() || null;
+      const conf = document.getElementById('self-confirm-password').value.trim() || null;
+      const alertBox = document.getElementById('self-cred-alert');
+
+      if (newP && newP !== conf) {
+        alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
+        alertBox.innerText = "Yangi parol va tasdiqlovchi parol mos kelmadi.";
+        return;
+      }
+
+      try {
+        const resp = await fetch('/api/v1/users/me/credentials', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            current_password: cur,
+            new_username: newU,
+            new_password: newP
+          })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          token = data.access_token;
+          localStorage.setItem('roffice_token', token);
+          alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-emerald-500/10 border-emerald-500/30 text-emerald-400 block';
+          alertBox.innerText = "Xavfsizlik ma'lumotlari muvaffaqiyatli yangilandi.";
+          setTimeout(() => {
+            closeCredentialsModal();
+            loadCurrentUserProfile();
+          }, 1200);
+        } else {
+          alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
+          alertBox.innerText = data.detail || "Xatolik yuz berdi.";
+        }
+      } catch (err) {
+        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+      }
+    }
+
+    // 7. TAB: XODIMLAR & ROLLAR & NIZOM VAZIFALARI
+    const roleNameMap = {
+      'front_staff': "Front-ofis xodimi",
+      'back_staff': "Back-ofis ijrochi",
+      'office_head': "Registrator boshlig'i",
+      'vice_rector': "O'quv prorektori",
+      'admin': "Administrator"
+    };
+
+    const roleBadgeColor = {
+      'front_staff': "bg-blue-500/10 text-blue-400 border-blue-500/20",
+      'back_staff': "bg-slate-500/10 text-slate-300 border-slate-500/20",
+      'office_head': "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+      'vice_rector': "bg-amber-500/10 text-amber-400 border-amber-500/20",
+      'admin': "bg-rose-500/10 text-rose-400 border-rose-500/20"
+    };
+
+    function toggleAddStaffForm() {
+      const f = document.getElementById('add-staff-form-wrap');
+      if (f) {
+        f.classList.toggle('hidden');
+        if (!f.classList.contains('hidden')) {
+          loadDepartmentsDropdown();
+        }
+      }
+    }
+
+    async function loadDepartmentsDropdown() {
+      try {
+        const resp = await fetch('/api/v1/services/departments');
+        departmentsList = await resp.json();
+        const sel = document.getElementById('new-staff-department');
+        sel.innerHTML = '<option value="">Bo\'limni tanlang (ixtiyoriy)</option>' +
+          departmentsList.map(d => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('');
+      } catch (e) {
+        console.error("Bo'limlarni yuklab bo'lmadi:", e);
+      }
+    }
+
+    async function loadNizomDutiesForCreate() {
+      try {
+        const resp = await fetch('/api/v1/users/nizom-duties', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        nizomDutiesCatalog = await resp.json();
+        const role = document.getElementById('new-staff-role').value;
+        const matching = nizomDutiesCatalog.filter(c => c.role === role);
+        if (matching.length > 0) {
+          const duties = matching.flatMap(m => m.duties).slice(0, 3);
+          document.getElementById('new-staff-duties').value = duties.join('\n');
+        }
+      } catch (e) {
+        console.error("Nizom vazifalarini yuklab bo'lmadi:", e);
+      }
+    }
+
+    async function handleCreateStaff(e) {
+      e.preventDefault();
+      const fullName = document.getElementById('new-staff-name').value.trim();
+      const username = document.getElementById('new-staff-username').value.trim();
+      const role = document.getElementById('new-staff-role').value;
+      const deptId = document.getElementById('new-staff-department').value ? parseInt(document.getElementById('new-staff-department').value) : null;
+      const email = document.getElementById('new-staff-email').value.trim() || null;
+      const phone = document.getElementById('new-staff-phone').value.trim() || null;
+      const duties = document.getElementById('new-staff-duties').value.trim() || null;
+
+      try {
+        const resp = await fetch('/api/v1/users/staff', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            full_name: fullName,
+            username: username,
+            role: role,
+            department_id: deptId,
+            email: email,
+            phone: phone,
+            assigned_duties: duties
+          })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          toggleAddStaffForm();
+          e.target.reset();
+
+          // Show generated temporary OTP modal
+          document.getElementById('temp-username-val').innerText = data.user.username;
+          document.getElementById('temp-password-val').innerText = data.temporary_password;
+          document.getElementById('temp-password-modal').classList.remove('hidden');
+
+          loadStaffUsers();
+        } else {
+          alert(data.detail || "Xodim qo'shishda xatolik yuz berdi.");
+        }
+      } catch (err) {
+        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+      }
+    }
+
+    function copyTempPassword() {
+      const p = document.getElementById('temp-password-val').innerText;
+      navigator.clipboard.writeText(p);
+      alert("Parol nusxalandi: " + p);
+    }
+
+    function closeTempPasswordModal() {
+      document.getElementById('temp-password-modal').classList.add('hidden');
+    }
+
+    async function loadStaffUsers() {
+      const tbody = document.getElementById('staff-users-table-body');
+      if (!tbody) return;
+
+      try {
+        const resp = await fetch('/api/v1/users/staff', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!resp.ok) {
+          tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-rose-400">Xodimlarni ko'rish huquqi yetarli emas (faqat Administrator va Boshliq).</td></tr>`;
+          return;
+        }
+        const users = await resp.json();
+        if (!users || users.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Xodimlar mavjud emas.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = users.map(u => {
+          const dutiesSummary = u.assigned_duties ? u.assigned_duties.split('\n')[0] : "Biriktirilmagan";
+          return `
+            <tr class="hover:bg-slate-950/40 transition">
+              <td class="p-3.5 font-mono text-slate-400">${u.id}</td>
+              <td class="p-3.5">
+                <div class="font-semibold text-white">${u.full_name}</div>
+                <div class="text-[11px] text-slate-400">${u.email || u.phone || '-'}</div>
+              </td>
+              <td class="p-3.5 font-mono text-blue-400">${u.username}</td>
+              <td class="p-3.5">
+                <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${roleBadgeColor[u.role] || 'border-slate-800'}">
+                  ${roleNameMap[u.role] || u.role}
+                </span>
+                ${u.must_change_password ? '<span class="ml-1 text-[10px] text-amber-400">(Vaqtinchalik OTP)</span>' : ''}
+              </td>
+              <td class="p-3.5 text-slate-300 text-xs max-w-xs truncate" title="${u.assigned_duties || ''}">
+                ${dutiesSummary}
+              </td>
+              <td class="p-3.5 text-right space-x-1.5 whitespace-nowrap">
+                <button onclick="openKpiAwardModal(${u.id}, '${u.full_name}', '${encodeURIComponent(u.assigned_duties || '')}')" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                  Vazifalar & KPI
+                </button>
+                <button onclick="deleteStaffMember(${u.id}, '${u.full_name}')" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+                  O'chirish
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-rose-400">Server bilan aloqa o'rnatib bo'lmadi.</td></tr>`;
+      }
+    }
+
+    async function deleteStaffMember(userId, name) {
+      if (!confirm(`Haqiqatan ham "${name}" xodimini tizimdan o'chirmoqchimisiz?`)) return;
+      try {
+        const resp = await fetch(`/api/v1/users/${userId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resp.ok) {
+          alert("Xodim muvaffaqiyatli faolsizlashtirildi.");
+          loadStaffUsers();
+        } else {
+          const err = await resp.json();
+          alert(err.detail || "Xodimni o'chirishda xatolik.");
+        }
+      } catch (e) {
+        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+      }
+    }
+
+    // 8. KPI AWARD MODAL
+    function openKpiAwardModal(empId, empName, encodedDuties) {
+      document.getElementById('kpi-target-employee-id').value = empId;
+      document.getElementById('kpi-modal-staff-name').innerText = empName;
+      const decoded = decodeURIComponent(encodedDuties);
+      const listEl = document.getElementById('kpi-modal-duties-list');
+      if (decoded && decoded.trim()) {
+        listEl.innerHTML = decoded.split('\n').map(d => `<div class="flex items-center gap-2"><span class="text-emerald-400">•</span> <span>${d}</span></div>`).join('');
+      } else {
+        listEl.innerHTML = '<span class="text-slate-500">Nizom bo\'yicha alohida xizmat vazifalari biriktirilmagan. Standart registrator xizmatlari qo\'llaniladi.</span>';
+      }
+      document.getElementById('kpi-award-modal').classList.remove('hidden');
+    }
+
+    function closeKpiAwardModal() {
+      document.getElementById('kpi-award-modal').classList.add('hidden');
+    }
+
+    async function handleAwardKpiPoints(e) {
+      e.preventDefault();
+      const empId = parseInt(document.getElementById('kpi-target-employee-id').value);
+      const title = document.getElementById('kpi-duty-title').value.trim();
+      const pts = parseInt(document.getElementById('kpi-duty-points').value);
+      const rsn = document.getElementById('kpi-duty-reason').value.trim();
+
+      try {
+        const resp = await fetch('/api/v1/kpi/award-points', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            employee_id: empId,
+            duty_title: title,
+            points: pts,
+            reason: rsn
+          })
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          alert(`Xodimga ${pts} KPI balli muvaffaqiyatli qo'shildi. Joriy foiz: ${res.kpi_percentage}%`);
+          closeKpiAwardModal();
+          e.target.reset();
+        } else {
+          alert(res.detail || "KPI balli berishda xatolik yuz berdi.");
+        }
+      } catch (err) {
+        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+      }
+    }
+
+    // 9. TAB: MUROJAATLAR MONITORINGI & IJRO
+    const STATUS_META = {
+      'new':                  { label: 'Yangi',               cls: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+      'assigned':             { label: 'Biriktirilgan',       cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+      'in_progress':          { label: 'Ijroda',              cls: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+      'clarification_needed': { label: "Ma'lumot so'raldi",   cls: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+      'resolved':             { label: 'Yakunlandi',          cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+      'completed':            { label: 'Tasdiqlandi',         cls: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+      'auto_closed':          { label: 'Avtoyopildi',         cls: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
+      'disputed':             { label: "E'tiroz",             cls: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
+      'escalated_head':       { label: 'Boshliqda',           cls: 'bg-orange-500/10 text-orange-400 border-orange-500/20' },
+      'escalated_prorektor':  { label: 'Prorektorda',         cls: 'bg-red-500/10 text-red-400 border-red-500/20' },
+      'rejected':             { label: 'Rad etildi',          cls: 'bg-rose-500/10 text-rose-400 border-rose-500/20' },
+      'cancelled':            { label: 'Bekor qilindi',       cls: 'bg-slate-500/10 text-slate-400 border-slate-500/20' },
+    };
+
+    async function loadStaffAppeals() {
+      const container = document.getElementById('staff-appeals-list');
+      const filterStatus = document.getElementById('appeals-filter-status')?.value || '';
+      container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500">Yuklanmoqda...</div>';
+
+      try {
+        let url = '/api/v1/appeals';
+        if (filterStatus) url += `?appeal_status=${filterStatus}`;
+
+        const resp = await fetch(url, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await resp.json();
+
+        // Update statistics
+        if (Array.isArray(data)) {
+          const total = data.length;
+          const newCount = data.filter(a => a.status === 'new').length;
+          const inpCount = data.filter(a => ['assigned','in_progress','clarification_needed'].includes(a.status)).length;
+          const doneCount = data.filter(a => ['resolved','completed','auto_closed'].includes(a.status)).length;
+          document.getElementById('stat-total').textContent = total;
+          document.getElementById('stat-new').textContent = newCount;
+          document.getElementById('stat-inprogress').textContent = inpCount;
+          document.getElementById('stat-done').textContent = doneCount;
+        }
+
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 border border-slate-800/80 rounded-2xl bg-slate-900/40">Hech qanday murojaat topilmadi.</div>';
+          return;
+        }
+
+        let html = '';
+        data.forEach(app => {
+          const meta = STATUS_META[app.status] || { label: app.status, cls: 'bg-slate-500/10 text-slate-400 border-slate-500/20' };
+          const deadline = app.sla_deadline_at ? new Date(app.sla_deadline_at) : null;
+          const now = new Date();
+          const isOverdue = deadline && deadline < now && !['resolved','completed','auto_closed','cancelled','rejected'].includes(app.status);
+          const slaStr = deadline ? deadline.toLocaleString('uz-UZ', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+
+          html += `
+            <div class="bg-slate-900/80 border ${isOverdue ? 'border-rose-500/40' : 'border-slate-800'} rounded-2xl p-5 space-y-3 transition">
+              <div class="flex items-start justify-between gap-2">
+                <div class="space-y-0.5 min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-mono text-xs font-bold text-emerald-400">#${app.ticket_number}</span>
+                    ${isOverdue ? '<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 uppercase tracking-wider">SLA o\'tdi</span>' : ''}
+                  </div>
+                  <h5 class="text-sm font-semibold text-white truncate">${app.subject}</h5>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium border flex-shrink-0 ${meta.cls}">${meta.label}</span>
+              </div>
+
+              <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 line-clamp-3">${app.message}</p>
+
+              <div class="flex flex-wrap gap-3 text-[11px] text-slate-500">
+                <span>Xizmat: <span class="text-slate-300">${app.service ? app.service.title : '—'}</span></span>
+                <span>SLA: <span class="${isOverdue ? 'text-rose-400 font-semibold' : 'text-slate-300'}">${slaStr}</span></span>
+              </div>
+
+              ${app.resolution_text ? `
+                <div class="p-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-1">
+                  <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Ijro javobi:</span>
+                  <p class="text-xs text-slate-200">${app.resolution_text}</p>
+                </div>
+              ` : ''}
+
+              ${app.rating ? `
+                <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                  <span>Talaba bahosi:</span>
+                  <span class="font-bold text-amber-400">${'★'.repeat(app.rating)}${'☆'.repeat(5 - app.rating)}</span>
+                  ${app.rating_comment ? `<span class="text-slate-500 italic">"${app.rating_comment}"</span>` : ''}
+                </div>
+              ` : ''}
+
+              <div class="flex gap-2 pt-1 flex-wrap">
+                ${app.status === 'new' ? `
+                  <button onclick="assignToMe(${app.id})" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition cursor-pointer">
+                    Menga biriktirish
+                  </button>
+                ` : ''}
+                ${['assigned','in_progress'].includes(app.status) ? `
+                  <button onclick="openResolveModal(${app.id}, '${app.ticket_number}', '${(app.subject||'').replace(/'/g,"\\'")}', '${(app.service?.title||'—').replace(/'/g,"\\'")}' )" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer">
+                    Javob berish va yakunlash
+                  </button>
+                  <button onclick="openClarifyModal(${app.id})" class="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-300 text-xs font-medium transition cursor-pointer">
+                    Ma'lumot so'rash
+                  </button>
+                ` : ''}
+                ${app.status === 'disputed' ? `
+                  <button onclick="openEscalateModal(${app.id})" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold transition cursor-pointer">
+                    Prorektorga eskalatsiya
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = '<div class="p-4 text-center text-xs text-rose-400">Murojaatlarni yuklab bo\'lmadi.</div>';
+      }
+    }
+
+    async function assignToMe(id) {
+      if (!currentUser) return;
+      const resp = await fetch(`/api/v1/appeals/${id}/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ staff_id: currentUser.id })
+      });
+      if (resp.ok) {
+        showToast('Murojaat sizga muvaffaqiyatli biriktirildi.', 'success');
+        loadStaffAppeals();
+      } else {
+        const err = await resp.json();
+        showToast(err.detail || 'Biriktirish xatosi', 'error');
+      }
+    }
+
+    // Resolve Modal
+    function openResolveModal(id, ticket, subject, service) {
+      document.getElementById('resolve-appeal-id').value = id;
+      document.getElementById('resolve-modal-ticket').textContent = `Talon: #${ticket}`;
+      document.getElementById('resolve-info-subject').textContent = subject;
+      document.getElementById('resolve-info-service').textContent = service;
+      document.getElementById('resolve-resolution-text').value = '';
+      document.getElementById('resolve-file-url').value = '';
+      document.getElementById('resolve-modal-alert').classList.add('hidden');
+      document.getElementById('resolve-appeal-modal').classList.remove('hidden');
+    }
+
+    function closeResolveModal() {
+      document.getElementById('resolve-appeal-modal').classList.add('hidden');
+    }
+
+    async function handleResolveSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('resolve-appeal-id').value;
+      const text = document.getElementById('resolve-resolution-text').value.trim();
+      const fileUrl = document.getElementById('resolve-file-url').value.trim() || null;
+      const alertBox = document.getElementById('resolve-modal-alert');
+
+      const submitBtn = e.target.querySelector('[type=submit]');
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Yuklanmoqda...';
+
+      try {
+        const resp = await fetch(`/api/v1/appeals/${id}/resolve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ resolution_text: text, result_file_url: fileUrl })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          closeResolveModal();
+          showToast('Murojaat muvaffaqiyatli yakunlandi. KPI bali avtomatik qo\'shildi.', 'success');
+          loadStaffAppeals();
+        } else {
+          alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
+          alertBox.textContent = data.detail || 'Xatolik yuz berdi.';
+        }
+      } catch (err) {
+        alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
+        alertBox.textContent = 'Server bilan aloqa o\'rnatib bo\'lmadi.';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Javobni yuklash va yakunlash';
+      }
+    }
+
+    // Escalate Modal
+    function openEscalateModal(id) {
+      document.getElementById('escalate-appeal-id').value = id;
+      document.getElementById('escalate-note').value = '';
+      document.getElementById('escalate-modal').classList.remove('hidden');
+    }
+
+    function closeEscalateModal() {
+      document.getElementById('escalate-modal').classList.add('hidden');
+    }
+
+    async function handleEscalateSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('escalate-appeal-id').value;
+      const note = document.getElementById('escalate-note').value.trim();
+      try {
+        const resp = await fetch(`/api/v1/appeals/${id}/escalate-prorektor`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ head_note: note })
+        });
+        if (resp.ok) {
+          closeEscalateModal();
+          showToast('Murojaat prorektorga muvaffaqiyatli yo\'naltirildi.', 'success');
+          loadStaffAppeals();
+        } else {
+          const err = await resp.json();
+          showToast(err.detail || 'Eskalatsiya xatosi', 'error');
+        }
+      } catch (err) {
+        showToast('Server bilan aloqa o\'rnatib bo\'lmadi.', 'error');
+      }
+    }
+
+    // Clarify Modal
+    function openClarifyModal(id) {
+      document.getElementById('clarify-appeal-id').value = id;
+      document.getElementById('clarify-message').value = '';
+      document.getElementById('clarify-modal').classList.remove('hidden');
+    }
+
+    function closeClarifyModal() {
+      document.getElementById('clarify-modal').classList.add('hidden');
+    }
+
+    async function handleClarifySubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('clarify-appeal-id').value;
+      const msg = document.getElementById('clarify-message').value.trim();
+      try {
+        const resp = await fetch(`/api/v1/appeals/${id}/request-clarification`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ clarification_message: msg })
+        });
+        if (resp.ok) {
+          closeClarifyModal();
+          showToast("Ma'lumot so'rovi talabaga yuborildi. SLA taymeri to'xtatildi.", 'info');
+          loadStaffAppeals();
+        } else {
+          const err = await resp.json();
+          showToast(err.detail || 'Xatolik', 'error');
+        }
+      } catch (err) {
+        showToast('Server bilan aloqa o\'rnatib bo\'lmadi.', 'error');
+      }
+    }
+
+    // Toast notification helper (chiroyli ko'rinishda xabar)
+    function showToast(message, type = 'info') {
+      const existing = document.getElementById('app-toast');
+      if (existing) existing.remove();
+
+      const colorMap = {
+        success: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300',
+        error: 'bg-rose-500/10 border-rose-500/30 text-rose-300',
+        info: 'bg-blue-500/10 border-blue-500/30 text-blue-300',
+        warning: 'bg-amber-500/10 border-amber-500/30 text-amber-300',
+      };
+      const cls = colorMap[type] || colorMap.info;
+
+      const toast = document.createElement('div');
+      toast.id = 'app-toast';
+      toast.className = `fixed bottom-6 right-6 z-[100] px-4 py-3 rounded-xl border text-xs font-medium shadow-xl max-w-sm ${cls}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 4000);
+    }
+
+    // 10. TAB: TA'LIM SHAKLI SIYOSATI
+    async function loadEducationPolicy() {
+      const container = document.getElementById('policy-toggles-container');
+      if (!container) return;
+      try {
+        const resp = await fetch('/api/v1/appeals/policy/education-forms');
+        currentPolicy = await resp.json();
+        renderPolicyToggles(currentPolicy);
+      } catch (e) {
+        container.innerHTML = '<p class="text-xs text-rose-400">Siyosatni yuklab bo\'lmadi.</p>';
+      }
+    }
+
+    function renderPolicyToggles(policy) {
+      const container = document.getElementById('policy-toggles-container');
+      if (!container) return;
+      container.innerHTML = '';
+      policy.items.forEach(item => {
+        const isChecked = item.allowed ? 'checked' : '';
+        const badgeClass = item.allowed ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        const badgeText = item.allowed ? "Onlayn ruxsat berilgan" : "Cheklangan (Kelib hal etish)";
+
+        container.innerHTML += `
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 flex items-center justify-between gap-4">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 flex-wrap mb-1">
+                <span class="font-bold text-white text-sm">${item.title}</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-medium border ${badgeClass}">${badgeText}</span>
+              </div>
+              <p class="text-xs text-slate-400 leading-relaxed">${item.description}</p>
+            </div>
+            <div>
+              <input
+                type="checkbox"
+                id="toggle-${item.code}"
+                ${isChecked}
+                onchange="toggleEducationForm('${item.code}')"
+                class="w-5 h-5 accent-emerald-600 rounded cursor-pointer"
+              >
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    async function toggleEducationForm(code) {
+      if (!currentPolicy) return;
+      const checkbox = document.getElementById('toggle-' + code);
+      const isAllowed = checkbox.checked;
+
+      let newAllowed = [...currentPolicy.allowed_forms];
+      if (isAllowed && !newAllowed.includes(code)) {
+        newAllowed.push(code);
+      } else if (!isAllowed && newAllowed.includes(code)) {
+        newAllowed = newAllowed.filter(x => x !== code);
+      }
+
+      try {
+        const resp = await fetch('/api/v1/appeals/policy/education-forms', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ allowed_forms: newAllowed })
+        });
+        if (resp.ok) {
+          currentPolicy = await resp.json();
+          renderPolicyToggles(currentPolicy);
+
+          const toast = document.getElementById('policy-toast');
+          toast.className = 'p-3.5 rounded-xl text-xs font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 block';
+          toast.innerText = `Sozlama saqlandi: ${code} ta'lim shakliga onlayn murojaat ${isAllowed ? 'ruxsat berildi' : 'cheklandi'}.`;
+          setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+        } else {
+          const err = await resp.json();
+          alert(err.detail || "Siyosatni o'zgartirib bo'lmadi");
+          checkbox.checked = !isAllowed;
+        }
+      } catch (e) {
+        alert("Ulanish xatosi: " + e);
+        checkbox.checked = !isAllowed;
+      }
+    }
+
+    // 11. TAB: KPI OVERVIEW
+    async function loadKPIOverview() {
+      const container = document.getElementById('kpi-cards');
+      try {
+        const resp = await fetch('/api/v1/kpi/overview?period=2026-09', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await resp.json();
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500">KPI ma\'lumotlari topilmadi.</div>';
+          return;
+        }
+        container.innerHTML = '';
+        data.forEach(k => {
+          container.innerHTML += `
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-300">Xodim ID: ${k.employee_id}</span>
+                <span class="px-2 py-0.5 rounded-full text-xs font-bold border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">${k.kpi_percentage}%</span>
+              </div>
+              <div class="w-full bg-slate-950 rounded-full h-2 overflow-hidden">
+                <div class="bg-emerald-500 h-2 rounded-full transition-all duration-500" style="width: ${Math.min(100, k.kpi_percentage)}%;"></div>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-xs text-slate-400 pt-1">
+                <div>To'plangan: <span class="font-semibold text-white">${k.completed_points} ball</span></div>
+                <div>Maqsad: <span class="font-semibold text-white">${k.target_points} ball</span></div>
+                <div>Murojaatlar: <span class="font-semibold text-white">${k.total_appeals_completed}</span></div>
+                <div>Qabullar: <span class="font-semibold text-white">${k.total_appointments_completed}</span></div>
+                <div>O'rtacha baho: <span class="font-semibold text-white">${k.average_rating}</span></div>
+                <div>Jarima: <span class="font-semibold text-rose-400">-${k.penalty_points} ball</span></div>
+              </div>
+            </div>
+          `;
+        });
+      } catch (e) {
+        container.innerHTML = '<div class="p-4 text-center text-xs text-rose-400">KPI yuklashda xatolik.</div>';
+      }
+    }
+
+    // 12. TAB: BAYRAMLAR TAQVIMI
+    async function loadHolidays() {
+      const container = document.getElementById('holidays-list');
+      try {
+        const resp = await fetch('/api/v1/calendar/holidays');
+        const holidays = await resp.json();
+        container.innerHTML = '';
+        holidays.forEach(h => {
+          container.innerHTML += `
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 space-y-1">
+              <span class="inline-block font-mono text-xs font-semibold text-emerald-400">${h.holiday_date}</span>
+              <h5 class="text-xs font-bold text-white">${h.title}</h5>
+              <p class="text-[11px] text-slate-500">SLA hisoblagichi to'xtatiladi</p>
+            </div>
+          `;
+        });
+      } catch (e) {
+        container.innerHTML = '<div class="p-4 text-center text-xs text-rose-400">Bayramlarni yuklab bo\'lmadi.</div>';
+      }
+    }
+
+    // 13. Page Initialization with Hash Recovery
+    window.addEventListener('DOMContentLoaded', async () => {
+      initNotifications();
+      await loadCurrentUserProfile();
+
+      // Determine initial tab from hash or localStorage
+      const hashTab = window.location.hash.replace('#', '');
+      const savedTab = localStorage.getItem('roffice_staff_tab');
+      const initialTab = hashTab || savedTab || 'appeals';
+
+      switchStaffTab(initialTab, false);
+    });
+  </script>
+</body>
+</html>
