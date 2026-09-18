@@ -2,15 +2,37 @@
 <html lang="uz" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Xodim va rahbariyat ish stoli — Registrator ofisi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
   <style>
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    @media (max-width: 1023px) {
+      #sidebar {
+        transform: translateX(-100%) !important;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      #sidebar.mobile-open {
+        transform: translateX(0) !important;
+      }
     }
   </style>
 </head>
@@ -22,7 +44,7 @@
   <div class="flex min-h-screen">
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between z-50 transition-transform duration-200 -translate-x-full lg:translate-x-0">
+    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between z-50">
       
       <div>
         <!-- Brand Header -->
@@ -1051,14 +1073,19 @@
     function toggleSidebar() {
       const s = document.getElementById('sidebar');
       const o = document.getElementById('sidebar-overlay');
-      s.classList.toggle('-translate-x-full');
-      o.classList.toggle('hidden');
+      if (s.classList.contains('mobile-open')) {
+        s.classList.remove('mobile-open');
+        o.classList.add('hidden');
+      } else {
+        s.classList.add('mobile-open');
+        o.classList.remove('hidden');
+      }
     }
 
     function closeSidebar() {
       const s = document.getElementById('sidebar');
       const o = document.getElementById('sidebar-overlay');
-      s.classList.add('-translate-x-full');
+      s.classList.remove('mobile-open');
       o.classList.add('hidden');
     }
 

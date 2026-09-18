@@ -2,19 +2,41 @@
 <html lang="uz" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Talaba shaxsiy kabineti — Registrator ofisi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
   <style>
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    @media (max-width: 1023px) {
+      #sidebar {
+        transform: translateX(-100%) !important;
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      }
+      #sidebar.mobile-open {
+        transform: translateX(0) !important;
+      }
     }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-blue-600 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen antialiased selection:bg-blue-600 selection:text-white pb-16 lg:pb-0">
 
   <!-- Mobile Overlay -->
   <div id="sidebar-overlay" onclick="closeSidebar()" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 hidden lg:hidden"></div>
@@ -22,7 +44,7 @@
   <div class="flex min-h-screen">
 
     <!-- Sidebar -->
-    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between z-50 transition-transform duration-200 -translate-x-full lg:translate-x-0">
+    <aside id="sidebar" class="fixed lg:sticky top-0 left-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between z-50">
       
       <div>
         <!-- Brand Header -->
@@ -426,14 +448,19 @@
     function toggleSidebar() {
       const s = document.getElementById('sidebar');
       const o = document.getElementById('sidebar-overlay');
-      s.classList.toggle('-translate-x-full');
-      o.classList.toggle('hidden');
+      if (s.classList.contains('mobile-open')) {
+        s.classList.remove('mobile-open');
+        o.classList.add('hidden');
+      } else {
+        s.classList.add('mobile-open');
+        o.classList.remove('hidden');
+      }
     }
 
     function closeSidebar() {
       const s = document.getElementById('sidebar');
       const o = document.getElementById('sidebar-overlay');
-      s.classList.add('-translate-x-full');
+      s.classList.remove('mobile-open');
       o.classList.add('hidden');
     }
 
@@ -855,5 +882,27 @@
       }
     }
   </script>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-3 py-2 flex items-center justify-around text-[10px] font-medium shadow-2xl">
+    <button onclick="switchStudentTab('appeals')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-400 active:scale-95 transition cursor-pointer">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+      <span>Arizalar</span>
+    </button>
+    <button onclick="switchStudentTab('create')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-400 active:scale-95 transition cursor-pointer">
+      <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white -mt-3 shadow-lg shadow-blue-500/40 ring-2 ring-slate-900">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      </div>
+      <span>Yangi ariza</span>
+    </button>
+    <button onclick="switchStudentTab('queue')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-400 active:scale-95 transition cursor-pointer">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      <span>Navbat</span>
+    </button>
+    <button onclick="switchStudentTab('profile')" class="flex flex-col items-center gap-1 text-slate-400 hover:text-blue-400 active:scale-95 transition cursor-pointer">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      <span>Profil</span>
+    </button>
+  </nav>
 </body>
 </html>
