@@ -549,10 +549,14 @@
     window.addEventListener('DOMContentLoaded', async () => {
       initNotifications();
 
+      const todayIso = new Date().toISOString().split('T')[0];
+      const qDateInput = document.getElementById('queue-date');
+      qDateInput.min = todayIso;
+
       const d = new Date();
       d.setDate(d.getDate() + 1);
       if (d.getDay() === 0) d.setDate(d.getDate() + 1);
-      document.getElementById('queue-date').value = d.toISOString().split('T')[0];
+      qDateInput.value = d.toISOString().split('T')[0];
 
       await fetchUserProfile();
       await loadEducationPolicy();

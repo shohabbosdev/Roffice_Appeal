@@ -1,6 +1,6 @@
 import random
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List, Optional
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -26,10 +26,16 @@ class QueueService:
     async def get_available_slots(
         cls, db: AsyncSession, appointment_date: str, service_id: int
     ) -> List[str]:
-        """Get remaining free 15-minute slots for the given date and service."""
-        # 1. Sunday check
+        """Get remaining free 15-minute slots for the given date and service, excluding past slots if today."""
+        tashkent_tz = timezone(timedelta(hours=5))
+        now_local = datetime.now(tashkent_tz)
+        today_str = now_local.strftime("%Y-%m-%d")
+
+        # 1. Past date & Sunday check
         try:
             dt = datetime.strptime(appointment_date, "%Y-%m-%d")
+            if appointment_date < today_str:
+                return []
             if dt.weekday() == 6:  # Sunday
                 return []
         except ValueError:
@@ -42,6 +48,7 @@ class QueueService:
         if holiday:
             return []
 
+        # 3. Fetch already booked slots
         stmt = select(Appointment.time_slot).where(
             Appointment.appointment_date == appointment_date,
             Appointment.service_id == service_id,
@@ -50,7 +57,23 @@ class QueueService:
         result = await db.execute(stmt)
         booked_slots = set(result.scalars().all())
 
-        return [slot for slot in cls.DEFAULT_SLOTS if slot not in booked_slots]
+        # 4. Filter out booked slots and past slots for today
+        is_today = (appointment_date == today_str)
+        current_time = now_local.time()
+
+        available_slots = []
+        for slot in cls.DEFAULT_SLOTS:
+            if slot in booked_slots:
+                continue
+            if is_today:
+                slot_start_str = slot.split(" - ")[0].strip()
+                slot_time = datetime.strptime(slot_start_str, "%H:%M").time()
+                # O'tib ketgan vaqt oralig'ini chiqarib tashlash
+                if slot_time <= current_time:
+                    continue
+            available_slots.append(slot)
+
+        return available_slots
 
     @classmethod
     async def book_appointment(
@@ -62,7 +85,18 @@ class QueueService:
         time_slot: str
     ) -> Appointment:
         """Reserve an in-person appointment slot and generate electronic queue ticket."""
-        # 1. Sunday check
+        tashkent_tz = timezone(timedelta(hours=5))
+        now_local = datetime.now(tashkent_tz)
+        today_str = now_local.strftime("%Y-%m-%d")
+
+        # 1. Past date check
+        if appointment_date < today_str:
+            raise HTTPException(
+                status_code=400,
+                detail="O'tib ketgan sanaga navbat olib bo'lmaydi."
+            )
+
+        # 2. Sunday check
         try:
             dt = datetime.strptime(appointment_date, "%Y-%m-%d")
             if dt.weekday() == 6:  # Sunday
@@ -73,7 +107,7 @@ class QueueService:
         except ValueError:
             raise HTTPException(status_code=400, detail="Sana formati noto'g'ri (YYYY-MM-DD bo'lishi kerak).")
 
-        # 2. Holiday check
+        # 3. Holiday check
         from app.models import Holiday
         holiday_stmt = select(Holiday).where(Holiday.holiday_date == appointment_date, Holiday.is_working_day == False)
         holiday = (await db.execute(holiday_stmt)).scalars().first()
@@ -85,6 +119,16 @@ class QueueService:
 
         if time_slot not in cls.DEFAULT_SLOTS:
             raise HTTPException(status_code=400, detail="Noto'g'ri vaqt oralig'i tanlandi.")
+
+        # 4. Past time check for today (Bugungi kun uchun o'tib ketgan vaqt oralig'ini tekshirish)
+        if appointment_date == today_str:
+            slot_start_str = time_slot.split(" - ")[0].strip()
+            slot_time = datetime.strptime(slot_start_str, "%H:%M").time()
+            if slot_time <= now_local.time():
+                raise HTTPException(
+                    status_code=400,
+                    detail="Tanlangan vaqt oralig'i o'tib ketgan. Iltimos, joriy vaqtdan keyingi bo'sh vaqtni tanlang."
+                )
 
         # Check double-booking for the same slot
         stmt = select(Appointment).where(

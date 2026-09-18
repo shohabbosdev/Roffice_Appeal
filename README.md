@@ -224,6 +224,8 @@ Loyiha ustida olib borilgan chuqur texnik audit natijasida quyidagi kamchiliklar
    - SLA eslatmalari to'plami (`_reminded_set`) doimiy ravishda faol arizalar bilan sinxronlanib, xotira tozalab boriladi.
 7. **CORS Siyosati Xavfsizlashtirildi:**
    - Wildcard origin o'rniga aniq ishonchli domenlar belgilandi.
+8. **Elektron Navbatda O'tgan Vaqtlarni Bloklash Mexanizmi:**
+   - "Kelib hal etish" bo'limida o'tmishdagi sanalarga talon olish butunlay cheklandi. Bugungi kun tanlanganida esa faqat joriy daqiqadan keyingi bo'sh qabul vaqtlari ko'rsatiladigan va o'tib ketgan slotlarga ariza topshirish bloklanadigan qilindi.
 
 ---
 
