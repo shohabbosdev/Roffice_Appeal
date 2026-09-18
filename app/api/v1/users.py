@@ -160,6 +160,12 @@ async def get_nizom_duties(current_user: User = Depends(get_current_user)):
     return NIZOM_DUTIES_CATALOG
 
 
+@router.get("/me", response_model=UserOut, summary="Joriy foydalanuvchi profili")
+async def get_my_profile(current_user: User = Depends(get_current_user)):
+    """Joriy avtorizatsiyadan o'tgan foydalanuvchining shaxsiy ma'lumotlari."""
+    return current_user
+
+
 @router.get("/staff", response_model=List[UserOut], summary="Barcha xodimlar va ularning joriy rollari ro'yxati")
 async def get_staff_list(
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.OFFICE_HEAD, UserRole.VICE_RECTOR)),

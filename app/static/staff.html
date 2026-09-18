@@ -201,64 +201,66 @@
     <div class="flex-1 flex flex-col min-w-0">
 
       <!-- Topbar -->
-      <header class="h-16 border-b border-slate-800 bg-slate-900/60 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30 flex-wrap gap-2">
-        <div class="flex items-center gap-3">
-          <button onclick="toggleSidebar()" class="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
+      <header class="h-16 border-b border-slate-800 bg-slate-900/80 backdrop-blur-xl px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+        <div class="flex items-center gap-3 min-w-0">
+          <button onclick="toggleSidebar()" class="lg:hidden p-2 -ml-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
             </svg>
           </button>
-          <h2 id="page-heading" class="text-base font-bold text-white tracking-tight">Murojaatlar monitoringi</h2>
+          <div class="truncate">
+            <h2 id="page-heading" class="text-sm sm:text-base font-bold text-white tracking-tight truncate">Murojaatlar monitoringi</h2>
+          </div>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <!-- Notification Bell -->
           <button
             id="notification-btn"
             onclick="toggleBrowserNotifications()"
             title="Brauzer bildirishnomalari holati"
-            class="px-2.5 py-1.5 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 transition cursor-pointer flex items-center gap-2 text-xs"
+            class="px-2.5 py-1.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 transition cursor-pointer flex items-center gap-2 text-xs shadow-sm"
           >
             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
             </svg>
             <span id="notif-indicator" class="w-2 h-2 rounded-full bg-slate-500"></span>
-            <span class="hidden sm:inline text-[11px]" id="notif-label">Bildirishnomalar</span>
+            <span class="hidden md:inline text-[11px]" id="notif-label">Bildirishnomalar</span>
           </button>
 
           <!-- Current User Profile & Security -->
-          <div class="flex items-center gap-2">
-            <div class="text-right hidden sm:block">
-              <div id="header-user-fullname" class="text-xs font-bold text-white truncate max-w-[150px]">Yuklanmoqda...</div>
-              <div id="header-user-dept" class="text-[10px] text-slate-400 truncate max-w-[150px]">-</div>
+          <div class="flex items-center gap-2 sm:gap-2.5">
+            <div class="text-right hidden sm:block leading-tight">
+              <div id="header-user-fullname" class="text-xs font-bold text-white truncate max-w-[180px]">Administrator</div>
+              <div id="header-user-dept" class="text-[10px] text-emerald-400/90 font-medium truncate max-w-[180px]">Bosh ma'muriyat</div>
             </div>
             
-            <span id="current-role-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-              Xodim
+            <span id="current-role-badge" class="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+              Admin
             </span>
 
-            <span id="header-telegram-status" class="hidden sm:inline-flex items-center px-2 py-1 rounded-full text-[11px] font-medium border border-slate-800 text-slate-400">
+            <span id="header-telegram-status" class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border border-slate-800 text-slate-400">
               TG ulanmagan
             </span>
 
             <button
               onclick="openCredentialsModal()"
-              class="px-2.5 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-950 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5"
+              class="px-2.5 py-1.5 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5 shadow-sm"
               title="Shaxsiy login va maxfiy parolni o'zgartirish"
             >
               <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
               </svg>
-              <span>Xavfsizlik</span>
+              <span class="hidden sm:inline">Xavfsizlik</span>
             </button>
           </div>
         </div>
       </header>
 
       <!-- Content -->
-      <main class="flex-1 p-6 max-w-6xl w-full mx-auto space-y-6">
+      <main class="flex-1 p-4 sm:p-6 max-w-6xl w-full mx-auto space-y-6">
 
-        <!-- Telegram Bot Reminder Banner -->
+        <!-- Telegram Bot Reminder Banner (Sleek and dismissible) -->
         <div id="telegram-reminder-banner" class="hidden p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 via-slate-900 to-blue-950/80 border border-emerald-500/30 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div class="flex items-start gap-3">
             <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -287,38 +289,64 @@
               ✕
             </button>
           </div>
-          </div>
         </div>
 
         <!-- TAB 1: MUROJAATLAR MONITORINGI & IJRO -->
-        <div id="tab-appeals" class="tab-pane block space-y-5">
+        <div id="tab-appeals" class="tab-pane block space-y-6">
           <!-- Analytics & SLA Radar Section -->
-          <div class="space-y-3">
+          <div class="space-y-4">
             <!-- Stats Row -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="appeals-stats-row">
-              <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 space-y-1">
-                <div class="text-[10px] uppercase tracking-wider text-slate-500 font-bold">Jami murojaatlar</div>
-                <div id="stat-total" class="text-2xl font-extrabold text-white">—</div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" id="appeals-stats-row">
+              <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-900/60 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Jami murojaatlar</span>
+                  <div class="w-8 h-8 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center text-slate-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  </div>
+                </div>
+                <div id="stat-total" class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">—</div>
+                <div class="text-[11px] text-slate-500">Tizimdagi umumiy soni</div>
               </div>
-              <div class="bg-slate-900/80 border border-blue-500/20 rounded-2xl p-4 space-y-1">
-                <div class="text-[10px] uppercase tracking-wider text-blue-400 font-bold">Yangi / Kutayotgan</div>
-                <div id="stat-new" class="text-2xl font-extrabold text-blue-400">—</div>
+
+              <div class="relative overflow-hidden bg-gradient-to-br from-blue-950/30 via-slate-900 to-slate-900/60 border border-blue-500/20 rounded-2xl p-4 sm:p-5 shadow-lg space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] uppercase tracking-wider text-blue-400 font-bold">Yangi / Kutayotgan</span>
+                  <div class="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                </div>
+                <div id="stat-new" class="text-2xl sm:text-3xl font-extrabold text-blue-400 tracking-tight">—</div>
+                <div class="text-[11px] text-blue-400/70">Biriktirish talab etiladi</div>
               </div>
-              <div class="bg-slate-900/80 border border-amber-500/20 rounded-2xl p-4 space-y-1">
-                <div class="text-[10px] uppercase tracking-wider text-amber-400 font-bold">Ijro jarayonida</div>
-                <div id="stat-inprogress" class="text-2xl font-extrabold text-amber-400">—</div>
+
+              <div class="relative overflow-hidden bg-gradient-to-br from-amber-950/30 via-slate-900 to-slate-900/60 border border-amber-500/20 rounded-2xl p-4 sm:p-5 shadow-lg space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] uppercase tracking-wider text-amber-400 font-bold">Ijro jarayonida</span>
+                  <div class="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                  </div>
+                </div>
+                <div id="stat-inprogress" class="text-2xl sm:text-3xl font-extrabold text-amber-400 tracking-tight">—</div>
+                <div class="text-[11px] text-amber-400/70">Xodimlar tomonidan ko'rilmoqda</div>
               </div>
-              <div class="bg-slate-900/80 border border-emerald-500/20 rounded-2xl p-4 space-y-1">
-                <div class="text-[10px] uppercase tracking-wider text-emerald-400 font-bold">Ijobiy hal etildi</div>
-                <div id="stat-done" class="text-2xl font-extrabold text-emerald-400">—</div>
+
+              <div class="relative overflow-hidden bg-gradient-to-br from-emerald-950/30 via-slate-900 to-slate-900/60 border border-emerald-500/20 rounded-2xl p-4 sm:p-5 shadow-lg space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] uppercase tracking-wider text-emerald-400 font-bold">Ijobiy hal etildi</span>
+                  <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                </div>
+                <div id="stat-done" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 tracking-tight">—</div>
+                <div class="text-[11px] text-emerald-400/70">Muvaffaqiyatli yakunlandi</div>
               </div>
             </div>
 
             <!-- SLA Risk Radar (Critical Attention Alert) -->
-            <div id="sla-risk-banner" class="hidden p-4 rounded-2xl bg-gradient-to-r from-rose-950/60 via-slate-900 to-amber-950/60 border border-rose-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div id="sla-risk-banner" class="hidden p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-rose-950/70 via-slate-900 to-amber-950/70 border border-rose-500/40 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-rose-500/20 text-rose-400 flex items-center justify-center font-bold text-base flex-shrink-0 animate-pulse">
-                  ⚠️
+                <div class="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                 </div>
                 <div>
                   <h4 class="text-xs font-bold text-white tracking-tight flex items-center gap-2">
@@ -333,36 +361,38 @@
               <button
                 onclick="toggleOverdueFilter(true)"
                 id="sla-risk-filter-btn"
-                class="px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition cursor-pointer self-start sm:self-auto flex-shrink-0 shadow-md shadow-rose-600/25"
+                class="px-3.5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs transition cursor-pointer self-start sm:self-auto flex-shrink-0 shadow-lg shadow-rose-600/30"
               >
                 Faqat xavf ostidagilarni ko'rish
               </button>
             </div>
 
             <!-- 7-Kunlik Dinamika Grafigi (Trend Chart) -->
-            <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 space-y-3">
-              <div class="flex items-center justify-between">
-                <div class="text-xs font-bold text-slate-300 flex items-center gap-2">
-                  <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg space-y-4">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div class="text-xs font-bold text-slate-200 flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  </div>
                   <span>Oxirgi 7 kunlik murojaatlar dinamikasi</span>
                 </div>
-                <div class="flex items-center gap-3 text-[11px] text-slate-400">
-                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-blue-500"></span> Kelib tushgan</span>
-                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-500"></span> Bajarilgan</span>
+                <div class="flex items-center gap-4 text-xs text-slate-400">
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> Kelib tushgan</span>
+                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span> Bajarilgan</span>
                 </div>
               </div>
               <!-- Mini bars container -->
-              <div id="appeals-trend-chart" class="grid grid-cols-7 gap-2 pt-2 items-end h-28 border-t border-slate-800/80">
+              <div id="appeals-trend-chart" class="grid grid-cols-7 gap-2 pt-4 items-end h-36 border-t border-slate-800/80">
                 <!-- Dynamically rendered -->
               </div>
             </div>
           </div>
 
           <!-- Toolbar: Live Search, Multi-Filters & Excel Export -->
-          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 space-y-3">
-            <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+          <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3.5">
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
               <!-- Live Search -->
-              <div class="relative flex-1 min-w-[240px]">
+              <div class="relative flex-1">
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -373,29 +403,29 @@
                   id="appeals-search"
                   oninput="handleAppealsFilter()"
                   placeholder="Qidiruv: Talaba F.I.Sh., HEMIS ID yoki #Talon raqami..."
-                  class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                  class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition"
                 >
               </div>
 
               <!-- Action buttons: Excel Export & Refresh -->
-              <div class="flex items-center gap-2 flex-wrap justify-end">
+              <div class="flex items-center gap-2 flex-shrink-0 justify-end">
                 <button
                   onclick="exportAppealsToExcel()"
-                  class="px-3.5 py-2 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+                  class="px-3.5 py-2.5 rounded-xl bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/30 text-emerald-300 hover:text-emerald-200 text-xs font-semibold transition cursor-pointer flex items-center gap-2 shadow-sm"
                   title="Ko'rsatilgan murojaatlarni Excel (CSV) formatida yuklab olish"
                 >
-                  <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                   </svg>
-                  <span>Excel hisobot</span>
+                  <span>Excel eksport</span>
                 </button>
 
                 <button
                   onclick="loadStaffAppeals()"
-                  class="px-3 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5"
+                  class="px-3 py-2.5 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5"
                   title="Ro'yxatni yangilash"
                 >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                   </svg>
                   <span>Yangilash</span>
@@ -404,14 +434,17 @@
             </div>
 
             <!-- Filters row -->
-            <div class="flex items-center gap-2 flex-wrap pt-2 border-t border-slate-800/70 text-xs">
-              <span class="text-slate-500 font-medium">Filtrlash:</span>
+            <div class="flex items-center gap-2.5 flex-wrap pt-3 border-t border-slate-800/80 text-xs">
+              <span class="text-slate-400 font-semibold flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
+                Filtrlar:
+              </span>
 
               <!-- Status filter -->
               <select
                 id="appeals-filter-status"
                 onchange="handleAppealsFilter()"
-                class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer"
+                class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer"
               >
                 <option value="">Barcha holatlar</option>
                 <option value="new">Yangi (biriktirilmagan)</option>
@@ -427,7 +460,7 @@
               <select
                 id="appeals-filter-service"
                 onchange="handleAppealsFilter()"
-                class="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer max-w-[220px]"
+                class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500 cursor-pointer max-w-[240px]"
               >
                 <option value="">Barcha xizmatlar</option>
               </select>
@@ -437,18 +470,18 @@
                 type="button"
                 id="overdue-toggle-btn"
                 onclick="toggleOverdueFilter()"
-                class="px-2.5 py-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition cursor-pointer text-xs font-medium"
+                class="px-3 py-1.5 rounded-xl border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition cursor-pointer text-xs font-medium flex items-center gap-1.5"
               >
-                🚨 Faqat muddati o'tganlar
+                <span>🚨</span> <span>Faqat muddati o'tganlar</span>
               </button>
 
-              <span id="filtered-count-badge" class="ml-auto text-[11px] text-slate-500">
+              <span id="filtered-count-badge" class="ml-auto text-[11px] font-medium text-slate-400 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">
                 Yuklanmoqda...
               </span>
             </div>
           </div>
 
-          <div id="staff-appeals-list" class="space-y-3">
+          <div id="staff-appeals-list" class="space-y-4">
             <div class="p-8 text-center text-xs text-slate-500 border border-slate-800/80 rounded-2xl bg-slate-900/40">
               Murojaatlar yuklanmoqda...
             </div>
@@ -918,10 +951,11 @@
             class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none"
             placeholder="Murojaatni ko'rib chiqdik. Hujjat/ma'lumotnoma tayyorlandi va..."></textarea>
         </div>
+        <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Rasmiy ma'lumotnoma yoki ijro fayli (ixtiyoriy)</label>
           <div class="flex items-center gap-2 mb-2">
             <label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer transition">
-              <i class="ph ph-upload-simple text-sm text-emerald-400"></i>
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
               <span id="staff-upload-label">Faylni yuklash (PDF, DOCX)...</span>
               <input type="file" id="staff-resolve-file-input" class="hidden" accept=".pdf,.doc,.docx,.png,.jpg" onchange="handleStaffFileUpload(this)">
             </label>
@@ -1155,58 +1189,99 @@
     // 3. Current User and Role Info
     async function loadCurrentUserProfile() {
       try {
-        const resp = await fetch('/api/v1/users/me', {
+        let resp = await fetch('/api/v1/users/me', {
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        if (!resp.ok) {
+          resp = await fetch('/api/v1/auth/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        }
         if (resp.status === 401) {
           handleLogout();
           return;
         }
-        currentUser = await resp.json();
-        userRole = currentUser.role;
-        localStorage.setItem('roffice_role', userRole);
+        if (resp.ok) {
+          currentUser = await resp.json();
+          userRole = currentUser.role || 'staff';
+          localStorage.setItem('roffice_role', userRole);
 
-        document.getElementById('header-user-fullname').innerText = currentUser.full_name;
-        document.getElementById('current-role-badge').innerText = roleNameMap[currentUser.role] || currentUser.role;
-        document.getElementById('current-role-badge').className = `inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${roleBadgeColor[currentUser.role] || 'bg-slate-800'}`;
+          const fullName = currentUser.full_name || localStorage.getItem('roffice_fullname') || currentUser.username || 'Administrator';
+          let roleTitle = roleNameMap[currentUser.role] || 'Xodim';
+          let deptTitle = 'Registrator ofisi';
 
-        applyRolePermissions(currentUser.role);
-
-        // Telegram holatini tekshirish
-        const tgHeaderEl = document.getElementById('header-telegram-status');
-        const tgBannerEl = document.getElementById('telegram-reminder-banner');
-
-        if (currentUser.telegram_chat_id) {
-          if (tgBannerEl) tgBannerEl.classList.add('hidden');
-          if (tgHeaderEl) {
-            const uName = currentUser.telegram_username ? `@${currentUser.telegram_username}` : 'Ulangan';
-            tgHeaderEl.className = 'hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-400';
-            tgHeaderEl.innerText = `✓ TG: ${uName}`;
+          if (currentUser.role === 'admin') {
+            roleTitle = 'Administrator';
+            deptTitle = 'Bosh ma\'muriyat';
+          } else if (currentUser.role === 'office_head') {
+            roleTitle = 'Ofis rahbari';
+            deptTitle = 'Registrator ofisi rahbariyati';
+          } else if (currentUser.role === 'vice_rector') {
+            roleTitle = 'Prorektor';
+            deptTitle = 'O\'quv ishlari bo\'yicha prorektorat';
+          } else if (currentUser.role === 'front_staff') {
+            roleTitle = 'Front Office';
+            deptTitle = 'Talabalarga xizmat ko\'rsatish sektori';
+          } else if (currentUser.role === 'back_staff') {
+            roleTitle = 'Back Office';
+            deptTitle = 'Hujjatlar va tahlil sektori';
           }
-        } else {
-          try {
-            const tgResp = await fetch('/api/v1/auth/telegram-info', {
-              headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (tgResp.ok) {
-              const tgInfo = await tgResp.json();
-              const connectBtn = document.getElementById('telegram-connect-btn');
-              if (connectBtn) connectBtn.href = tgInfo.deep_link;
-              if (tgHeaderEl) {
-                tgHeaderEl.innerHTML = `<a href="${tgInfo.deep_link}" target="_blank" class="text-blue-400 hover:underline">TG ulash</a>`;
-              }
-              if (tgBannerEl && !sessionStorage.getItem('roffice_dismiss_staff_tg')) {
-                tgBannerEl.classList.remove('hidden');
+
+          const fnEl = document.getElementById('header-user-fullname');
+          if (fnEl) fnEl.innerText = fullName;
+          const deptEl = document.getElementById('header-user-dept');
+          if (deptEl) deptEl.innerText = deptTitle;
+
+          const badgeEl = document.getElementById('current-role-badge');
+          if (badgeEl) {
+            badgeEl.innerText = roleTitle;
+            badgeEl.className = `inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${roleBadgeColor[currentUser.role] || 'bg-slate-800 text-slate-300 border-slate-700'}`;
+          }
+
+          applyRolePermissions(currentUser.role);
+
+          // Telegram holatini tekshirish
+          const tgHeaderEl = document.getElementById('header-telegram-status');
+          const tgBannerEl = document.getElementById('telegram-reminder-banner');
+
+          if (currentUser.telegram_chat_id) {
+            if (tgBannerEl) tgBannerEl.classList.add('hidden');
+            if (tgHeaderEl) {
+              const uName = currentUser.telegram_username ? `@${currentUser.telegram_username}` : 'Ulangan';
+              tgHeaderEl.className = 'hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-400';
+              tgHeaderEl.innerText = `✓ TG: ${uName}`;
+            }
+          } else {
+            // Admin uchun banner ko'rsatilmaydi, faqat xodimlar uchun
+            if (currentUser.role === 'admin') {
+              if (tgBannerEl) tgBannerEl.classList.add('hidden');
+            } else {
+              try {
+                const tgResp = await fetch('/api/v1/auth/telegram-info', {
+                  headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (tgResp.ok) {
+                  const tgInfo = await tgResp.json();
+                  const connectBtn = document.getElementById('telegram-connect-btn');
+                  if (connectBtn) connectBtn.href = tgInfo.deep_link;
+                  if (tgHeaderEl) {
+                    tgHeaderEl.innerHTML = `<a href="${tgInfo.deep_link}" target="_blank" class="text-blue-400 hover:underline">TG ulash</a>`;
+                  }
+                  if (tgBannerEl && !sessionStorage.getItem('roffice_dismiss_staff_tg')) {
+                    tgBannerEl.classList.remove('hidden');
+                  }
+                }
+              } catch (tge) {
+                console.error("Telegram info yuklashda xatolik:", tge);
               }
             }
-          } catch (tge) {
-            console.error("Telegram info yuklashda xatolik:", tge);
           }
-        }
 
-        // Check if mandatory first login password change is needed
-        if (currentUser.must_change_password) {
-          document.getElementById('first-login-modal').classList.remove('hidden');
+          // Majburiy birinchi parolni o'zgartirish
+          if (currentUser.must_change_password) {
+            const firstLoginEl = document.getElementById('first-login-modal');
+            if (firstLoginEl) firstLoginEl.classList.remove('hidden');
+          }
         }
       } catch (e) {
         console.error("Profil yuklash xatosi:", e);
@@ -1781,28 +1856,28 @@
       const maxVal = Math.max(...days.map(d => Math.max(d.createdCount, d.resolvedCount, 1)), 5);
 
       chartEl.innerHTML = days.map(d => {
-        const hCreated = Math.round((d.createdCount / maxVal) * 80);
-        const hResolved = Math.round((d.resolvedCount / maxVal) * 80);
+        const hCreated = Math.round((d.createdCount / maxVal) * 95);
+        const hResolved = Math.round((d.resolvedCount / maxVal) * 95);
 
         return `
-          <div class="flex flex-col items-center gap-1.5 h-full justify-end">
-            <div class="flex items-end gap-1 w-full justify-center h-20">
+          <div class="flex flex-col items-center gap-2 h-full justify-end">
+            <div class="flex items-end gap-1.5 w-full justify-center h-28">
               <div 
-                class="w-3.5 bg-blue-500 rounded-t transition-all hover:bg-blue-400 relative group cursor-pointer"
-                style="height: ${Math.max(hCreated, 4)}px;"
+                class="w-3.5 sm:w-5 bg-gradient-to-t from-blue-600 to-blue-400 rounded-t-md transition-all hover:brightness-125 relative group cursor-pointer shadow-sm shadow-blue-500/20"
+                style="height: ${Math.max(hCreated, 6)}px;"
                 title="${d.ymd}: ${d.createdCount} ta kelib tushdi"
               >
-                ${d.createdCount > 0 ? `<span class="opacity-0 group-hover:opacity-100 absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-blue-300 bg-slate-900 px-1 rounded shadow pointer-events-none">${d.createdCount}</span>` : ''}
+                ${d.createdCount > 0 ? `<span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-blue-300 pointer-events-none">${d.createdCount}</span>` : ''}
               </div>
               <div 
-                class="w-3.5 bg-emerald-500 rounded-t transition-all hover:bg-emerald-400 relative group cursor-pointer"
-                style="height: ${Math.max(hResolved, 4)}px;"
+                class="w-3.5 sm:w-5 bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-md transition-all hover:brightness-125 relative group cursor-pointer shadow-sm shadow-emerald-500/20"
+                style="height: ${Math.max(hResolved, 6)}px;"
                 title="${d.ymd}: ${d.resolvedCount} ta bajarildi"
               >
-                ${d.resolvedCount > 0 ? `<span class="opacity-0 group-hover:opacity-100 absolute -top-5 left-1/2 -translate-x-1/2 text-[9px] font-bold text-emerald-300 bg-slate-900 px-1 rounded shadow pointer-events-none">${d.resolvedCount}</span>` : ''}
+                ${d.resolvedCount > 0 ? `<span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-emerald-300 pointer-events-none">${d.resolvedCount}</span>` : ''}
               </div>
             </div>
-            <span class="text-[10px] text-slate-400 font-medium">${d.label}</span>
+            <span class="text-[10px] sm:text-[11px] text-slate-400 font-medium">${d.label}</span>
           </div>
         `;
       }).join('');
@@ -1893,71 +1968,87 @@
         const createdStr = app.created_at ? new Date(app.created_at).toLocaleString('uz-UZ', { dateStyle: 'short', timeStyle: 'short' }) : '—';
 
         html += `
-          <div class="bg-slate-900/80 border ${isOverdue ? 'border-rose-500/50 bg-rose-950/10' : 'border-slate-800'} rounded-2xl p-5 space-y-3.5 transition">
-            <!-- Top info -->
+          <div class="bg-slate-900/80 border ${isOverdue ? 'border-rose-500/50 shadow-rose-950/20 bg-gradient-to-b from-rose-950/10 to-slate-900/80' : 'border-slate-800/90'} rounded-2xl p-5 space-y-4 shadow-lg hover:border-slate-700 transition">
+            <!-- Top info: Ticket, Status, Date -->
             <div class="flex items-start justify-between gap-3">
-              <div class="space-y-1 min-w-0">
+              <div class="space-y-1.5 min-w-0">
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span class="font-mono text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">#${app.ticket_number}</span>
-                  ${isOverdue ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 uppercase tracking-wider animate-pulse">SLA Kechikkan</span>' : ''}
-                  <span class="text-[11px] text-slate-500">Yaratildi: ${createdStr}</span>
+                  <span class="font-mono text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-lg">#${app.ticket_number}</span>
+                  ${isOverdue ? '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30 uppercase tracking-wider animate-pulse">SLA Kechikkan</span>' : ''}
+                  <span class="text-[11px] text-slate-500 flex items-center gap-1">
+                    <svg class="w-3 h-3 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    ${createdStr}
+                  </span>
                 </div>
-                <h5 class="text-sm font-bold text-white tracking-tight leading-snug">${app.subject}</h5>
+                <h5 class="text-sm sm:text-base font-bold text-white tracking-tight leading-snug">${app.subject}</h5>
               </div>
-              <span class="px-2.5 py-1 rounded-full text-xs font-semibold border flex-shrink-0 ${meta.cls}">${meta.label}</span>
+              <span class="px-3 py-1 rounded-full text-xs font-semibold border flex-shrink-0 ${meta.cls}">${meta.label}</span>
             </div>
 
             <!-- Student Profile Badge -->
-            <div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 text-xs flex-wrap">
-              <span class="text-slate-400 flex items-center gap-1 font-medium">
-                👤 <span>Talaba:</span>
-              </span>
-              <strong class="text-white">${app.student ? app.student.full_name : 'Noma\'lum talaba'}</strong>
-              ${app.student?.username ? `<span class="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono text-[11px]">ID: ${app.student.username}</span>` : ''}
-              ${app.student?.education_form ? `<span class="text-slate-400 text-[11px]">Ta'lim shakli: <strong class="text-slate-300 capitalize">${app.student.education_form}</strong></span>` : ''}
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-950/80 border border-slate-800/80 text-xs flex-wrap">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 text-xs font-bold">
+                  ${(app.student?.full_name || 'T')[0]}
+                </div>
+                <strong class="text-white font-semibold">${app.student ? app.student.full_name : 'Noma\'lum talaba'}</strong>
+              </div>
+              ${app.student?.username ? `<span class="px-2 py-0.5 rounded-md bg-blue-500/10 text-blue-300 border border-blue-500/20 font-mono text-[11px]">HEMIS ID: ${app.student.username}</span>` : ''}
+              ${app.student?.education_form ? `<span class="text-slate-400 text-[11px] ml-auto">Ta'lim shakli: <strong class="text-slate-200 uppercase">${app.student.education_form}</strong></span>` : ''}
             </div>
 
             <!-- Appeal Message Content -->
-            <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/50 p-3 rounded-xl border border-slate-800/60 line-clamp-4">${app.message}</p>
+            <div class="text-xs text-slate-300 leading-relaxed bg-slate-950/40 p-3.5 rounded-xl border border-slate-800/60 whitespace-pre-wrap">${app.message}</div>
 
             ${app.attachment_urls ? `
-              <div class="pt-0.5">
-                <a href="${app.attachment_urls}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-medium transition">
-                  <i class="ph ph-file-arrow-down text-sm"></i> Talaba ilova qilgan hujjatni ko'rish
+              <div>
+                <a href="${app.attachment_urls}" target="_blank" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 text-xs font-medium transition">
+                  <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>Talaba ilova qilgan hujjatni yuklab olish</span>
                 </a>
               </div>
             ` : ''}
 
-            <!-- Footer Details: Service, SLA & Assigned Staff -->
-            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80 text-xs">
-              <div class="flex items-center gap-3 text-slate-400 flex-wrap">
-                <span>Xizmat: <strong class="text-slate-200">${app.service ? app.service.title : '—'}</strong></span>
-                <span>SLA: <strong class="${isOverdue ? 'text-rose-400 font-bold' : 'text-slate-200'}">${slaStr}</strong></span>
-                <span>Ijrochi: <strong class="text-indigo-300">${app.assigned_staff ? app.assigned_staff.full_name : '<span class="text-amber-400 font-normal italic">Biriktirilmagan</span>'}</strong></span>
+            <!-- Footer Details: Service, SLA & Assigned Staff in clean 3-col grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-3 rounded-xl bg-slate-950/40 border border-slate-800/60 text-xs">
+              <div>
+                <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Xizmat</div>
+                <div class="text-slate-200 font-medium truncate mt-0.5">${app.service ? app.service.title : '—'}</div>
+              </div>
+              <div>
+                <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">SLA Muhlati</div>
+                <div class="font-medium mt-0.5 ${isOverdue ? 'text-rose-400 font-bold' : 'text-slate-200'}">${slaStr}</div>
+              </div>
+              <div>
+                <div class="text-[10px] text-slate-500 uppercase tracking-wider font-bold">Mas'ul Ijrochi</div>
+                <div class="font-medium mt-0.5 text-indigo-300">${app.assigned_staff ? app.assigned_staff.full_name : '<span class="text-amber-400 font-normal italic">Biriktirilmagan</span>'}</div>
               </div>
             </div>
 
             ${app.resolution_text ? `
-              <div class="p-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-1">
-                <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Ijro javobi:</span>
-                <p class="text-xs text-slate-200">${app.resolution_text}</p>
+              <div class="p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-xl space-y-1.5">
+                <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Rasmiy ijro xulosasi:
+                </span>
+                <p class="text-xs text-slate-200 leading-relaxed">${app.resolution_text}</p>
               </div>
             ` : ''}
 
             ${app.rating ? `
-              <div class="flex items-center gap-1.5 text-xs text-slate-400">
-                <span>Talaba bahosi:</span>
-                <span class="font-bold text-amber-400">${'★'.repeat(app.rating)}${'☆'.repeat(5 - app.rating)}</span>
-                ${app.rating_comment ? `<span class="text-slate-500 italic">"${app.rating_comment}"</span>` : ''}
+              <div class="flex items-center gap-2 p-2.5 rounded-xl bg-amber-950/20 border border-amber-500/20 text-xs text-amber-300">
+                <span class="font-medium">Talaba bahosi:</span>
+                <span class="font-bold text-amber-400 tracking-wider">${'★'.repeat(app.rating)}${'☆'.repeat(5 - app.rating)}</span>
+                ${app.rating_comment ? `<span class="text-slate-400 italic">"${app.rating_comment}"</span>` : ''}
               </div>
             ` : ''}
 
             <!-- Action buttons -->
-            <div class="flex gap-2 pt-2 flex-wrap items-center">
+            <div class="flex items-center gap-2.5 pt-2 flex-wrap border-t border-slate-800/80">
               ${isAdminOrHead ? `
                 <button
                   onclick="openReassignModal(${app.id}, '${app.ticket_number}', '${(app.student?.full_name||'Talaba').replace(/'/g,"\\'")}', '${(app.service?.title||'—').replace(/'/g,"\\'")}', ${app.assigned_staff_id || 'null'})"
-                  class="px-3 py-1.5 rounded-lg bg-indigo-600/90 hover:bg-indigo-600 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+                  class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-2 shadow-md shadow-indigo-600/20"
                   title="Murojaatni ijrochi xodimga biriktirish yoki boshqasiga o'tkazish"
                 >
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -1966,23 +2057,26 @@
               ` : ''}
 
               ${app.status === 'new' && !isAdminOrHead ? `
-                <button onclick="assignToMe(${app.id})" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition cursor-pointer">
+                <button onclick="assignToMe(${app.id})" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition cursor-pointer shadow-md shadow-blue-600/20">
                   Menga biriktirish
                 </button>
               ` : ''}
 
               ${['assigned','in_progress'].includes(app.status) ? `
-                <button onclick="openResolveModal(${app.id}, '${app.ticket_number}', '${(app.subject||'').replace(/'/g,"\\'")}', '${(app.service?.title||'—').replace(/'/g,"\\'")}' )" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer">
-                  Javob berish va yakunlash
+                <button onclick="openResolveModal(${app.id}, '${app.ticket_number}', '${(app.subject||'').replace(/'/g,"\\'")}', '${(app.service?.title||'—').replace(/'/g,"\\'")}' )" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Javob berish va yakunlash</span>
                 </button>
-                <button onclick="openClarifyModal(${app.id})" class="px-3 py-1.5 rounded-lg border border-slate-700 hover:border-blue-500 text-slate-300 hover:text-blue-300 text-xs font-medium transition cursor-pointer">
-                  Ma'lumot so'rash
+                <button onclick="openClarifyModal(${app.id})" class="px-3.5 py-2 rounded-xl border border-slate-700 hover:border-blue-500 bg-slate-950 text-slate-300 hover:text-blue-300 text-xs font-medium transition cursor-pointer flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span>Ma'lumot so'rash</span>
                 </button>
               ` : ''}
 
               ${app.status === 'disputed' ? `
-                <button onclick="openEscalateModal(${app.id})" class="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold transition cursor-pointer">
-                  Prorektorga eskalatsiya
+                <button onclick="openEscalateModal(${app.id})" class="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-amber-600/20">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+                  <span>Prorektorga eskalatsiya</span>
                 </button>
               ` : ''}
             </div>
