@@ -203,6 +203,8 @@ class Appointment(Base):
     window_number: Mapped[str] = mapped_column(String(50), nullable=False) # e.g. "1-qavat, 104-xona, 2-darcha"
     appointment_date: Mapped[str] = mapped_column(String(10), nullable=False) # "YYYY-MM-DD"
     time_slot: Mapped[str] = mapped_column(String(20), nullable=False) # "10:15 - 10:30"
+    scheduled_start: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, index=True)
+    scheduled_end: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
     status: Mapped[AppointmentStatus] = mapped_column(SQLEnum(AppointmentStatus), default=AppointmentStatus.BOOKED, nullable=False)
     
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))

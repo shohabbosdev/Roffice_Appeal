@@ -928,104 +928,144 @@
       if (!serviceId || !dateVal) return;
 
       selectedSlot = null;
-      container.innerHTML = '<p class="text-xs text-slate-400">Slotlar yuklanmoqda...</p>';
+      container.innerHTML = '<p class="text-xs text-slate-400 py-3">Slotlar yuklanmoqda...</p>';
       try {
         const resp = await fetch(`/api/v1/appointments/available-slots?service_id=${serviceId}&appointment_date=${dateVal}&detailed=true`);
         const data = await resp.json();
 
-        // 1. Dam olish kuni yoki bayram
+        // 1. Agar dam olish yoki bayram bo'lsa
         if (!data.is_working_day) {
+          const nextDate = data.next_available_date || '';
           container.innerHTML = `
-            <div class="w-full p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs space-y-1">
+            <div class="w-full p-4 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-300 text-xs space-y-2">
               <div class="font-semibold flex items-center gap-1.5 text-amber-400">
                 <i class="ph ph-warning-circle text-base"></i> Qabul mavjud emas
               </div>
               <p class="text-slate-300 leading-relaxed">${data.message || "Dam olish yoki bayram kuni."}</p>
-              <button type="button" onclick="selectNextAvailableDate()" class="mt-2 inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-semibold underline cursor-pointer">
-                Keyingi ish kunini tanlash ➜
-              </button>
+              ${nextDate ? `
+                <button type="button" onclick="document.getElementById('queue-date').value='${nextDate}'; loadAvailableSlots();" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold cursor-pointer transition">
+                  Keyingi ish kuniga o'tish (${nextDate}) ➜
+                </button>
+              ` : ''}
             </div>
           `;
           return;
         }
 
-        // 2. Ogohlantirish (masalan, bugungi qabul vaqtlari o'tib ketgan bo'lsa)
-        let alertHtml = '';
-        if (data.message) {
-          alertHtml = `
-            <div class="w-full p-3 mb-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs">
-              <div class="font-semibold flex items-center gap-1.5 mb-1 text-blue-400">
-                <i class="ph ph-clock text-base"></i> Qabul vaqti yakunlangan
+        // 2. Agar bugungi ish vaqtlari to'liq yakunlangan bo'lsa -> Avtomatik ertangi kunga o'tish
+        if (data.is_today && data.total_available === 0 && data.next_available_date) {
+          const nextDate = data.next_available_date;
+          document.getElementById('queue-date').value = nextDate;
+          
+          container.innerHTML = `
+            <div class="w-full p-3.5 mb-2 rounded-xl bg-blue-500/10 border border-blue-500/25 text-blue-300 text-xs space-y-1">
+              <div class="font-semibold flex items-center gap-1.5 text-blue-400">
+                <i class="ph ph-info text-base"></i> Eng yaqin qabul kuni
               </div>
-              <p class="text-slate-300 leading-relaxed">${data.message}</p>
-              <button type="button" onclick="selectNextAvailableDate()" class="mt-2 inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer">
-                Keyingi ish kuniga o'tish ➜
-              </button>
+              <p class="text-slate-300 leading-relaxed">Bugungi barcha qabul soatlari yakunlangan. Sizga eng yaqin qabul kuni (<b>${nextDate}</b>) ochilmoqda...</p>
             </div>
           `;
+          setTimeout(() => loadAvailableSlots(), 600);
+          return;
         }
 
         const slots = data.slots || [];
-        if (slots.length === 0) {
-          container.innerHTML = alertHtml + '<p class="text-xs text-slate-400">Ushbu kunga qabul vaqtlari topilmadi.</p>';
+        const activeSlots = slots.filter(s => s.status !== 'past');
+
+        if (activeSlots.length === 0) {
+          container.innerHTML = `
+            <div class="w-full p-4 text-center text-xs text-slate-400 bg-slate-950/60 rounded-xl border border-slate-800">
+              Ushbu kunga bo'sh qabul vaqtlari qolmagan.
+              ${data.next_available_date ? `
+                <div class="mt-2">
+                  <button type="button" onclick="document.getElementById('queue-date').value='${data.next_available_date}'; loadAvailableSlots();" class="text-blue-400 hover:text-blue-300 font-semibold underline cursor-pointer">
+                    Keyingi ish kunini tanlash (${data.next_available_date}) ➜
+                  </button>
+                </div>
+              ` : ''}
+            </div>
+          `;
           return;
         }
 
-        let slotsButtonsHtml = '<div class="w-full grid grid-cols-2 sm:grid-cols-4 gap-2">';
-        let firstAvailableSet = false;
+        const morningSlots = activeSlots.filter(s => s.session === 'morning');
+        const afternoonSlots = activeSlots.filter(s => s.session === 'afternoon');
 
-        slots.forEach((s) => {
-          if (s.status === 'past') {
-            // O'TIB KETGAN — BLOKLANGAN (kulrang, chizilgan, disabled, bosib bo'lmaydi)
-            slotsButtonsHtml += `
-              <div title="Ushbu vaqt oralig'i o'tib ketgan" class="px-2.5 py-2 rounded-lg border border-slate-800/60 bg-slate-950/50 text-slate-600 text-[11px] font-mono text-center opacity-45 cursor-not-allowed select-none line-through relative">
-                ${s.time_slot}
-                <span class="block text-[9px] font-sans text-slate-600 tracking-tighter no-underline font-normal">O'tgan</span>
+        let html = '<div class="space-y-4 w-full">';
+
+        // 🌅 Ertalabki seans
+        if (morningSlots.length > 0) {
+          html += `
+            <div>
+              <div class="flex items-center justify-between text-xs font-semibold text-slate-300 mb-2">
+                <span class="flex items-center gap-1.5">🌅 Ertalabki qabul (09:00 — 13:00)</span>
+                <span class="text-[11px] text-slate-500 font-normal">${morningSlots.filter(s => s.is_available).length} ta bo'sh</span>
               </div>
-            `;
-          } else if (s.status === 'booked') {
-            // BAND QILINGAN — BLOKLANGAN (qizil tusda, disabled, bosib bo'lmaydi)
-            slotsButtonsHtml += `
-              <div title="Ushbu vaqt band qilingan" class="px-2.5 py-2 rounded-lg border border-rose-950/40 bg-rose-950/20 text-rose-500/70 text-[11px] font-mono text-center opacity-60 cursor-not-allowed select-none relative">
-                ${s.time_slot}
-                <span class="block text-[9px] font-sans text-rose-500/80 tracking-tighter font-normal">Band</span>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          `;
+          morningSlots.forEach(s => {
+            html += renderSlotItem(s);
+          });
+          html += '</div></div>';
+        }
+
+        // 🌇 Tushdan keyingi seans
+        if (afternoonSlots.length > 0) {
+          html += `
+            <div>
+              <div class="flex items-center justify-between text-xs font-semibold text-slate-300 mb-2 pt-2 border-t border-slate-800/60">
+                <span class="flex items-center gap-1.5">🌇 Tushdan keyingi qabul (14:00 — 17:00)</span>
+                <span class="text-[11px] text-slate-500 font-normal">${afternoonSlots.filter(s => s.is_available).length} ta bo'sh</span>
               </div>
-            `;
-          } else {
-            // BO'SH VA MAVJUD — BOSISH MUMKIN!
-            const isSelected = !firstAvailableSet;
-            if (isSelected) {
-              selectedSlot = s.time_slot;
-              firstAvailableSet = true;
-            }
-            const activeClasses = isSelected
-              ? 'bg-blue-600 border-blue-500 text-white shadow-md ring-2 ring-blue-500/30'
-              : 'bg-slate-900/80 border-slate-700/80 text-slate-200 hover:border-blue-500 hover:bg-slate-800';
-            
-            slotsButtonsHtml += `
-              <button type="button" data-slot="${s.time_slot}" onclick="selectSlot(this, '${s.time_slot}')" class="slot-btn px-2.5 py-2 rounded-lg border text-[11px] font-mono font-medium transition cursor-pointer text-center ${activeClasses}">
-                ${s.time_slot}
-                <span class="block text-[9px] font-sans text-emerald-400 tracking-tighter font-normal">Bo'sh</span>
-              </button>
-            `;
-          }
-        });
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          `;
+          afternoonSlots.forEach(s => {
+            html += renderSlotItem(s);
+          });
+          html += '</div></div>';
+        }
 
-        slotsButtonsHtml += '</div>';
+        html += '</div>';
 
-        // Izoh ko'rsatgichi (Legend)
-        const legendHtml = `
-          <div class="w-full flex items-center justify-between text-[10px] text-slate-400 pt-2.5 border-t border-slate-800/80 mt-2">
-            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Bo'sh (qabulga ochiq)</span>
-            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500/80 inline-block"></span> Band</span>
-            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-600 inline-block"></span> O'tib ketgan (bloklangan)</span>
+        // Izoh ko'rsatgichi
+        html += `
+          <div class="w-full flex items-center justify-between text-[11px] text-slate-400 pt-3 border-t border-slate-800/80 mt-1">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block"></span> Bo'sh (ochiq)</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block"></span> Band qilingan</span>
           </div>
         `;
 
-        container.innerHTML = alertHtml + slotsButtonsHtml + legendHtml;
+        container.innerHTML = html;
+
+        // Birinchi bo'sh slotni avtomatik tanlash
+        const firstFree = activeSlots.find(s => s.is_available);
+        if (firstFree) {
+          selectedSlot = firstFree.time_slot;
+          const firstBtn = container.querySelector(`[data-slot="${firstFree.time_slot}"]`);
+          if (firstBtn) {
+            firstBtn.className = 'slot-btn px-2.5 py-2.5 rounded-xl border text-xs font-mono font-medium transition cursor-pointer text-center bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-600/25 ring-2 ring-blue-500/30';
+          }
+        }
       } catch (e) {
-        container.innerHTML = '<p class="text-xs text-rose-400">Navbat vaqtlarini yuklab bo\'lmadi.</p>';
+        container.innerHTML = '<p class="text-xs text-rose-400 py-3">Navbat vaqtlarini yuklab bo\'lmadi.</p>';
       }
+    }
+
+    function renderSlotItem(s) {
+      if (!s.is_available) {
+        return `
+          <div title="Ushbu vaqt band qilingan" class="px-2.5 py-2.5 rounded-xl border border-rose-950/40 bg-rose-950/20 text-rose-400 text-xs font-mono text-center opacity-60 cursor-not-allowed select-none">
+            ${s.time_slot}
+            <span class="block text-[10px] font-sans text-rose-400/80 font-normal">Band</span>
+          </div>
+        `;
+      }
+      return `
+        <button type="button" data-slot="${s.time_slot}" onclick="selectSlot(this, '${s.time_slot}')" class="slot-btn px-2.5 py-2.5 rounded-xl border text-xs font-mono font-medium transition cursor-pointer text-center bg-slate-900/80 border-slate-700/80 text-slate-200 hover:border-blue-500 hover:bg-slate-800">
+          ${s.time_slot}
+          <span class="block text-[10px] font-sans text-emerald-400 font-normal">Bo'sh</span>
+        </button>
+      `;
     }
 
     async function bookQueueTicket() {

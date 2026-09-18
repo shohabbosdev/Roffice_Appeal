@@ -1,16 +1,67 @@
-import random
 import uuid
-from datetime import datetime, timezone, timedelta
-from typing import List, Optional
-from sqlalchemy import select, and_
+from datetime import datetime, timezone, timedelta, date, time
+from typing import List, Optional, Tuple, Dict, Any
+from sqlalchemy import select, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
-from app.models import Appointment, AppointmentStatus, Service, User, UserRole
+from app.models import Appointment, AppointmentStatus, Service, User, UserRole, Holiday
 from app.services.kpi_service import KPIService
 
 
 class QueueService:
-    # 15-minute slots between 09:00 and 17:00, excluding 13:00-14:00 lunch
+    """Registrator ofisi elektron navbat (Darcha qabuli) boshqaruv xizmati."""
+
+    SLOT_MINUTES = 15
+    WORK_START_HOUR = 9
+    WORK_END_HOUR = 17
+    LUNCH_START_HOUR = 13
+    LUNCH_END_HOUR = 14
+    TASHKENT_TZ = timezone(timedelta(hours=5))
+
+    @classmethod
+    def get_now(cls) -> datetime:
+        """Toshkent vaqti bo'yicha joriy datetime."""
+        return datetime.now(cls.TASHKENT_TZ)
+
+    @classmethod
+    def generate_slots(cls) -> List[Tuple[time, time]]:
+        """Ish kuni uchun barcha 15 daqiqalik qabul oraliqlarini hisoblaydi."""
+        slots = []
+        # Ertalabki seans: 09:00 - 13:00
+        cur_min = cls.WORK_START_HOUR * 60
+        lunch_min = cls.LUNCH_START_HOUR * 60
+        while cur_min < lunch_min:
+            s_hour, s_min = divmod(cur_min, 60)
+            e_hour, e_min = divmod(cur_min + cls.SLOT_MINUTES, 60)
+            slots.append((time(s_hour, s_min), time(e_hour, e_min)))
+            cur_min += cls.SLOT_MINUTES
+
+        # Tushdan keyingi seans: 14:00 - 17:00
+        cur_min = cls.LUNCH_END_HOUR * 60
+        end_min = cls.WORK_END_HOUR * 60
+        while cur_min < end_min:
+            s_hour, s_min = divmod(cur_min, 60)
+            e_hour, e_min = divmod(cur_min + cls.SLOT_MINUTES, 60)
+            slots.append((time(s_hour, s_min), time(e_hour, e_min)))
+            cur_min += cls.SLOT_MINUTES
+
+        return slots
+
+    @classmethod
+    def slot_to_str(cls, start: time, end: time) -> str:
+        return f"{start.strftime('%H:%M')} - {end.strftime('%H:%M')}"
+
+    @classmethod
+    def parse_slot_str(cls, slot_str: str) -> Tuple[time, time]:
+        """ '09:00 - 09:15' formatini (time(9,0), time(9,15)) ga aylantiradi."""
+        parts = slot_str.split("-")
+        if len(parts) != 2:
+            raise ValueError("Noto'g'ri slot formati")
+        s = datetime.strptime(parts[0].strip(), "%H:%M").time()
+        e = datetime.strptime(parts[1].strip(), "%H:%M").time()
+        return s, e
+
+    # Backward compatibility uchun ro'yxat
     DEFAULT_SLOTS = [
         "09:00 - 09:15", "09:15 - 09:30", "09:30 - 09:45", "09:45 - 10:00",
         "10:00 - 10:15", "10:15 - 10:30", "10:30 - 10:45", "10:45 - 11:00",
@@ -23,153 +74,156 @@ class QueueService:
     ]
 
     @classmethod
+    async def is_working_day(cls, db: AsyncSession, target_date: date) -> Tuple[bool, Optional[str]]:
+        """Sana dam olish kuni yoki rasmiy bayram ekanligini aniqlaydi."""
+        # 1. Yakshanba tekshiruvi
+        if target_date.weekday() == 6:
+            return False, "Yakshanba — rasmiy dam olish kuni. Qabul dushanba-shanba kunlari 09:00 dan 17:00 gacha amalga oshiriladi."
+
+        # 2. Kalendar bayram tekshiruvi
+        date_str = target_date.strftime("%Y-%m-%d")
+        stmt = select(Holiday).where(Holiday.holiday_date == date_str, Holiday.is_working_day == False)
+        holiday = (await db.execute(stmt)).scalars().first()
+        if holiday:
+            return False, f"Ushbu sana rasmiy dam olish kuni: {holiday.title}"
+
+        return True, None
+
+    @classmethod
+    async def find_next_available_date(cls, db: AsyncSession, start_date: date) -> date:
+        """Berilgan sanadan boshlab eng yaqin haqiqiy ish kunini topadi."""
+        check_date = start_date
+        for _ in range(14):  # 2 haftagacha qidirish
+            is_work, _ = await cls.is_working_day(db, check_date)
+            if is_work:
+                return check_date
+            check_date += timedelta(days=1)
+        return start_date
+
+    @classmethod
     async def get_available_slots(
         cls, db: AsyncSession, appointment_date: str, service_id: int
     ) -> List[str]:
-        """Get remaining free 15-minute slots for the given date and service, excluding past slots if today."""
-        tashkent_tz = timezone(timedelta(hours=5))
-        now_local = datetime.now(tashkent_tz)
-        today_str = now_local.strftime("%Y-%m-%d")
-
-        # 1. Past date & Sunday check
-        try:
-            dt = datetime.strptime(appointment_date, "%Y-%m-%d")
-            if appointment_date < today_str:
-                return []
-            if dt.weekday() == 6:  # Sunday
-                return []
-        except ValueError:
-            raise HTTPException(status_code=400, detail="Sana formati noto'g'ri (YYYY-MM-DD bo'lishi kerak).")
-
-        # 2. Holiday check
-        from app.models import Holiday
-        holiday_stmt = select(Holiday).where(Holiday.holiday_date == appointment_date, Holiday.is_working_day == False)
-        holiday = (await db.execute(holiday_stmt)).scalars().first()
-        if holiday:
+        """Mavjud bo'sh vaqt slotlari (stringlar ro'yxati, backward-compatible)."""
+        res = await cls.get_detailed_slots(db, appointment_date, service_id)
+        if not res.get("is_working_day"):
             return []
-
-        # 3. Fetch already booked slots
-        stmt = select(Appointment.time_slot).where(
-            Appointment.appointment_date == appointment_date,
-            Appointment.service_id == service_id,
-            Appointment.status.in_([AppointmentStatus.BOOKED, AppointmentStatus.CHECKED_IN])
-        )
-        result = await db.execute(stmt)
-        booked_slots = set(result.scalars().all())
-
-        # 4. Filter out booked slots and past slots for today
-        is_today = (appointment_date == today_str)
-        current_time = now_local.time()
-
-        available_slots = []
-        for slot in cls.DEFAULT_SLOTS:
-            if slot in booked_slots:
-                continue
-            if is_today:
-                slot_start_str = slot.split(" - ")[0].strip()
-                slot_time = datetime.strptime(slot_start_str, "%H:%M").time()
-                # O'tib ketgan vaqt oralig'ini chiqarib tashlash
-                if slot_time <= current_time:
-                    continue
-            available_slots.append(slot)
-
-        return available_slots
+        return [s["time_slot"] for s in res.get("slots", []) if s.get("is_available")]
 
     @classmethod
     async def get_detailed_slots(
         cls, db: AsyncSession, appointment_date: str, service_id: int
-    ) -> dict:
-        """Belgilangan sana uchun har bir 15 daqiqalik vaqt oralig'ining aniq holatini (mavjud, o'tib ketgan, band) qaytaradi."""
-        tashkent_tz = timezone(timedelta(hours=5))
-        now_local = datetime.now(tashkent_tz)
-        today_str = now_local.strftime("%Y-%m-%d")
+    ) -> Dict[str, Any]:
+        """
+        Belgilangan sana uchun qabul vaqtlarini to'liq va tabiiy tahlil qiladi.
+        O'tgan vaqtlar va band qilingan vaqtlar aniq holat bilan qaytariladi.
+        """
+        now = cls.get_now()
+        today = now.date()
+        today_str = today.strftime("%Y-%m-%d")
 
         try:
-            dt = datetime.strptime(appointment_date, "%Y-%m-%d")
+            target_date = datetime.strptime(appointment_date, "%Y-%m-%d").date()
         except ValueError:
             raise HTTPException(status_code=400, detail="Sana formati noto'g'ri (YYYY-MM-DD bo'lishi kerak).")
 
-        # 1. Yakshanba tekshiruvi
-        if dt.weekday() == 6:
+        # Ish kuni tekshiruvi
+        is_work, holiday_msg = await cls.is_working_day(db, target_date)
+        if not is_work:
             return {
                 "date": appointment_date,
                 "is_working_day": False,
-                "message": "Yakshanba — rasmiy dam olish kuni. Qabul dushanba-shanba kunlari 09:00 dan 17:00 gacha amalga oshiriladi.",
+                "message": holiday_msg,
+                "next_available_date": (await cls.find_next_available_date(db, target_date + timedelta(days=1))).strftime("%Y-%m-%d"),
                 "slots": []
             }
 
-        # 2. Bayram yoki dam olish kuni tekshiruvi
-        from app.models import Holiday
-        holiday_stmt = select(Holiday).where(Holiday.holiday_date == appointment_date, Holiday.is_working_day == False)
-        holiday = (await db.execute(holiday_stmt)).scalars().first()
-        if holiday:
-            return {
-                "date": appointment_date,
-                "is_working_day": False,
-                "message": f"Ushbu sana rasmiy dam olish kuni: {holiday.title}",
-                "slots": []
-            }
-
-        # 3. Band qilingan slotlar
+        # Band qilingan slotlarni olish
         stmt = select(Appointment.time_slot).where(
             Appointment.appointment_date == appointment_date,
             Appointment.service_id == service_id,
             Appointment.status.in_([AppointmentStatus.BOOKED, AppointmentStatus.CHECKED_IN])
         )
-        result = await db.execute(stmt)
-        booked_slots = set(result.scalars().all())
+        booked_slots = set((await db.execute(stmt)).scalars().all())
 
-        is_past_date = (appointment_date < today_str)
-        is_today = (appointment_date == today_str)
-        current_time = now_local.time()
+        is_past_day = (target_date < today)
+        is_today = (target_date == today)
+        current_time = now.time()
 
+        all_slots = cls.generate_slots()
         slots_list = []
         available_count = 0
+        morning_available = 0
+        afternoon_available = 0
 
-        for slot in cls.DEFAULT_SLOTS:
-            slot_start_str = slot.split(" - ")[0].strip()
-            slot_time = datetime.strptime(slot_start_str, "%H:%M").time()
+        for start_t, end_t in all_slots:
+            slot_str = cls.slot_to_str(start_t, end_t)
+            is_morning = start_t.hour < cls.LUNCH_START_HOUR
 
-            if is_past_date:
+            if is_past_day:
                 slots_list.append({
-                    "time_slot": slot,
+                    "time_slot": slot_str,
+                    "start_time": start_t.strftime("%H:%M"),
+                    "end_time": end_t.strftime("%H:%M"),
+                    "session": "morning" if is_morning else "afternoon",
                     "is_available": False,
                     "status": "past",
                     "reason": "Sana o'tib ketgan"
                 })
-            elif is_today and slot_time <= current_time:
+            elif is_today and start_t <= current_time:
                 slots_list.append({
-                    "time_slot": slot,
+                    "time_slot": slot_str,
+                    "start_time": start_t.strftime("%H:%M"),
+                    "end_time": end_t.strftime("%H:%M"),
+                    "session": "morning" if is_morning else "afternoon",
                     "is_available": False,
                     "status": "past",
                     "reason": "Vaqt o'tib ketgan"
                 })
-            elif slot in booked_slots:
+            elif slot_str in booked_slots:
                 slots_list.append({
-                    "time_slot": slot,
+                    "time_slot": slot_str,
+                    "start_time": start_t.strftime("%H:%M"),
+                    "end_time": end_t.strftime("%H:%M"),
+                    "session": "morning" if is_morning else "afternoon",
                     "is_available": False,
                     "status": "booked",
                     "reason": "Band qilingan"
                 })
             else:
                 slots_list.append({
-                    "time_slot": slot,
+                    "time_slot": slot_str,
+                    "start_time": start_t.strftime("%H:%M"),
+                    "end_time": end_t.strftime("%H:%M"),
+                    "session": "morning" if is_morning else "afternoon",
                     "is_available": True,
                     "status": "available",
                     "reason": "Bo'sh"
                 })
                 available_count += 1
+                if is_morning:
+                    morning_available += 1
+                else:
+                    afternoon_available += 1
 
         message = None
-        if is_past_date:
+        next_date_str = None
+        if is_past_day:
             message = "O'tib ketgan sana uchun navbat olib bo'lmaydi."
+            next_date_str = (await cls.find_next_available_date(db, today)).strftime("%Y-%m-%d")
         elif is_today and available_count == 0:
-            message = "Bugungi kun uchun barcha qabul vaqtlari yakunlangan (qabul soatlari 09:00 dan 17:00 gacha). Iltimos, keyingi ish kunini tanlang."
+            message = "Bugungi kun uchun barcha qabul vaqtlari yakunlangan (qabul soatlari 09:00 dan 17:00 gacha)."
+            next_date_str = (await cls.find_next_available_date(db, today + timedelta(days=1))).strftime("%Y-%m-%d")
 
         return {
             "date": appointment_date,
             "is_working_day": True,
+            "is_today": is_today,
+            "total_available": available_count,
+            "morning_available": morning_available,
+            "afternoon_available": afternoon_available,
             "message": message,
+            "next_available_date": next_date_str,
             "slots": slots_list
         }
 
@@ -182,53 +236,42 @@ class QueueService:
         appointment_date: str,
         time_slot: str
     ) -> Appointment:
-        """Reserve an in-person appointment slot and generate electronic queue ticket."""
-        tashkent_tz = timezone(timedelta(hours=5))
-        now_local = datetime.now(tashkent_tz)
-        today_str = now_local.strftime("%Y-%m-%d")
+        """Talaba uchun elektron talon va navbat band qilish."""
+        now = cls.get_now()
+        today = now.date()
+        today_str = today.strftime("%Y-%m-%d")
 
-        # 1. Past date check
-        if appointment_date < today_str:
-            raise HTTPException(
-                status_code=400,
-                detail="O'tib ketgan sanaga navbat olib bo'lmaydi."
-            )
-
-        # 2. Sunday check
+        # 1. Sana validatsiyasi
         try:
-            dt = datetime.strptime(appointment_date, "%Y-%m-%d")
-            if dt.weekday() == 6:  # Sunday
-                raise HTTPException(
-                    status_code=400,
-                    detail="Yakshanba dam olish kuni. Qabul dushanbadan shanbagacha 09:00 dan 17:00 gacha amalga oshiriladi."
-                )
+            target_date = datetime.strptime(appointment_date, "%Y-%m-%d").date()
         except ValueError:
             raise HTTPException(status_code=400, detail="Sana formati noto'g'ri (YYYY-MM-DD bo'lishi kerak).")
 
-        # 3. Holiday check
-        from app.models import Holiday
-        holiday_stmt = select(Holiday).where(Holiday.holiday_date == appointment_date, Holiday.is_working_day == False)
-        holiday = (await db.execute(holiday_stmt)).scalars().first()
-        if holiday:
+        if target_date < today:
+            raise HTTPException(status_code=400, detail="O'tib ketgan sanaga navbat olib bo'lmaydi.")
+
+        # 2. Ish kuni va bayram tekshiruvi
+        is_work, holiday_msg = await cls.is_working_day(db, target_date)
+        if not is_work:
+            raise HTTPException(status_code=400, detail=holiday_msg or "Dam olish kuni.")
+
+        # 3. Vaqt oralig'ini tekshirish
+        try:
+            start_t, end_t = cls.parse_slot_str(time_slot)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Vaqt oralig'i formati noto'g'ri (HH:MM - HH:MM bo'lishi kerak).")
+
+        # 4. Bugun uchun vaqt o'tganligini toza DateTime bilan tekshirish
+        scheduled_start_dt = datetime.combine(target_date, start_t).replace(tzinfo=cls.TASHKENT_TZ)
+        scheduled_end_dt = datetime.combine(target_date, end_t).replace(tzinfo=cls.TASHKENT_TZ)
+
+        if scheduled_start_dt <= now:
             raise HTTPException(
                 status_code=400,
-                detail=f"Belgilangan sana rasmiy bayram yoki dam olish kuni: {holiday.title}"
+                detail="Tanlangan vaqt oralig'i o'tib ketgan. Iltimos, joriy vaqtdan keyingi bo'sh vaqtni tanlang."
             )
 
-        if time_slot not in cls.DEFAULT_SLOTS:
-            raise HTTPException(status_code=400, detail="Noto'g'ri vaqt oralig'i tanlandi.")
-
-        # 4. Past time check for today (Bugungi kun uchun o'tib ketgan vaqt oralig'ini tekshirish)
-        if appointment_date == today_str:
-            slot_start_str = time_slot.split(" - ")[0].strip()
-            slot_time = datetime.strptime(slot_start_str, "%H:%M").time()
-            if slot_time <= now_local.time():
-                raise HTTPException(
-                    status_code=400,
-                    detail="Tanlangan vaqt oralig'i o'tib ketgan. Iltimos, joriy vaqtdan keyingi bo'sh vaqtni tanlang."
-                )
-
-        # 5. Anti-Abuse: Bitta talaba ayni bir sana va xizmat bo'yicha faqat 1 ta faol navbatga ega bo'lishi mumkin
+        # 5. Anti-Abuse: Bitta talaba ayni bir kunda bitta xizmat bo'yicha faqat 1 ta faol navbatga ega bo'lishi mumkin
         student_active_stmt = select(Appointment).where(
             Appointment.student_id == student_id,
             Appointment.appointment_date == appointment_date,
@@ -242,7 +285,7 @@ class QueueService:
                 detail=f"Sizda ushbu sana uchun mazkur xizmat bo'yicha allaqachon faol navbat taloni mavjud (#{student_active.ticket_code}, vaqti: {student_active.time_slot})."
             )
 
-        # 6. Check double-booking for the same slot
+        # 6. Double-booking tekshiruvi (boshqa talaba band qilmaganmi)
         stmt = select(Appointment).where(
             Appointment.appointment_date == appointment_date,
             Appointment.service_id == service_id,
@@ -253,7 +296,7 @@ class QueueService:
         if existing:
             raise HTTPException(status_code=409, detail="Ushbu vaqt oralig'i allaqachon band qilingan.")
 
-        # Get Service and Department to determine Window / Staff
+        # Xizmat va darcha ma'lumotlarini olish
         service = await db.get(Service, service_id)
         if not service:
             raise HTTPException(status_code=404, detail="Tanlangan xizmat topilmadi.")
@@ -262,7 +305,6 @@ class QueueService:
         if service.department and service.department.window_number:
             window_str = f"104-xona, {service.department.window_number}"
 
-        # Assign available staff member from department if available
         staff_stmt = select(User).where(
             User.department_id == service.department_id,
             User.role.in_([UserRole.FRONT_STAFF, UserRole.BACK_STAFF]),
@@ -271,6 +313,7 @@ class QueueService:
         staff_member = (await db.execute(staff_stmt)).scalars().first()
         staff_id = staff_member.id if staff_member else None
 
+        # Talon kodi generatsiyasi: TALON-MMDD-XXXX
         date_tag = appointment_date.replace("-", "")[4:]
         unique_suffix = uuid.uuid4().hex[:4].upper()
         ticket_code = f"TALON-{date_tag}-{unique_suffix}"
@@ -283,6 +326,8 @@ class QueueService:
             window_number=window_str,
             appointment_date=appointment_date,
             time_slot=time_slot,
+            scheduled_start=scheduled_start_dt.astimezone(timezone.utc),
+            scheduled_end=scheduled_end_dt.astimezone(timezone.utc),
             status=AppointmentStatus.BOOKED,
             earned_kpi_points=service.kpi_points
         )
@@ -295,7 +340,7 @@ class QueueService:
     async def complete_appointment(
         cls, db: AsyncSession, appointment_id: int, staff_id: int, notes: Optional[str] = None
     ) -> Appointment:
-        """Mark in-person appointment as completed and award KPI points to staff."""
+        """Xizmat ko'rsatishni yakunlash va KPI ballini hisoblash."""
         appointment = await db.get(Appointment, appointment_id)
         if not appointment:
             raise HTTPException(status_code=404, detail="Qabul ma'lumoti topilmadi.")
@@ -306,7 +351,7 @@ class QueueService:
         if notes:
             appointment.notes = notes
 
-        # Award KPI points to serving staff
+        # Xodimga KPI ballini yozish
         await KPIService.record_completed_service(
             db=db,
             employee_id=staff_id,
@@ -320,10 +365,7 @@ class QueueService:
 
     @classmethod
     async def cancel_appointment(
-        cls,
-        db: AsyncSession,
-        appointment_id: int,
-        student_id: int
+        cls, db: AsyncSession, appointment_id: int, student_id: int
     ) -> Appointment:
         """Talaba kelolmagan taqdirda o'z navbatini bekor qiladi va slot bo'shaydi."""
         appointment = await db.get(Appointment, appointment_id)
@@ -345,9 +387,8 @@ class QueueService:
     @classmethod
     async def auto_expire_no_show_appointments(cls, db: AsyncSession) -> int:
         """O'tib ketgan sanalardagi kelinmagan (BOOKED) navbatlarni NO_SHOW holatiga o'tkazish."""
-        tashkent_tz = timezone(timedelta(hours=5))
-        now_local = datetime.now(tashkent_tz)
-        today_str = now_local.strftime("%Y-%m-%d")
+        now = cls.get_now()
+        today_str = now.date().strftime("%Y-%m-%d")
 
         stmt = select(Appointment).where(
             Appointment.status == AppointmentStatus.BOOKED,
@@ -362,4 +403,3 @@ class QueueService:
         if count > 0:
             await db.commit()
         return count
-

@@ -248,6 +248,11 @@ Loyiha ustida olib borilgan chuqur texnik audit natijasida quyidagi kamchiliklar
     - O'tib ketgan sanalardagi kelinmagan talonlar fon vazifasi (`auto_expire_no_show_appointments`) orqali avtomatik ravishda `NO_SHOW` holatiga o'tkazilib, statistika sofligi ta'minlanadi.
 14. **Kiberxavfsizlik: Fayllarning Magic Bytes (Binar Imzo) Validatsiyasi:**
     - Yuklanayotgan fayllarning faqat `.pdf` kengaytmasiga ishonmasdan, ularning haqiqiy binar imzosi (`%PDF`, `\x89PNG`, `\xff\xd8\xff`, `PK`) tekshiriladigan bo'ldi (soxta skriptlar va Stored XSS tahdidlari to'liq bartaraf etildi).
+15. **Toza DateTime Me'morchiligi va Aqlli Seansli Qabul UI (Clean Relational Schedule):**
+    - Qo'lbola string split va qattiq kodlangan ro'yxatlardan butunlay voz kechildi.
+    - `Appointment` modeliga relyatsion darajada indekslangan `scheduled_start: DateTime` va `scheduled_end: DateTime` ustunlari biriktirildi.
+    - `QueueService`: Ish vaqti parametrlari asosida dinamik slotlar generatori (`generate_slots`), dam olish kunlari va bayramlarni avtomatik aylanib o'tuvchi `find_next_available_date` aqlli qidiruvi joriy etildi.
+    - UI/UX Inqilobi: 28 ta ustiga chizilgan nofaol tugmalar o'rniga, soat 17:00 dan o'tganda (yoki bo'sh vaqt qolmaganda) tizim eng yaqin ish kuniga avtomatik o'tadi hamda qabul vaqtlari 🌅 Ertalabki qabul (09:00–13:00) va 🌇 Tushdan keyingi qabul (14:00–17:00) seanslariga ajratilgan ergonomik va zamonaviy ko'rinishga keltirildi.
 
 ---
 

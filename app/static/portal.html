@@ -1403,59 +1403,83 @@
         const data = await resp.json();
 
         if (!data.is_working_day) {
+          const nextDate = data.next_available_date || '';
           container.innerHTML = `
             <div style="padding: 12px; border-radius: 8px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; font-size: 0.8rem;">
               <strong>Qabul mavjud emas:</strong> ${data.message || "Dam olish kuni."}
-              <div style="margin-top: 6px;"><a href="javascript:void(0)" onclick="selectPortalNextDate()" style="color: #60a5fa; text-decoration: underline;">Keyingi ish kuniga o'tish ➜</a></div>
+              ${nextDate ? `<div style="margin-top: 6px;"><a href="javascript:void(0)" onclick="document.getElementById('queue-date').value='${nextDate}'; loadAvailableSlots();" style="color: #60a5fa; text-decoration: underline;">Keyingi ish kuniga o'tish (${nextDate}) ➜</a></div>` : ''}
             </div>
           `;
           return;
         }
 
-        let alertHtml = '';
-        if (data.message) {
-          alertHtml = `
-            <div style="padding: 10px; margin-bottom: 10px; border-radius: 8px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); color: #93c5fd; font-size: 0.8rem;">
-              <strong>Qabul vaqti:</strong> ${data.message}
-              <div style="margin-top: 6px;"><a href="javascript:void(0)" onclick="selectPortalNextDate()" style="color: #34d399; font-weight: 600; text-decoration: underline;">Keyingi ish kuniga o'tish ➜</a></div>
-            </div>
-          `;
+        // Agar bugungi vaqtlar to'liq o'tgan bo'lsa
+        if (data.is_today && data.total_available === 0 && data.next_available_date) {
+          const nextDate = data.next_available_date;
+          document.getElementById('queue-date').value = nextDate;
+          container.innerHTML = `<p style="color: #60a5fa; font-size: 0.8rem;">Bugungi qabul yakunlangan. Eng yaqin sana (${nextDate}) yuklanmoqda...</p>`;
+          setTimeout(() => loadAvailableSlots(), 600);
+          return;
         }
 
         const slots = data.slots || [];
-        if (slots.length === 0) {
-          container.innerHTML = alertHtml + '<p style="color: var(--text-muted); font-size: 0.8rem;">Vaqt oralig\'i topilmadi.</p>';
+        const activeSlots = slots.filter(s => s.status !== 'past');
+
+        if (activeSlots.length === 0) {
+          container.innerHTML = `
+            <div style="padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); font-size: 0.8rem;">
+              Ushbu kunga bo'sh qabul vaqtlari qolmagan.
+              ${data.next_available_date ? `<div style="margin-top: 6px;"><a href="javascript:void(0)" onclick="document.getElementById('queue-date').value='${data.next_available_date}'; loadAvailableSlots();" style="color: #60a5fa; text-decoration: underline;">Keyingi ish kunini tanlash (${data.next_available_date}) ➜</a></div>` : ''}
+            </div>
+          `;
           return;
         }
 
-        let slotsHtml = '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
-        let firstSet = false;
+        const morning = activeSlots.filter(s => s.session === 'morning');
+        const afternoon = activeSlots.filter(s => s.session === 'afternoon');
 
-        slots.forEach(s => {
-          if (s.status === 'past') {
-            slotsHtml += `<button type="button" class="slot-btn past" disabled title="O'tib ketgan">${s.time_slot} <small style="display:block; font-size: 9px; opacity: 0.7;">O'tgan</small></button>`;
-          } else if (s.status === 'booked') {
-            slotsHtml += `<button type="button" class="slot-btn booked" disabled title="Band qilingan">${s.time_slot} <small style="display:block; font-size: 9px; opacity: 0.8;">Band</small></button>`;
-          } else {
-            const isSel = !firstSet;
-            if (isSel) {
-              selectedSlot = s.time_slot;
-              firstSet = true;
+        let html = '';
+
+        if (morning.length > 0) {
+          html += '<div style="margin-bottom: 12px;"><div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">🌅 Ertalabki qabul (09:00 — 13:00)</div><div style="display: flex; flex-wrap: wrap; gap: 8px;">';
+          morning.forEach(s => {
+            if (!s.is_available) {
+              html += `<button type="button" class="slot-btn booked" disabled title="Band">${s.time_slot} <small style="display:block; font-size: 9px; opacity: 0.8;">Band</small></button>`;
+            } else {
+              html += `<button type="button" class="slot-btn" data-slot="${s.time_slot}" onclick="selectPortalSlot(this, '${s.time_slot}')">${s.time_slot} <small style="display:block; font-size: 9px; color: #34d399;">Bo'sh</small></button>`;
             }
-            slotsHtml += `<button type="button" class="slot-btn ${isSel ? 'selected' : ''}" onclick="selectPortalSlot(this, '${s.time_slot}')">${s.time_slot} <small style="display:block; font-size: 9px; color: #34d399;">Bo'sh</small></button>`;
-          }
-        });
-        slotsHtml += '</div>';
+          });
+          html += '</div></div>';
+        }
+
+        if (afternoon.length > 0) {
+          html += '<div><div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; padding-top: 6px; border-top: 1px solid var(--border);">🌇 Tushdan keyingi qabul (14:00 — 17:00)</div><div style="display: flex; flex-wrap: wrap; gap: 8px;">';
+          afternoon.forEach(s => {
+            if (!s.is_available) {
+              html += `<button type="button" class="slot-btn booked" disabled title="Band">${s.time_slot} <small style="display:block; font-size: 9px; opacity: 0.8;">Band</small></button>`;
+            } else {
+              html += `<button type="button" class="slot-btn" data-slot="${s.time_slot}" onclick="selectPortalSlot(this, '${s.time_slot}')">${s.time_slot} <small style="display:block; font-size: 9px; color: #34d399;">Bo'sh</small></button>`;
+            }
+          });
+          html += '</div></div>';
+        }
 
         const legend = `
-          <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border);">
-            <span>🟢 Bo'sh (ochiq)</span>
+          <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--border);">
+            <span>🟢 Bo'sh (qabulga ochiq)</span>
             <span>🔴 Band</span>
-            <span>⚪ O'tib ketgan (bloklangan)</span>
           </div>
         `;
 
-        container.innerHTML = alertHtml + slotsHtml + legend;
+        container.innerHTML = html + legend;
+
+        // Birinchi bo'sh slotni tanlash
+        const first = activeSlots.find(s => s.is_available);
+        if (first) {
+          selectedSlot = first.time_slot;
+          const btn = container.querySelector(`[data-slot="${first.time_slot}"]`);
+          if (btn) btn.classList.add('selected');
+        }
       } catch (e) {
         container.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">Yuklab bo\'lmadi.</p>';
       }
