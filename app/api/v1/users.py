@@ -17,87 +17,138 @@ from app.api.deps import require_role, get_current_user
 router = APIRouter(prefix="/users", tags=["Foydalanuvchilar va rollar boshqaruvi"])
 
 
-# Nizom bo'yicha namunaviy xizmat vazifalari katalogi
+# Oliy ta'lim, fan va innovatsiyalar vazirligi 73-sonli buyrug'i (Namunaviy Nizom)
+# bo'yicha rollar va sektorlar kesimidagi to'liq rasmiy xizmat vazifalari katalogi
 NIZOM_DUTIES_CATALOG = [
     {
         "role": UserRole.FRONT_STAFF.value,
-        "sector": "Talabalarga xizmat ko'rsatish va ma'lumotnomalar sektori (1-darcha)",
+        "sector": "Talabalarga xizmat ko'rsatish va ma'lumotnomalar berish sektori (1-darcha)",
         "duties": [
-            "O'qish joyidan QR-kodli elektron ma'lumotnoma rasmiylashtirish",
-            "Transkript va akademik ko'chirmalarni talabaga taqdim etish",
-            "Diplom va uning ilovasini buyurtma qilish va berish",
-            "Darcha qabulida elektron navbat taloni bo'yicha xizmat ko'rsatish"
+            "O'qish joyidan QR-kodli elektron ma'lumotnoma shakllantirish va berish",
+            "Transkript (baholar ko'chirmasi) va akademik ko'chirmalarni taqdim etish",
+            "Sirtqi va masofaviy ta'lim shakli talabalari uchun chaqiruv qog'ozlarini shakllantirish",
+            "Talabaga shaxsiy GPA ko'rsatkichi haqida ma'lumotnoma berish",
+            "Talabalarning HEMIS axborot tizimidagi parolini tiklash",
+            "Talaba guvohnomasi va turar joyi guvohnomasini yaratish hamda taqdim etish",
+            "Dars jadvallari, oraliq va yakuniy nazoratlar jadvali bo'yicha konsultatsiya berish",
+            "Qayta o'qish uchun fan guruhlariga ariza topshirishda talabaga yordam ko'rsatish",
+            "Talabalar turar joyiga ko'chib o'tganlarni vaqtinchalik ro'yxatga qo'yish hujjatlarini tayyorlash",
+            "Darcha qabulida 15 daqiqalik elektron navbat taloni bo'yicha bevosita xizmat ko'rsatish"
         ]
     },
     {
         "role": UserRole.FRONT_STAFF.value,
-        "sector": "Shartnoma, to'lovlar va stipendiya masalalari sektori (2-darcha)",
+        "sector": "Buxgalteriya va marketing sektori (2-darcha)",
         "duties": [
-            "To'lov-kontrakt shartnomalarini rasmiylashtirish va qaydnoma yuritish",
+            "To'lov-kontrakt shartnoma summasini aniqlash, hisoblash va shartnomalarni taqdim etish",
             "Talabalar stipendiyasi va moddiy yordam arizalarini birlamchi qabul qilish",
-            "Kontrakt to'lovlari auditini muvofiqlashtirish"
+            "HEMIS platformasi natijalari asosida stipendiya tayinlash buyruqlari loyihalarini tayyorlash",
+            "Akademik qarzdor talabalar uchun qayta o'zlashtirish to'lov miqdorlarini hisoblash va shartnoma berish",
+            "Ijara to'lovi subsidiyasi olish uchun arizalarni qabul qilish va ekspertiza qilish",
+            "Talabalarning yotoqxonalarga joylashishi uchun arizalarini ro'yxatga olish",
+            "Bitiruvchilarni ishga taqsimlash, ishga yuborilganlik yo'llanmasi va shaxsiy taqsimot qaydnomasini rasmiylashtirish",
+            "Potensial ish beruvchilar bazasini shakllantirish va talabalarga yetkazish"
         ]
     },
     {
         "role": UserRole.FRONT_STAFF.value,
-        "sector": "Maslahat, qabul va umumiy arizalar sektori (3-darcha)",
+        "sector": "Ilmiy-innovatsion faoliyat va xalqaro aloqalar sektori (3-darcha)",
         "duties": [
-            "O'qishni ko'chirish (Perevod) arizalarini qabul qilish va ekspertiza qilish",
-            "Akademik ta'tildan qaytish arizalarini ko'rib chiqish",
-            "Kreditlarni qayta topshirish (qayta o'qish) arizalarini rasmiylashtirish"
+            "O'qish joyidan ingliz tilida rasmiy ma'lumotnomalar berish",
+            "Xalqaro grantlar, akademik mobillik dasturlari va 'El-yurt umidi' jamg'armasi stipendiyalari bo'yicha konsultatsiya",
+            "O'qishga qabul qilingan xorijlik talabalarni elektron tizimda ro'yxatga olish va fanlarga biriktirish",
+            "Xorijlik talabalar uchun viza rasmiylashtirish va O'zbekiston Respublikasida vaqtinchalik ro'yxatga qo'yish",
+            "Nomdor davlat stipendiyalari, ilmiy konferensiyalar va startap tanlovlariga talabalar arizalarini qabul qilish",
+            "Qo'shma ta'lim dasturlari bo'yicha talabalarga ma'lumot berish va targ'ibot qilish",
+            "'Ustoz-shogird' maktabi va ilmiy to'garaklar faoliyatini muvofiqlashtirish"
         ]
     },
     {
         "role": UserRole.BACK_STAFF.value,
-        "sector": "O'quv jarayonini tahlil qilish va nazorat sektori",
+        "sector": "Statistik ma'lumotlarni yuritish va tahlil sektori",
         "duties": [
-            "O'quv rejalari bajarilishini audit qilish va dars jadvallarini nazorat qilish",
-            "Chetlatilgan talabalarni o'qishga qayta tiklash buyruqlarini tayyorlash",
-            "Kursdan kursga o'tkazish buyruqlari loyihalarini ishlab chiqish"
+            "Talabalar soni, resurslar, to'lov-shartnomalar va o'zlashtirish bo'yicha tahliliy ma'lumotlar bankini yuritish",
+            "Kursdan kursga qolgan, safdan chetlashtirilgan va akademik ta'tildagi talabalar statistikasini shakllantirish",
+            "O'qishni ko'chirish va tiklashga tavsiya etilgan talabalar bo'yicha umumiy statistik hisobotlar tayyorlash",
+            "O'zbekiston Respublikasi Statistika agentligi va vazirlikka taqdim etiladigan rasmiy hisobot shakllarini yuritish",
+            "Bitiruvchilar umumiy ma'lumotlar bankini shakllantirish va bandlik monitoringini olib borish",
+            "HEMIS axborot tizimiga kiritilayotgan statistik ko'rsatkichlarning to'g'riligini doimiy audit qilish"
         ]
     },
     {
         "role": UserRole.BACK_STAFF.value,
-        "sector": "Reyting va baholash sektori",
+        "sector": "O'quv jarayonini muvofiqlashtirish sektori",
         "duties": [
-            "Baholash vedomostlari va reyting jurnallarining to'g'riligini tekshirish",
-            "Reyting qaydnomalari bo'yicha apellatsiyalarni ekspertiza qilish",
-            "Talabalarning GPA ko'rsatkichlari va akademik qarzdorliklarini tahlil qilish"
+            "Akademik guruhlarni shakllantirish va talabalarni guruhlarga kiritish",
+            "Qayta o'qish fan guruhlari, dars jadvallari va nazorat grafiklarini tizimda yaratish",
+            "Talabalarni tegishli tanlov fanlariga hamda tyutorlarga biriktirish",
+            "O'quv rejada mavjud fanlarni semestrlarga taqsimlash va yuklamalarni nazorat qilish",
+            "Talabalar harakati buyruqlari (chetlashtirish, tiklash, ko'chirish, akademik ta'til) loyihalarini rasmiylashtirish",
+            "Talabalarni kursdan kursga o'tkazish buyruqlarini tizim orqali tayyorlash",
+            "HEMIS tizimi orqali talabalar davomatini monitoring qilish va kunlik hisobotlarni shakllantirish",
+            "Yakuniy nazoratlar jadvalini tizimga joylashtirish va o'tkazilishini nazorat qilish"
         ]
     },
     {
         "role": UserRole.BACK_STAFF.value,
-        "sector": "HEMIS tizimi va AKT integratsiyasi sektori",
+        "sector": "Talabalar hujjatlarini yuritish va saqlash (Arxiv) sektori",
         "duties": [
-            "HEMIS axborot tizimida talabalar o'quv dasturlari va fan tanlovlarini sozlash",
-            "Elektron platforma integratsiyasi xatoliklarini bartaraf etish",
-            "Elektron navbat tizimi texnik barqarorligini ta'minlash"
-        ]
-    },
-    {
-        "role": UserRole.BACK_STAFF.value,
-        "sector": "Hujjatlar aylanishi va arxiv sektori",
-        "duties": [
-            "Bitiruvchilar va talabalarning shaxsiy yig'majildlari hamda arxivini yuritish",
-            "Arxivdan o'quv reja, dastur va diplom tasdiqnomalarini tayyorlash"
+            "O'qishni tugatgan talabalar shaxsiy yig'majildlarini to'plash, tikish va arxivga topshirish",
+            "Familiyasi o'zgargan, akademik ta'tilga chiqqan, yo'nalishini o'zgartirgan talabalarning buyruq ko'chirmalarini bazaga joylash",
+            "Qat'iy hisobdagi hujjatlar va blankalar (diplom, diplom ilovasi, akademik sertifikatlar) hisobini yuritish, saqlash va berish",
+            "Akademik qarzdor talabalar ro'yxatini aniqlash va xabarnomalar tayyorlash",
+            "Diplomlarning haqiqiyligini tekshirish (d-arxiv.edu.uz va mehnat.uz platformalari orqali tashkilotlar so'rovlariga javob berish)",
+            "Yo'qotilgan diplom va ilovalar o'rniga dublikat berish to'g'risidagi arizalarni ekspertiza qilish va javob qaytarish"
         ]
     },
     {
         "role": UserRole.OFFICE_HEAD.value,
         "sector": "Registrator ofisi rahbariyati",
         "duties": [
-            "Registrator ofisi faoliyatini umumiy boshqarish va xodimlar o'rtasida vazifalar taqsimlash",
-            "Murojaatlar ijro muddati (SLA) va elektron navbat sifatini nazorat qilish",
-            "Xodimlarning oylik KPI samaradorlik ko'rsatkichlarini baholash va rag'batlantirish",
-            "Bahsli murojaatlarni tahlil qilish va prorektorga eskalatsiya qilish"
+            "Registrator ofisi faoliyatini umumiy boshqarish, xodimlar o'rtasida xizmat vazifalarini taqsimlash va muvofiqlashtirish",
+            "Front va Back office bo'lim boshliqlari hamda menejerlar faoliyatini doimiy monitoring qilish",
+            "Murojaatlarning SLA ijro muddatlari va elektron navbat sifatini real vaqt rejimida nazorat qilish",
+            "Xodimlarning oylik KPI (150 ballik reja) ko'rsatkichlarini audit qilish, tasdiqlash va rag'batlantirish takliflarini kiritish",
+            "2-bosqich ichki nizolar (dispute): talaba e'tiroz bildirgan arizalarni bevosita ko'rib chiqish va hal etish",
+            "Yechilmagan murakkab nizoli masalalarni O'quv ishlari bo'yicha prorektorga (3-bosqich) eskalatsiya qilish",
+            "Ofis tomonidan ko'rsatiladigan xizmatlar turlarini kengaytirish va sifatini oshirish strategiyalarini ishlab chiqish"
         ]
     },
     {
         "role": UserRole.VICE_RECTOR.value,
         "sector": "O'quv ishlari bo'yicha prorektorat",
         "duties": [
-            "Eskalatsiya qilingan bahsli akademik murojaatlar bo'yicha yakuniy qaror qabul qilish",
-            "Talabalar appelyatsiya komissiyasi faoliyatiga rahbarlik qilish"
+            "Ofis faoliyati ustidan oliy nazoratni amalga oshirish va umumiy metodik rahbarlik qilish",
+            "Eskalatsiya qilingan bahsli akademik murojaatlar bo'yicha yakuniy va majburiy qaror qabul qilish",
+            "Filial Talabalar apellyatsiya komissiyasi faoliyatiga rahbarlik qilish",
+            "O'quv jarayoni grafigi va yakuniy nazoratlar o'tkazish jadvallarini tasdiqlash",
+            "Registrator ofisi xodimlarining shtat birliklari va lavozim yo'riqnomalarini muvofiqlashtirish"
+        ]
+    },
+    {
+        "role": UserRole.STUDENT.value,
+        "sector": "Filial talabalari (Foydalanuvchilar)",
+        "duties": [
+            "HEMIS yagona autentifikatsiyasi orqali tizimga kirish va akademik profilini tekshirish",
+            "Reglament bo'yicha ruxsat etilgan ta'lim shakllarida (sirtqi, masofaviy) onlayn murojaat yo'llash",
+            "Registrator ofisiga shaxsan tashrif buyurish uchun 'Kelib hal etish' bo'yicha elektron navbat taloni olish",
+            "Olingan navbat taloni bilan ofisga (104-xona) belgilangan vaqt oralig'ida tashrif buyurish va Check-in qilish",
+            "Tayyorlangan rasmiy ijro natijasi va ma'lumotnomalarni yuklab olish",
+            "Ijro etilgan arizalarni 1 dan 5 gacha baholash yoki asoslantirilgan e'tiroz (dispute) bildirish",
+            "Telegram bot orqali arizalar holati va elektron talon xabarnomalarini qabul qilish"
+        ]
+    },
+    {
+        "role": UserRole.ADMIN.value,
+        "sector": "Tizim ma'muriyati va AKT sektori",
+        "duties": [
+            "Foydalanuvchilar hisoblarini yaratish, rollarni biriktirish, vaqtinchalik parollarni boshqarish",
+            "Registrator ofisi sohalari/bo'limlari va xizmat ko'rsatish darchalarini konfiguratsiya qilish",
+            "Xizmatlar katalogi, xizmatlarning KPI ballari va SLA soatlarini sozlash",
+            "Ta'lim shakllari (kunduzgi, sirtqi, masofaviy) onlayn murojaat cheklov siyosatini boshqarish",
+            "Ish vaqti, rasmiy bayramlar va dam olish kunlari kalendarini yangilab borish",
+            "HEMIS API va Telegram Bot integratsiyasi texnik barqarorligini ta'minlash",
+            "Tizim xavfsizlik auditi, ma'lumotlar bazasi zaxira nusxalarini yaratish va nazorat qilish"
         ]
     }
 ]

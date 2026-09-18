@@ -63,16 +63,124 @@ Registrator ofisi axborot tizimi O'zbekiston Respublikasi Oliy ta'lim, fan va in
 
 ---
 
-## Tizim Rollari va Vakolatlari (RBAC)
+## Tizim Rollari va Funksional Vazifalar Xaritasi (RBAC & Nizom Muvofiqligi)
 
-| Rol | Kodi | Asosiy Vakolatlari |
-| :--- | :--- | :--- |
-| **Talaba** | `student` | Onlayn murojaat yo'llash, navbat taloni olish, natijani tasdiqlash va baholash, e'tiroz bildirish. |
-| **Front-ofis xodimi** | `front_staff` | Darcha qabuli (1, 2, 3-darchalar), ma'lumotnoma va transkript berish, shartnoma arizalarini ko'rib chiqish. |
-| **Back-ofis mutaxassisi** | `back_staff` | Arxiv ma'lumotnomalari, GPA tahlili, o'qishni tiklash va akademik tahlil bo'yicha ijro. |
-| **Registrator ofisi boshlig'i** | `office_head` | Ijro intizomi nazorati, arizalarni qayta yo'naltirish, ichki nizolarni hal qilish, xodimlar KPI ballarini audit qilish. |
-| **O'quv ishlari bo'yicha prorektor** | `vice_rector` | Eskalatsiya qilingan murakkab nizoli masalalar bo'yicha yakuniy majburiy qaror qabul qilish. |
-| **Administrator** | `admin` | Tizim konfiguratsiyasi, sohalar/darchalar katalogi, bayramlar taqvimi va xodimlarni boshqarish. |
+O'zbekiston Respublikasi Oliy ta'lim, fan va innovatsiyalar vazirligining 2025-yil 24-fevraldagi 73-sonli buyrug'i (Namunaviy Nizom) talablariga binoan Registrator ofisida har bir rol va sektorning vazifalari hamda javobgarlik chegarasi quyidagicha qat'iy belgilangan:
+
+```
+                                 ┌─────────────────────────────────────────┐
+                                 │   O'quv ishlari bo'yicha Prorektor      │
+                                 │     (Oliy nazorat, 3-bosqich qarori)    │
+                                 └────────────────────┬────────────────────┘
+                                                      │
+                                 ┌────────────────────▼────────────────────┐
+                                 │       Registrator ofisi Boshlig'i       │
+                                 │   (Umumiy boshqaruv, SLA, 2-bosqich)    │
+                                 └───────────┬─────────────────┬───────────┘
+                                             │                 │
+                  ┌──────────────────────────▼───┐         ┌───▼──────────────────────────┐
+                  │   FRONT OFFICE (104-xona)    │         │         BACK OFFICE          │
+                  │   Bevosita darchalar qabuli  │         │   Ma'lumotlar bazasi/tahlil  │
+                  └──────────────┬───────────────┘         └──────────────┬───────────────┘
+                                 │                                        │
+         ┌───────────────────────┼───────────────────────┐                ├─ 1. Statistik tahlil sektori
+         │                       │                       │                ├─ 2. O'quv jarayonini muvofiqlashtirish
+   ┌─────▼────────┐        ┌─────▼────────┐        ┌─────▼────────┐       └─ 3. Hujjatlar va arxiv sektori
+   │  1-Darcha    │        │  2-Darcha    │        │  3-Darcha    │
+   │  Ma'lumot-   │        │  Moliya va   │        │  Ilmiy va    │
+   │  nomalar     │        │  shartnoma   │        │  xalqaro     │
+   └──────────────┘        └──────────────┘        └──────────────┘
+```
+
+---
+
+### 1. Talaba (`student`)
+- **Vazifasi:** Tizimning asosiy iste'molchisi (mijoz).
+- **Asosiy amallari:**
+  - HEMIS yagona talaba akkaunti (`student.jbnuu.uz`) orqali kirish (2 kunlik xavfsiz sessiya).
+  - Sirtqi va masofaviy ta'lim shakllari: portal orqali 24/7 rejimida onlayn murojaat yo'llash.
+  - Kunduzgi ta'lim shakli: 104-xonaga "Kelib hal etish" bo'yicha 15 daqiqalik elektron navbat taloni (`TALON-MMDD-XXXX`) olish.
+  - Murojaat ijro etilgach, tayyor QR-kodli rasmiy faylni yuklab olish.
+  - Natijani 1 dan 5 yulduzgacha baholash (baho xodimning KPI ko'rsatkichiga to'g'ridan-to'g'ri ta'sir qiladi).
+  - Natijadan norozi bo'lsa, 72 soat ichida asoslantirilgan e'tiroz (`dispute`) bildirish.
+- **Cheklovlari:** Boshqa talabalarning murojaatlari yoki talonlarini ko'ra olmaydi; kunduzgi ta'lim talabasi ruxsat berilmagan xizmatlarga onlayn ariza yubora olmaydi (faqat navbat oladi).
+
+---
+
+### 2. Front-ofis xodimi (`front_staff` — 104-xona darchalari)
+- **1-Darcha: Talabalarga xizmat ko'rsatish va ma'lumotnomalar sektori:**
+  - O'qish joyidan QR-kodli elektron ma'lumotnoma berish (SLA: 2 soat).
+  - Rasmiy transkript va baholar ko'chirmasini taqdim etish (SLA: 24 soat).
+  - Sirtqi/masofaviy talabalarga imtihon sessiyasi chaqiruv qog'ozini shakllantirish.
+  - Talabaning shaxsiy GPA ko'rsatkichi ma'lumotnomasini chiqarish.
+  - HEMIS tizimi login va parolini tiklab berish.
+  - Darcha qabulida 15 daqiqalik elektron navbat taloni bo'yicha qabul qilish va yakunlash.
+- **2-Darcha: Buxgalteriya, to'lovlar va stipendiya sektori:**
+  - To'lov-kontrakt shartnoma summasini hisoblash, rasmiylashtirish va qaydnoma yuritish.
+  - Qayta o'qish (kreditlarni qayta topshirish) uchun to'lov miqdorini aniqlash va shartnoma berish.
+  - Talabalar stipendiyasi va moddiy yordam arizalarini birlamchi qabul qilish.
+  - Ijara to'lovi subsidiyasi va talabalar turar joyiga joylashish arizalarini ro'yxatga olish.
+  - Bitiruvchilarni ishga taqsimlash yo'llanmalari va qaydnomalarini rasmiylashtirish.
+- **3-Darcha: Ilmiy-innovatsion faoliyat va xalqaro aloqalar sektori:**
+  - O'qish joyidan ingliz tilida rasmiy ma'lumotnomalar tayyorlash.
+  - Xalqaro grantlar, akademik mobillik dasturlari va "El-yurt umidi" tanlovlari bo'yicha maslahat berish.
+  - Xorijlik talabalarni tizimda ro'yxatga olish, viza va vaqtinchalik ro'yxatdan o'tkazish xizmatlari.
+  - Nomdor davlat stipendiyalari, ilmiy konferensiyalar va startap tanlovlari arizalarini qabul qilish.
+- **Front-ofis KPI mezonlari:** Har bir yakunlangan darcha qabuli va xizmat uchun 2 dan 10 ballgacha; talabalarning bergan o'rtacha bahosi koeffitsiyenti; SLA buzilishi uchun har bir kechikishga -5 jarima bali.
+
+---
+
+### 3. Back-ofis mutaxassisi (`back_staff` — Tahlil va arxiv)
+- **1-Sektor: Statistik ma'lumotlarni yuritish va tahlil sektori:**
+  - Talabalar kontingenti, resurslar, shartnoma to'lovlari va o'zlashtirish tahliliy hisobotlarini yuritish.
+  - Talabalar safidan chetlashtirilgan, kursda qoldirilgan va akademik ta'tildagilar statistikasini tuzish.
+  - Statistika agentligi va vazirlikka yuboriladigan shakllarni shakllantirish.
+  - HEMIS ga kiritilayotgan statistik ma'lumotlar to'g'riligini doimiy audit qilish.
+- **2-Sektor: O'quv jarayonini muvofiqlashtirish sektori:**
+  - Akademik guruhlarni shakllantirish, talabalarni tanlov fanlariga va tyutorlarga biriktirish.
+  - Qayta o'qish fan guruhlari, dars jadvallari va oraliq/yakuniy nazoratlar grafiklarini tizimga kiritish.
+  - Talabalar harakati buyruqlari loyihalarini ishlab chiqish (o'qishni ko'chirish, tiklash, chetlashtirish, kursdan kursga o'tkazish).
+  - HEMIS orqali kunlik davomat monitoringini yuritish.
+- **3-Sektor: Talabalar hujjatlarini yuritish va arxiv sektori:**
+  - Bitiruvchilarning shaxsiy yig'majildlarini to'plash, tikish va arxivga topshirish.
+  - Qat'iy hisobdagi blankalar (diplom, diplom ilovasi, sertifikatlar) hisobi va berilishini yuritish.
+  - Diplomlarning haqiqiyligini tekshirish (`d-arxiv.edu.uz`, `mehnat.uz`) va tashkilotlar so'rovlariga rasmiy javob berish.
+  - Yo'qotilgan diplom va ilovalar o'rniga dublikat berish arizalarini ekspertiza qilish.
+- **Back-ofis KPI mezonlari:** Nizomiy xizmat vazifalari ijrosi (Boshliq tomonidan tasdiqlangan bildirgi asosida), murakkab arizalarni o'z vaqtida hal etish ko'rsatkichi (oylik 150 ballik reja).
+
+---
+
+### 4. Registrator ofisi boshlig'i (`office_head`)
+- **Vazifasi:** Ofis faoliyatini umumiy boshqarish, tezkor ijro intizomi va xizmat sifatini ta'minlash.
+- **Asosiy amallari:**
+  - Barcha Front va Back xodimlarga kelib tushgan murojaatlarni taqsimlash va yo'naltirish.
+  - Ijrochilar o'rtasida "ping-pong"ning oldini olish: qayta yo'naltirish 1 martadan oshganda avtomatik o'ziga qulflanadi.
+  - SLA ijro muddatlarini real vaqt rejimida kuzatish (Qizil, Sariq, Yashil svetofor monitoringi).
+  - **2-bosqich ichki nizo:** Talaba ijro natijasiga e'tiroz bildirsa (`dispute`), ariza ijrochiga qaytmaydi, to'g'ridan-to'g'ri boshliq tomonidan ko'rib chiqiladi.
+  - Hal etilmagan murakkab nizolarni O'quv ishlari bo'yicha prorektorga (3-bosqich) eskalatsiya qilish.
+  - Xodimlarning oylik KPI hisobotini ko'rib chiqish, jarima (-5 ball) yoki qo'shimcha rag'bat ballarini berish.
+
+---
+
+### 5. O'quv ishlari bo'yicha prorektor (`vice_rector`)
+- **Vazifasi:** Ofis ustidan oliy nazorat va yakuniy qaror qabul qiluvchi instansiya.
+- **Asosiy amallari:**
+  - Boshliq tomonidan 3-bosqichga eskalatsiya qilingan eng murakkab yoki bahsli arizalar bo'yicha yakuniy majburiy qaror chiqarish.
+  - Prorektorning qarori kiritilishi bilan nizo qat'iy yopiladi va talabaga rasmiy yakuniy xat jo'natiladi.
+  - Talabalar apellyatsiya komissiyasi faoliyatiga rahbarlik qilish.
+  - Tizimdagi umumiy oylik KPI va tahliliy ko'rsatkichlarni monitoring qilish.
+
+---
+
+### 6. Administrator (`admin`)
+- **Vazifasi:** Axborot tizimining texnik va ma'muriy barqarorligini ta'minlash.
+- **Asosiy amallari:**
+  - Yangi xodimlarni yaratish, ularga rollar va xizmat vazifalarini biriktirish, vaqtinchalik parollarni boshqarish.
+  - Registrator ofisi sohalari/sektorlari va darcha raqamlarini yaratish va tahrirlash.
+  - Xizmatlar katalogini yuritish (nomi, tavsifi, tegishli darcha, KPI bali, SLA soati).
+  - Ta'lim shakllari bo'yicha onlayn murojaat cheklov siyosatini boshqarish (`/appeals/policy/education-forms`).
+  - Bayram va dam olish kunlari kalendarini yuritish (ushbu kunlarda taymerlar muzlaydi va navbat berilmaydi).
+  - Tizim xavfsizligi, API integratsiyalari va ma'lumotlar bazasi butunligini nazorat qilish.
 
 ---
 

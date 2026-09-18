@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.core.database import get_db
-from app.models import Appeal, AppealStatus, User, UserRole
+from app.models import Appeal, AppealStatus, User, UserRole, Service
 from app.schemas import (
     AppealCreate, AppealAssign, AppealReassign, AppealClarify,
     AppealProvideClarify, AppealResolve, AppealConfirm, AppealDispute,
@@ -106,10 +106,16 @@ async def get_appeals(
     if current_user.role == UserRole.STUDENT:
         query = query.where(Appeal.student_id == current_user.id)
     elif current_user.role in [UserRole.FRONT_STAFF, UserRole.BACK_STAFF]:
-        query = query.where(
-            (Appeal.assigned_staff_id == current_user.id) |
-            ((Appeal.status == AppealStatus.NEW) & (Appeal.assigned_staff_id.is_(None)))
-        )
+        if current_user.department_id:
+            query = query.join(Appeal.service).where(
+                (Appeal.assigned_staff_id == current_user.id) |
+                ((Appeal.status == AppealStatus.NEW) & (Appeal.assigned_staff_id.is_(None)) & (Service.department_id == current_user.department_id))
+            )
+        else:
+            query = query.where(
+                (Appeal.assigned_staff_id == current_user.id) |
+                ((Appeal.status == AppealStatus.NEW) & (Appeal.assigned_staff_id.is_(None)))
+            )
 
     if appeal_status:
         query = query.where(Appeal.status == appeal_status)
