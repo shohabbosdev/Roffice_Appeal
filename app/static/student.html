@@ -814,6 +814,23 @@
       loadStudentAppeals();
     }
 
+    function selectSlot(btnEl, slotTime) {
+      document.querySelectorAll('.slot-btn').forEach(b => {
+        b.className = 'slot-btn px-2.5 py-2 rounded-lg border text-[11px] font-mono font-medium transition cursor-pointer text-center bg-slate-900/80 border-slate-700/80 text-slate-200 hover:border-blue-500 hover:bg-slate-800';
+      });
+      btnEl.className = 'slot-btn px-2.5 py-2 rounded-lg border text-[11px] font-mono font-medium transition cursor-pointer text-center bg-blue-600 border-blue-500 text-white shadow-md ring-2 ring-blue-500/30';
+      selectedSlot = slotTime;
+    }
+
+    function selectNextAvailableDate() {
+      const qDateInput = document.getElementById('queue-date');
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      if (d.getDay() === 0) d.setDate(d.getDate() + 1); // Yakshanba bo'lsa dushanbaga
+      qDateInput.value = d.toISOString().split('T')[0];
+      loadAvailableSlots();
+    }
+
     async function loadAvailableSlots() {
       const serviceId = document.getElementById('queue-service-select').value;
       const dateVal = document.getElementById('queue-date').value;
@@ -821,31 +838,102 @@
 
       if (!serviceId || !dateVal) return;
 
+      selectedSlot = null;
       container.innerHTML = '<p class="text-xs text-slate-400">Slotlar yuklanmoqda...</p>';
       try {
-        const resp = await fetch(`/api/v1/appointments/available-slots?service_id=${serviceId}&appointment_date=${dateVal}`);
-        const slots = await resp.json();
-        if (!slots || slots.length === 0) {
-          container.innerHTML = '<p class="text-xs text-amber-400">Ushbu kunga navbat mavjud emas (dam olish yoki bayram kuni).</p>';
+        const resp = await fetch(`/api/v1/appointments/available-slots?service_id=${serviceId}&appointment_date=${dateVal}&detailed=true`);
+        const data = await resp.json();
+
+        // 1. Dam olish kuni yoki bayram
+        if (!data.is_working_day) {
+          container.innerHTML = `
+            <div class="w-full p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs space-y-1">
+              <div class="font-semibold flex items-center gap-1.5 text-amber-400">
+                <i class="ph ph-warning-circle text-base"></i> Qabul mavjud emas
+              </div>
+              <p class="text-slate-300 leading-relaxed">${data.message || "Dam olish yoki bayram kuni."}</p>
+              <button type="button" onclick="selectNextAvailableDate()" class="mt-2 inline-flex items-center gap-1 text-xs text-blue-400 hover:text-blue-300 font-semibold underline cursor-pointer">
+                Keyingi ish kunini tanlash ➜
+              </button>
+            </div>
+          `;
           return;
         }
-        container.innerHTML = '';
-        slots.forEach((s, idx) => {
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.className = 'slot-btn px-3 py-1.5 rounded-lg border text-xs font-mono transition cursor-pointer ' + 
-            (idx === 0 ? 'bg-blue-600 border-blue-500 text-white' : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700');
-          btn.innerText = s;
-          btn.onclick = () => {
-            document.querySelectorAll('.slot-btn').forEach(b => {
-              b.className = 'slot-btn px-3 py-1.5 rounded-lg border text-xs font-mono transition cursor-pointer bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700';
-            });
-            btn.className = 'slot-btn px-3 py-1.5 rounded-lg border text-xs font-mono transition cursor-pointer bg-blue-600 border-blue-500 text-white';
-            selectedSlot = s;
-          };
-          container.appendChild(btn);
+
+        // 2. Ogohlantirish (masalan, bugungi qabul vaqtlari o'tib ketgan bo'lsa)
+        let alertHtml = '';
+        if (data.message) {
+          alertHtml = `
+            <div class="w-full p-3 mb-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs">
+              <div class="font-semibold flex items-center gap-1.5 mb-1 text-blue-400">
+                <i class="ph ph-clock text-base"></i> Qabul vaqti yakunlangan
+              </div>
+              <p class="text-slate-300 leading-relaxed">${data.message}</p>
+              <button type="button" onclick="selectNextAvailableDate()" class="mt-2 inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 font-semibold cursor-pointer">
+                Keyingi ish kuniga o'tish ➜
+              </button>
+            </div>
+          `;
+        }
+
+        const slots = data.slots || [];
+        if (slots.length === 0) {
+          container.innerHTML = alertHtml + '<p class="text-xs text-slate-400">Ushbu kunga qabul vaqtlari topilmadi.</p>';
+          return;
+        }
+
+        let slotsButtonsHtml = '<div class="w-full grid grid-cols-2 sm:grid-cols-4 gap-2">';
+        let firstAvailableSet = false;
+
+        slots.forEach((s) => {
+          if (s.status === 'past') {
+            // O'TIB KETGAN — BLOKLANGAN (kulrang, chizilgan, disabled, bosib bo'lmaydi)
+            slotsButtonsHtml += `
+              <div title="Ushbu vaqt oralig'i o'tib ketgan" class="px-2.5 py-2 rounded-lg border border-slate-800/60 bg-slate-950/50 text-slate-600 text-[11px] font-mono text-center opacity-45 cursor-not-allowed select-none line-through relative">
+                ${s.time_slot}
+                <span class="block text-[9px] font-sans text-slate-600 tracking-tighter no-underline font-normal">O'tgan</span>
+              </div>
+            `;
+          } else if (s.status === 'booked') {
+            // BAND QILINGAN — BLOKLANGAN (qizil tusda, disabled, bosib bo'lmaydi)
+            slotsButtonsHtml += `
+              <div title="Ushbu vaqt band qilingan" class="px-2.5 py-2 rounded-lg border border-rose-950/40 bg-rose-950/20 text-rose-500/70 text-[11px] font-mono text-center opacity-60 cursor-not-allowed select-none relative">
+                ${s.time_slot}
+                <span class="block text-[9px] font-sans text-rose-500/80 tracking-tighter font-normal">Band</span>
+              </div>
+            `;
+          } else {
+            // BO'SH VA MAVJUD — BOSISH MUMKIN!
+            const isSelected = !firstAvailableSet;
+            if (isSelected) {
+              selectedSlot = s.time_slot;
+              firstAvailableSet = true;
+            }
+            const activeClasses = isSelected
+              ? 'bg-blue-600 border-blue-500 text-white shadow-md ring-2 ring-blue-500/30'
+              : 'bg-slate-900/80 border-slate-700/80 text-slate-200 hover:border-blue-500 hover:bg-slate-800';
+            
+            slotsButtonsHtml += `
+              <button type="button" data-slot="${s.time_slot}" onclick="selectSlot(this, '${s.time_slot}')" class="slot-btn px-2.5 py-2 rounded-lg border text-[11px] font-mono font-medium transition cursor-pointer text-center ${activeClasses}">
+                ${s.time_slot}
+                <span class="block text-[9px] font-sans text-emerald-400 tracking-tighter font-normal">Bo'sh</span>
+              </button>
+            `;
+          }
         });
-        selectedSlot = slots[0];
+
+        slotsButtonsHtml += '</div>';
+
+        // Izoh ko'rsatgichi (Legend)
+        const legendHtml = `
+          <div class="w-full flex items-center justify-between text-[10px] text-slate-400 pt-2.5 border-t border-slate-800/80 mt-2">
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Bo'sh (qabulga ochiq)</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-rose-500/80 inline-block"></span> Band</span>
+            <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-slate-600 inline-block"></span> O'tib ketgan (bloklangan)</span>
+          </div>
+        `;
+
+        container.innerHTML = alertHtml + slotsButtonsHtml + legendHtml;
       } catch (e) {
         container.innerHTML = '<p class="text-xs text-rose-400">Navbat vaqtlarini yuklab bo\'lmadi.</p>';
       }

@@ -15,13 +15,20 @@ from app.api.deps import get_current_user, require_role
 router = APIRouter(prefix="/appointments", tags=["Elektron navbat (Kelib / Uchrashib hal etish)"])
 
 
-@router.get("/available-slots", response_model=List[str], summary="Belgilangan sana uchun bo'sh 15 daqiqalik vaqt oraliqlari")
+@router.get("/available-slots", summary="Belgilangan sana uchun bo'sh 15 daqiqalik vaqt oraliqlari yoki to'liq slotlar holati")
 async def get_available_slots(
     appointment_date: str = Query(..., description="Sana formati: YYYY-MM-DD"),
     service_id: int = Query(..., description="Xizmat turi ID"),
+    detailed: bool = Query(False, description="To'liq slot holatlari (o'tib ketgan, bloklangan, band) bilan olish"),
     db: AsyncSession = Depends(get_db)
 ):
-    """Tanlangan xizmat va sana bo'yicha qolgan bo'sh vaqt slotlarini qaytaradi."""
+    """Tanlangan xizmat va sana bo'yicha bo'sh yoki batafsil slot holatlarini qaytaradi."""
+    if detailed:
+        return await QueueService.get_detailed_slots(
+            db=db,
+            appointment_date=appointment_date,
+            service_id=service_id
+        )
     return await QueueService.get_available_slots(
         db=db,
         appointment_date=appointment_date,

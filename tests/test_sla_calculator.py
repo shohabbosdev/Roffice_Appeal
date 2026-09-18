@@ -30,10 +30,10 @@ def test_is_working_time():
 
 
 def test_calculate_deadline_same_day():
-    # Monday 10:00 UTC + 4 hours SLA -> finishes same day at 14:00
+    # Monday 10:00 UTC + 4 hours SLA -> with 13:00-14:00 lunch freeze, finishes same day at 15:00
     mon_start = datetime(2026, 9, 21, 10, 0, tzinfo=timezone.utc)
     deadline = SLAService.calculate_deadline(mon_start, sla_hours=4)
-    assert deadline == datetime(2026, 9, 21, 14, 0, tzinfo=timezone.utc)
+    assert deadline == datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc)
 
 
 def test_calculate_deadline_spans_overnight():

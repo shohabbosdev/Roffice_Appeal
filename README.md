@@ -224,8 +224,15 @@ Loyiha ustida olib borilgan chuqur texnik audit natijasida quyidagi kamchiliklar
    - SLA eslatmalari to'plami (`_reminded_set`) doimiy ravishda faol arizalar bilan sinxronlanib, xotira tozalab boriladi.
 7. **CORS Siyosati Xavfsizlashtirildi:**
    - Wildcard origin o'rniga aniq ishonchli domenlar belgilandi.
-8. **Elektron Navbatda O'tgan Vaqtlarni Bloklash Mexanizmi:**
-   - "Kelib hal etish" bo'limida o'tmishdagi sanalarga talon olish butunlay cheklandi. Bugungi kun tanlanganida esa faqat joriy daqiqadan keyingi bo'sh qabul vaqtlari ko'rsatiladigan va o'tib ketgan slotlarga ariza topshirish bloklanadigan qilindi.
+8. **Elektron Navbatda O'tgan Vaqtlarni Qat'iy Bloklash Mexanizmi:**
+   - "Kelib hal etish" bo'limida o'tmishdagi sanalarga talon olish backendda HTTP 400 bilan butunlay cheklandi. Bugungi kun tanlanganida esa faqat joriy daqiqadan keyingi bo'sh qabul vaqtlari faol bo'ladi.
+9. **Slotlar Holatini Vizual Bloklash va Dinamik UI Indikatorlari:**
+   - Vaqt slotlari uchun yangi `get_detailed_slots` va `/api/v1/appointments/available-slots?detailed=true` mexanizmi joriy etildi.
+   - Har bir slot aniq holatga ega:
+     - **O'tib ketgan vaqtlar:** chizilgan (`line-through`), kulrang, nofaol (`disabled`, `cursor-not-allowed`) va `(O'tgan)` belgisi bilan ko'rsatiladi;
+     - **Band qilingan vaqtlar:** qizil tusda, nofaol (`disabled`) va `(Band)` belgisi bilan ko'rsatiladi;
+     - **Bo'sh vaqtlar:** yashil/ko'k indikator bilan qabulga ochiq bo'ladi;
+     - **Ish vaqti yakunlanganda:** agar soat 17:00 dan o'tgan bo'lsa, foydalanuvchiga aniq tushuntirish va "Ertangi ish kuniga o'tish ➜" tugmasi taqdim etiladi.
 
 ---
 

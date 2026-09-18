@@ -573,6 +573,31 @@
       background: var(--primary);
       color: white;
       border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.4);
+    }
+
+    .slot-btn.past {
+      opacity: 0.45;
+      text-decoration: line-through;
+      cursor: not-allowed;
+      border-color: rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.2);
+    }
+    .slot-btn.past:hover {
+      border-color: rgba(255, 255, 255, 0.05);
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .slot-btn.booked {
+      opacity: 0.6;
+      cursor: not-allowed;
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.1);
+      color: #f87171;
+    }
+    .slot-btn.booked:hover {
+      border-color: rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0.1);
     }
 
     /* Modern Switch Toggle */
@@ -1348,6 +1373,21 @@
       loadStudentAppeals();
     }
 
+    function selectPortalSlot(btnEl, slotTime) {
+      document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+      btnEl.classList.add('selected');
+      selectedSlot = slotTime;
+    }
+
+    function selectPortalNextDate() {
+      const qDateInput = document.getElementById('queue-date');
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+      qDateInput.value = d.toISOString().split('T')[0];
+      loadAvailableSlots();
+    }
+
     // Load available slots
     async function loadAvailableSlots() {
       const serviceId = document.getElementById('queue-service-select').value;
@@ -1356,27 +1396,66 @@
 
       if (!serviceId || !dateVal) return;
 
+      selectedSlot = null;
       container.innerHTML = '<p style="font-size: 0.8rem; color: var(--text-muted);">Slotlar olinmoqda...</p>';
       try {
-        const resp = await fetch(`/api/v1/appointments/available-slots?service_id=${serviceId}&appointment_date=${dateVal}`);
-        const slots = await resp.json();
-        if (!slots || slots.length === 0) {
-          container.innerHTML = '<p style="color: #fbbf24; font-size: 0.8rem;">Ushbu kunga navbatlar mavjud emas (dam olish yoki bayram kuni).</p>';
+        const resp = await fetch(`/api/v1/appointments/available-slots?service_id=${serviceId}&appointment_date=${dateVal}&detailed=true`);
+        const data = await resp.json();
+
+        if (!data.is_working_day) {
+          container.innerHTML = `
+            <div style="padding: 12px; border-radius: 8px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; font-size: 0.8rem;">
+              <strong>Qabul mavjud emas:</strong> ${data.message || "Dam olish kuni."}
+              <div style="margin-top: 6px;"><a href="javascript:void(0)" onclick="selectPortalNextDate()" style="color: #60a5fa; text-decoration: underline;">Keyingi ish kuniga o'tish ➜</a></div>
+            </div>
+          `;
           return;
         }
-        container.innerHTML = '';
-        slots.forEach((s, idx) => {
-          const btn = document.createElement('button');
-          btn.className = 'slot-btn' + (idx === 0 ? ' selected' : '');
-          btn.innerText = s;
-          btn.onclick = () => {
-            document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-            selectedSlot = s;
-          };
-          container.appendChild(btn);
+
+        let alertHtml = '';
+        if (data.message) {
+          alertHtml = `
+            <div style="padding: 10px; margin-bottom: 10px; border-radius: 8px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.25); color: #93c5fd; font-size: 0.8rem;">
+              <strong>Qabul vaqti:</strong> ${data.message}
+              <div style="margin-top: 6px;"><a href="javascript:void(0)" onclick="selectPortalNextDate()" style="color: #34d399; font-weight: 600; text-decoration: underline;">Keyingi ish kuniga o'tish ➜</a></div>
+            </div>
+          `;
+        }
+
+        const slots = data.slots || [];
+        if (slots.length === 0) {
+          container.innerHTML = alertHtml + '<p style="color: var(--text-muted); font-size: 0.8rem;">Vaqt oralig\'i topilmadi.</p>';
+          return;
+        }
+
+        let slotsHtml = '<div style="display: flex; flex-wrap: wrap; gap: 8px;">';
+        let firstSet = false;
+
+        slots.forEach(s => {
+          if (s.status === 'past') {
+            slotsHtml += `<button type="button" class="slot-btn past" disabled title="O'tib ketgan">${s.time_slot} <small style="display:block; font-size: 9px; opacity: 0.7;">O'tgan</small></button>`;
+          } else if (s.status === 'booked') {
+            slotsHtml += `<button type="button" class="slot-btn booked" disabled title="Band qilingan">${s.time_slot} <small style="display:block; font-size: 9px; opacity: 0.8;">Band</small></button>`;
+          } else {
+            const isSel = !firstSet;
+            if (isSel) {
+              selectedSlot = s.time_slot;
+              firstSet = true;
+            }
+            slotsHtml += `<button type="button" class="slot-btn ${isSel ? 'selected' : ''}" onclick="selectPortalSlot(this, '${s.time_slot}')">${s.time_slot} <small style="display:block; font-size: 9px; color: #34d399;">Bo'sh</small></button>`;
+          }
         });
-        selectedSlot = slots[0];
+        slotsHtml += '</div>';
+
+        const legend = `
+          <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--border);">
+            <span>🟢 Bo'sh (ochiq)</span>
+            <span>🔴 Band</span>
+            <span>⚪ O'tib ketgan (bloklangan)</span>
+          </div>
+        `;
+
+        container.innerHTML = alertHtml + slotsHtml + legend;
       } catch (e) {
         container.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">Yuklab bo\'lmadi.</p>';
       }

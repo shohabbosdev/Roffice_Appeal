@@ -281,6 +281,20 @@ class AppointmentOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class SlotDetail(BaseModel):
+    time_slot: str
+    is_available: bool
+    status: str  # "available", "past", "booked", "holiday"
+    reason: Optional[str] = None
+
+
+class AvailableSlotsResponse(BaseModel):
+    date: str
+    is_working_day: bool
+    message: Optional[str] = None
+    slots: List[SlotDetail]
+
+
 # KPI Schemas
 class EmployeeKPIOut(BaseModel):
     id: int
