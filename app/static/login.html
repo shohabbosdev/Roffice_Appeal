@@ -131,11 +131,48 @@
         <!-- Alert Notification Box -->
         <div id="login-alert" class="hidden mb-5 p-3.5 rounded-xl text-xs font-medium border transition-all duration-200"></div>
 
+        <!-- Role Guidance Switcher Tabs -->
+        <div class="p-1 mb-4 bg-slate-900/90 rounded-xl border border-slate-800 flex items-center gap-1 shadow-inner">
+          <button
+            type="button"
+            id="tab-student"
+            onclick="switchRole('student')"
+            class="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-200 bg-blue-600 text-white shadow-md cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l9-5-9-5-9 5 9 5z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+            </svg>
+            <span>Talaba (HEMIS)</span>
+          </button>
+          <button
+            type="button"
+            id="tab-staff"
+            onclick="switchRole('staff')"
+            class="flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200 cursor-pointer"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span>Xodim / Ma'muriyat</span>
+          </button>
+        </div>
+
+        <!-- Role Guidance Hint Box -->
+        <div id="role-hint" class="flex items-center gap-2 mb-4.5 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-snug">
+          <svg class="w-4 h-4 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span id="role-hint-text">
+            <strong>student.jbnuu.uz</strong> tizimidagi HEMIS ID va parolingiz bilan to'g'ridan-to'g'ri kiring.
+          </span>
+        </div>
+
         <!-- Login Form -->
         <form id="unified-login-form" onsubmit="handleUnifiedLogin(event)" class="space-y-4">
           <div>
-            <label for="login-username" class="block text-xs font-semibold text-slate-300 mb-1.5">
-              Login, Email yoki HEMIS talaba ID
+            <label for="login-username" id="login-label" class="block text-xs font-semibold text-slate-300 mb-1.5">
+              HEMIS talaba ID raqami yoki login
             </label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -147,7 +184,7 @@
                 type="text"
                 id="login-username"
                 class="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition"
-                placeholder="Login, elektron pochta yoki talaba ID"
+                placeholder="Masalan: 401251200032 yoki login"
                 autocomplete="username"
                 required
               >
@@ -221,6 +258,37 @@
   </footer>
 
   <script>
+    let currentRole = 'student';
+
+    function switchRole(role) {
+      currentRole = role;
+      const studentTab = document.getElementById('tab-student');
+      const staffTab = document.getElementById('tab-staff');
+      const labelEl = document.getElementById('login-label');
+      const inputEl = document.getElementById('login-username');
+      const hintBox = document.getElementById('role-hint');
+      const hintText = document.getElementById('role-hint-text');
+
+      if (role === 'student') {
+        studentTab.className = 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-200 bg-blue-600 text-white shadow-md cursor-pointer';
+        staffTab.className = 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200 cursor-pointer';
+        
+        labelEl.textContent = "HEMIS talaba ID raqami yoki login";
+        inputEl.placeholder = "Masalan: 401251200032 yoki login";
+        hintBox.className = "flex items-center gap-2 mb-4.5 p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/20 text-[11px] text-blue-300 leading-snug";
+        hintText.innerHTML = "<strong>student.jbnuu.uz</strong> tizimidagi HEMIS ID va parolingiz bilan to'g'ridan-to'g'ri kiring.";
+      } else {
+        staffTab.className = 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-200 bg-indigo-600 text-white shadow-md cursor-pointer';
+        studentTab.className = 'flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold transition-all duration-200 text-slate-400 hover:text-slate-200 cursor-pointer';
+        
+        labelEl.textContent = "Elektron pochta yoki xodim logini";
+        inputEl.placeholder = "Masalan: shohabbosdev@gmail.com yoki login";
+        hintBox.className = "flex items-center gap-2 mb-4.5 p-2.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-[11px] text-indigo-300 leading-snug";
+        hintText.innerHTML = "Registrator ofisi xodimlari va ma'muriyat vakillari uchun maxsus kirish qismi.";
+      }
+      inputEl.focus();
+    }
+
     function togglePasswordVisibility() {
       const passInput = document.getElementById('login-password');
       const eyeIcon = document.getElementById('eye-icon');
