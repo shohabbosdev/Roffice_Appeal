@@ -233,6 +233,13 @@ Loyiha ustida olib borilgan chuqur texnik audit natijasida quyidagi kamchiliklar
      - **Band qilingan vaqtlar:** qizil tusda, nofaol (`disabled`) va `(Band)` belgisi bilan ko'rsatiladi;
      - **Bo'sh vaqtlar:** yashil/ko'k indikator bilan qabulga ochiq bo'ladi;
      - **Ish vaqti yakunlanganda:** agar soat 17:00 dan o'tgan bo'lsa, foydalanuvchiga aniq tushuntirish va "Ertangi ish kuniga o'tish ➜" tugmasi taqdim etiladi.
+10. **Hujjat va Fayllarni Xavfsiz Yuklash Tizimi (File Uploads):**
+    - `/api/v1/uploads` endpointi va statik `/uploads/` yo'nalishi ishga tushirildi.
+    - Xavfsizlik: MIME-turlar (.pdf, .png, .jpg, .jpeg, .doc, .docx) va hajm (10 MB gacha) qat'iy tekshiriladi, unikal UUID bilan saqlanadi.
+    - `student.html` va `staff.html` orqali talaba arizaga tasdiqlovchi hujjat (PDF, rasm) biriktirishi, ijrochi esa rasmiy ma'lumotnomani bevosita portalga yuklashi mumkin.
+11. **Telegram Webhook va Interaktiv Bog'lanish:**
+    - `/api/v1/telegram/webhook` endpointi joriy etilib, ishlab chiqarish muhitida Telegram Bot yangilanishlarini real vaqtda qabul qilish imkoniyati yaratildi.
+    - Talabalar `/start` bosganda kontaktini yuborishi, tizim uni JBNUU HEMIS API orqali tekshirib, xabarnomalarga avtomatik ulashi ta'minlandi.
 
 ---
 

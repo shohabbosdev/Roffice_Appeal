@@ -298,6 +298,24 @@
                 ></textarea>
               </div>
 
+              <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                  Tasdiqlovchi hujjat yoki ilova (ixtiyoriy)
+                </label>
+                <div class="flex items-center gap-3">
+                  <label class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer transition">
+                    <i class="ph ph-upload-simple text-sm text-blue-400"></i>
+                    <span id="upload-file-label">Fayl tanlash (PDF, rasm, Word)...</span>
+                    <input type="file" id="appeal-file-input" class="hidden" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" onchange="handleFileUpload(this)">
+                  </label>
+                  <input type="hidden" id="appeal-attachment-url" value="">
+                  <button type="button" id="remove-file-btn" onclick="clearUploadedFile()" class="hidden text-rose-400 hover:text-rose-300 text-xs">
+                    <i class="ph ph-trash"></i> O'chirish
+                  </button>
+                </div>
+                <p id="upload-status-text" class="text-[11px] text-slate-500 mt-1">Maksimal hajm: 10 MB. Formatlar: PDF, PNG, JPG, DOCX.</p>
+              </div>
+
               <div id="appeal-result-box" class="hidden p-3.5 rounded-xl text-xs font-medium border"></div>
 
               <button
@@ -695,11 +713,65 @@
       }
     }
 
+    async function handleFileUpload(inputEl) {
+      const file = inputEl.files[0];
+      if (!file) return;
+
+      const label = document.getElementById('upload-file-label');
+      const statusText = document.getElementById('upload-status-text');
+      const hiddenUrlInput = document.getElementById('appeal-attachment-url');
+      const removeBtn = document.getElementById('remove-file-btn');
+
+      label.innerText = `Yuklanmoqda: ${file.name}...`;
+      statusText.innerText = "Fayl serverga yuklanmoqda, iltimos kuting...";
+      statusText.className = "text-[11px] text-blue-400 mt-1";
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const resp = await fetch('/api/v1/uploads', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token },
+          body: formData
+        });
+        const res = await resp.json();
+
+        if (resp.ok && res.file_url) {
+          hiddenUrlInput.value = res.file_url;
+          label.innerHTML = `<span class="text-emerald-400 font-medium">✓ ${file.name}</span>`;
+          statusText.innerText = `Fayl muvaffaqiyatli biriktirildi (${(res.size_bytes / 1024).toFixed(1)} KB).`;
+          statusText.className = "text-[11px] text-emerald-400 mt-1";
+          removeBtn.classList.remove('hidden');
+        } else {
+          label.innerText = "Fayl tanlash (PDF, rasm, Word)...";
+          statusText.innerText = res.detail || "Fayl yuklashda xatolik yuz berdi.";
+          statusText.className = "text-[11px] text-rose-400 mt-1";
+          inputEl.value = "";
+        }
+      } catch (err) {
+        label.innerText = "Fayl tanlash (PDF, rasm, Word)...";
+        statusText.innerText = "Serverga fayl yuklab bo'lmadi.";
+        statusText.className = "text-[11px] text-rose-400 mt-1";
+        inputEl.value = "";
+      }
+    }
+
+    function clearUploadedFile() {
+      document.getElementById('appeal-file-input').value = "";
+      document.getElementById('appeal-attachment-url').value = "";
+      document.getElementById('upload-file-label').innerText = "Fayl tanlash (PDF, rasm, Word)...";
+      document.getElementById('upload-status-text').innerText = "Maksimal hajm: 10 MB. Formatlar: PDF, PNG, JPG, DOCX.";
+      document.getElementById('upload-status-text').className = "text-[11px] text-slate-500 mt-1";
+      document.getElementById('remove-file-btn').classList.add('hidden');
+    }
+
     async function handleCreateAppeal(e) {
       e.preventDefault();
       const serviceId = document.getElementById('service-select').value;
       const subject = document.getElementById('appeal-subject').value;
       const message = document.getElementById('appeal-message').value;
+      const attachmentUrl = document.getElementById('appeal-attachment-url').value;
       const resBox = document.getElementById('appeal-result-box');
 
       try {
@@ -712,7 +784,8 @@
           body: JSON.stringify({
             service_id: parseInt(serviceId),
             subject: subject,
-            message: message
+            message: message,
+            attachment_urls: attachmentUrl || null
           })
         });
         const res = await resp.json();
@@ -720,6 +793,7 @@
           resBox.className = 'p-3.5 rounded-xl text-xs font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 block';
           resBox.innerHTML = `Murojaat qabul qilindi. <strong>Talon raqami: #${res.ticket_number}</strong><br>SLA ijro muddati: ${new Date(res.sla_deadline_at).toLocaleString('uz')}`;
           document.getElementById('appeal-form').reset();
+          clearUploadedFile();
           loadStudentAppeals();
         } else {
           resBox.className = 'p-3.5 rounded-xl text-xs font-medium border border-rose-500/30 bg-rose-500/10 text-rose-400 block';
@@ -769,10 +843,25 @@
               </div>
               <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">${app.message}</p>
               
+              ${app.attachment_urls ? `
+                <div class="pt-1">
+                  <a href="${app.attachment_urls}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-medium transition">
+                    <i class="ph ph-file-arrow-down text-sm"></i> Ilova qilingan hujjatni ko'rish
+                  </a>
+                </div>
+              ` : ''}
+
               ${app.resolution_text ? `
-                <div class="p-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-1">
+                <div class="p-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-2">
                   <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Xizmat ijrosi natijasi:</span>
                   <p class="text-xs text-slate-200">${app.resolution_text}</p>
+                  ${app.result_file_url ? `
+                    <div class="pt-1">
+                      <a href="${app.result_file_url}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-medium transition">
+                        <i class="ph ph-file-text text-sm"></i> Rasmiy ma'lumotnoma fayli
+                      </a>
+                    </div>
+                  ` : ''}
                 </div>
               ` : ''}
 

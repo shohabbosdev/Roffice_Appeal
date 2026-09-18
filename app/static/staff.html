@@ -775,9 +775,16 @@
             class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none"
             placeholder="Murojaatni ko'rib chiqdik. Hujjat/ma'lumotnoma tayyorlandi va..."></textarea>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Fayl havolasi (ixtiyoriy)</label>
-          <input type="url" id="resolve-file-url" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="https://drive.google.com/...">
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Rasmiy ma'lumotnoma yoki ijro fayli (ixtiyoriy)</label>
+          <div class="flex items-center gap-2 mb-2">
+            <label class="flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer transition">
+              <i class="ph ph-upload-simple text-sm text-emerald-400"></i>
+              <span id="staff-upload-label">Faylni yuklash (PDF, DOCX)...</span>
+              <input type="file" id="staff-resolve-file-input" class="hidden" accept=".pdf,.doc,.docx,.png,.jpg" onchange="handleStaffFileUpload(this)">
+            </label>
+            <span id="staff-upload-status" class="text-[11px] text-slate-500"></span>
+          </div>
+          <input type="url" id="resolve-file-url" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Yoki tashqi havola: https://...">
         </div>
         <div class="flex gap-2 pt-1">
           <button type="submit" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer shadow-md shadow-emerald-600/20">
@@ -1543,6 +1550,14 @@
 
               <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/60 line-clamp-3">${app.message}</p>
 
+              ${app.attachment_urls ? `
+                <div class="pt-0.5">
+                  <a href="${app.attachment_urls}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-medium transition">
+                    <i class="ph ph-file-arrow-down text-sm"></i> Talaba ilova qilgan hujjatni ko'rish
+                  </a>
+                </div>
+              ` : ''}
+
               <div class="flex flex-wrap gap-3 text-[11px] text-slate-500">
                 <span>Xizmat: <span class="text-slate-300">${app.service ? app.service.title : '—'}</span></span>
                 <span>SLA: <span class="${isOverdue ? 'text-rose-400 font-semibold' : 'text-slate-300'}">${slaStr}</span></span>
@@ -1622,6 +1637,54 @@
 
     function closeResolveModal() {
       document.getElementById('resolve-appeal-modal').classList.add('hidden');
+      const fileInput = document.getElementById('staff-resolve-file-input');
+      if (fileInput) fileInput.value = '';
+      const label = document.getElementById('staff-upload-label');
+      if (label) label.innerText = 'Faylni yuklash (PDF, DOCX)...';
+      const statusEl = document.getElementById('staff-upload-status');
+      if (statusEl) statusEl.innerText = '';
+    }
+
+    async function handleStaffFileUpload(inputEl) {
+      const file = inputEl.files[0];
+      if (!file) return;
+
+      const label = document.getElementById('staff-upload-label');
+      const statusEl = document.getElementById('staff-upload-status');
+      const urlInput = document.getElementById('resolve-file-url');
+
+      label.innerText = `Yuklanmoqda: ${file.name}...`;
+      statusEl.innerText = "Yuklanmoqda...";
+      statusEl.className = "text-[11px] text-blue-400";
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const resp = await fetch('/api/v1/uploads', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token },
+          body: formData
+        });
+        const res = await resp.json();
+
+        if (resp.ok && res.file_url) {
+          urlInput.value = res.file_url;
+          label.innerHTML = `<span class="text-emerald-400 font-medium">✓ ${file.name}</span>`;
+          statusEl.innerText = `(${(res.size_bytes / 1024).toFixed(1)} KB)`;
+          statusEl.className = "text-[11px] text-emerald-400";
+        } else {
+          label.innerText = 'Faylni yuklash (PDF, DOCX)...';
+          statusEl.innerText = res.detail || "Xatolik";
+          statusEl.className = "text-[11px] text-rose-400";
+          inputEl.value = '';
+        }
+      } catch (err) {
+        label.innerText = 'Faylni yuklash (PDF, DOCX)...';
+        statusEl.innerText = "Server xatosi";
+        statusEl.className = "text-[11px] text-rose-400";
+        inputEl.value = '';
+      }
     }
 
     async function handleResolveSubmit(e) {

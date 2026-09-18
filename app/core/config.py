@@ -42,6 +42,11 @@ class Settings(BaseSettings):
     JBNUU_VALIDATE_PHONE_URL: str = "https://student.jbnuu.uz/rest/v1/data/validate-phone"
     JBNUU_API_TOKEN: str = "Qn8Jp7TVvpGdQUvWoqpBC1i0p7ukHKT0"
 
+    # Fayllarni yuklash (Uploads) sozlamalari
+    UPLOAD_DIR: str = "uploads"
+    MAX_UPLOAD_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
+    ALLOWED_EXTENSIONS: List[str] = [".pdf", ".png", ".jpg", ".jpeg", ".doc", ".docx"]
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

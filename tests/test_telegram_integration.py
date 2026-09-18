@@ -162,3 +162,24 @@ async def test_telegram_contact_validation_failure(monkeypatch):
 
     # Should not raise exception
     await handle_telegram_update(update)
+
+
+@pytest.mark.asyncio
+async def test_telegram_webhook_endpoint(client: AsyncClient):
+    """POST /api/v1/telegram/webhook endpointini tekshirish."""
+    # 1. Noto'g'ri JSON (400)
+    resp_bad = await client.post(
+        "/api/v1/telegram/webhook",
+        content="not-json",
+        headers={"Content-Type": "application/json"}
+    )
+    assert resp_bad.status_code == 400
+
+    # 2. To'g'ri bo'sh update (200 OK)
+    resp_ok = await client.post(
+        "/api/v1/telegram/webhook",
+        json={"update_id": 999999}
+    )
+    assert resp_ok.status_code == 200
+    assert resp_ok.json() == {"ok": True}
+
