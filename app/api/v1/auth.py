@@ -29,7 +29,9 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
     # 1. Mahalliy ma'lumotlar bazasidan tekshirish (xodimlar va mavjud talabalar)
     result = await db.execute(
         select(User).where(
-            (User.username == credentials.username) | (User.hemis_student_id == credentials.username),
+            (User.username == credentials.username) | 
+            (User.email == credentials.username) | 
+            (User.hemis_student_id == credentials.username),
             User.is_active == True
         )
     )

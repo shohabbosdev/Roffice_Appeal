@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY app/ ./app/
 COPY seed_data.py .
+COPY manage_admin.py .
 
 # Create directory for persistent SQLite data
 RUN mkdir -p /app/data

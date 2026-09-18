@@ -1,4 +1,5 @@
 import asyncio
+import os
 from datetime import datetime, timezone
 from sqlalchemy import select
 from app.core.database import AsyncSessionLocal, engine, Base
@@ -13,17 +14,35 @@ from app.core.config import settings
 async def seed_database():
     print("Baza jadvallarini yaratish va dastlabki ma'lumotlarni kiritish boshlandi...")
 
+    admin_email = os.getenv("ADMIN_EMAIL", "admin@jbnuu.uz")
+    admin_username = os.getenv("ADMIN_USERNAME", admin_email.split("@")[0] if "@" in admin_email else "admin")
+    admin_password = os.getenv("ADMIN_PASSWORD", "AdminPass123!")
+    admin_fullname = os.getenv("ADMIN_FULLNAME", "Tizim Ma'muri")
+
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
     async with AsyncSessionLocal() as session:
         # Check if already seeded
         existing_admin = (await session.execute(
-            select(User).where(User.username == "admin")
-        )).scalar_one_or_none()
+            select(User).where(
+                (User.username == admin_username) | 
+                (User.email == admin_email) | 
+                (User.role == UserRole.ADMIN)
+            )
+        )).scalars().first()
 
         if existing_admin:
-            print("Dastlabki ma'lumotlar allaqachon kiritilgan!")
+            if os.getenv("ADMIN_PASSWORD") or os.getenv("ADMIN_EMAIL"):
+                existing_admin.username = admin_username
+                existing_admin.email = admin_email
+                existing_admin.hashed_password = hash_password(admin_password)
+                existing_admin.role = UserRole.ADMIN
+                existing_admin.is_active = True
+                await session.commit()
+                print("Mavjud administrator ma'lumotlari muvaffaqiyatli yangilandi!")
+            else:
+                print("Dastlabki ma'lumotlar allaqachon kiritilgan!")
             return
 
         # 1. Registrator ofisi bo'limlari (Nizomga muvofiq)
@@ -249,10 +268,10 @@ async def seed_database():
         # 3. Foydalanuvchilar (Rahbariyat, Xodimlar, Talabalar)
         # Rahbariyat
         user_admin = User(
-            username="admin",
-            email="admin@jbnuu.uz",
-            hashed_password=hash_password("AdminPass123!"),
-            full_name="Tizim Ma'muri",
+            username=admin_username,
+            email=admin_email,
+            hashed_password=hash_password(admin_password),
+            full_name=admin_fullname,
             role=UserRole.ADMIN
         )
         user_head = User(

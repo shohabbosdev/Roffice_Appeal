@@ -1,20 +1,46 @@
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: roffice_appeal_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-roffice_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-roffice_secure_pass_2026}
+      POSTGRES_DB: ${POSTGRES_DB:-roffice_db}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-roffice_user} -d ${POSTGRES_DB:-roffice_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: roffice_appeal_backend
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=sqlite+aiosqlite:///./data/roffice.db
-      - HEMIS_BASE_URL=https://student.jbnuu.uz/rest/v1
-    volumes:
-      - ./data:/app/data
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${PORT:-8087}:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-roffice_user}:${POSTGRES_PASSWORD:-roffice_secure_pass_2026}@db:5432/${POSTGRES_DB:-roffice_db}
+      - HEMIS_BASE_URL=https://student.jbnuu.uz/rest/v1
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@jbnuu.uz}
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-AdminPass123!}
+      - ADMIN_FULLNAME=${ADMIN_FULLNAME:-Tizim Ma'muri}
+    volumes:
+      - ./uploads:/app/uploads
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s
       timeout: 5s
       retries: 3
       start_period: 10s
+
+volumes:
+  pgdata:
