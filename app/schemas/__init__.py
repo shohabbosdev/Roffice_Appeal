@@ -247,6 +247,8 @@ class AppealOut(BaseModel):
     dispute_reason: Optional[str] = None
     earned_kpi_points: int
     service: Optional[ServiceOut] = None
+    student: Optional[UserOut] = None
+    assigned_staff: Optional[UserOut] = None
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -23,6 +23,14 @@ router = APIRouter(prefix="/appeals", tags=["Murojaatlar (Online murojaat jarayo
 logger = logging.getLogger(__name__)
 
 
+def _appeal_options():
+    return (
+        selectinload(Appeal.service),
+        selectinload(Appeal.student),
+        selectinload(Appeal.assigned_staff)
+    )
+
+
 @router.get("/policy/education-forms", response_model=EducationFormPolicyOut, summary="Ta'lim shakllari onlayn murojaat cheklovlari siyosati")
 async def get_education_form_policy(
     db: AsyncSession = Depends(get_db)
@@ -72,7 +80,7 @@ async def create_appeal(
     )
     # Reload with service
     result = await db.execute(
-        select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal.id)
+        select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id)
     )
     reloaded_appeal = result.scalar_one()
 
@@ -101,7 +109,7 @@ async def get_appeals(
     - Xodim: o'ziga biriktirilgan murojaatlarni ko'radi
     - Rahbariyat (Boshliq, Prorektor, Admin): barcha murojaatlarni ko'radi
     """
-    query = select(Appeal).options(selectinload(Appeal.service))
+    query = select(Appeal).options(*_appeal_options())
 
     if current_user.role == UserRole.STUDENT:
         query = query.where(Appeal.student_id == current_user.id)
@@ -135,7 +143,7 @@ async def get_appeal_detail(
 ):
     """Murojaat tafsilotlari, ijro muddati va QR kod tekshiruvi."""
     result = await db.execute(
-        select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal_id)
+        select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal_id)
     )
     appeal = result.scalar_one_or_none()
     if not appeal:
@@ -162,7 +170,7 @@ async def assign_appeal(
         staff_id=data.staff_id,
         assigned_by_user_id=current_user.id
     )
-    result = await db.execute(select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal.id))
+    result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
     reloaded_assigned = result.scalar_one()
 
     # Xodimga Telegram orqali xabar
@@ -195,7 +203,7 @@ async def reassign_appeal(
         current_staff_id=current_user.id,
         reason=data.reason
     )
-    result = await db.execute(select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal.id))
+    result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
     return result.scalar_one()
 
 
@@ -213,7 +221,7 @@ async def request_clarification(
         staff_id=current_user.id,
         clarification_message=data.clarification_message
     )
-    result = await db.execute(select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal.id))
+    result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
     return result.scalar_one()
 
 
@@ -235,7 +243,7 @@ async def provide_clarification(
         student_id=current_user.id,
         additional_info=data.additional_info
     )
-    result = await db.execute(select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal.id))
+    result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
     return result.scalar_one()
 
 
@@ -254,7 +262,7 @@ async def resolve_appeal(
         resolution_text=data.resolution_text,
         result_file_url=data.result_file_url
     )
-    result = await db.execute(select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal.id))
+    result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
     reloaded_resolved = result.scalar_one()
 
     # Talabaga Telegram orqali rasmiy javobni yetkazish
@@ -289,7 +297,7 @@ async def confirm_resolution(
         rating=data.rating,
         rating_comment=data.rating_comment
     )
-    result = await db.execute(select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal.id))
+    result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
     return result.scalar_one()
 
 
@@ -311,7 +319,7 @@ async def dispute_resolution(
         student_id=current_user.id,
         dispute_reason=data.dispute_reason
     )
-    result = await db.execute(select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal.id))
+    result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
     return result.scalar_one()
 
 
@@ -329,7 +337,7 @@ async def escalate_prorektor(
         head_user_id=current_user.id,
         head_note=data.head_note
     )
-    result = await db.execute(select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal.id))
+    result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
     return result.scalar_one()
 
 
@@ -347,5 +355,5 @@ async def prorektor_decision(
         prorektor_user_id=current_user.id,
         final_decision=data.final_decision
     )
-    result = await db.execute(select(Appeal).options(selectinload(Appeal.service)).where(Appeal.id == appeal.id))
+    result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
     return result.scalar_one()
