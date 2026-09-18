@@ -4,6 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Registrator ofisi — O'zMU Jizzax filiali</title>
+  
+  <script>
+    (function() {
+      const isSub = window.location.pathname.startsWith('/roffice-appeal');
+      window.APP_BASE = isSub ? '/roffice-appeal' : '';
+      let b = document.querySelector('base');
+      if (!b) {
+        b = document.createElement('base');
+        document.head.prepend(b);
+      }
+      b.href = isSub ? '/roffice-appeal/' : '/';
+
+      if (window.APP_BASE) {
+        const origFetch = window.fetch;
+        window.fetch = function(inp, init) {
+          if (typeof inp === 'string' && (inp.startsWith('/api/') || inp.startsWith('/static/'))) {
+            inp = window.APP_BASE + inp;
+          }
+          return origFetch(inp, init);
+        };
+      }
+    })();
+    function apiUrl(p) {
+      if (!p || p.startsWith('http')) return p || '';
+      return (window.APP_BASE || '') + (p.startsWith('/') ? p : '/' + p);
+    }
+    function pageUrl(p) {
+      if (!p || p.startsWith('http')) return p || '';
+      return (window.APP_BASE || '') + (p.startsWith('/') ? p : '/' + p);
+    }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="static/img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -704,7 +738,7 @@
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <div class="brand">
-          <div class="logo-badge">R</div>
+          <img src="static/img/logo.png" alt="O'zMU JF" style="width: 38px; height: 38px; object-fit: contain;">
           <div>
             <div class="brand-title">Registrator ofisi</div>
             <div class="brand-sub">O'zMU Jizzax filiali</div>
@@ -805,6 +839,13 @@
           <div class="badge badge-online">
             <div class="badge-dot"></div>
             <span>Dushanba-Shanba faol</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <span id="topbar-username" style="font-size: 0.85rem; font-weight: 700; color: #818cf8;">Shohabbos</span>
+            <span id="topbar-role" class="tag tag-highlight" style="font-size: 0.7rem;">ADMIN</span>
+            <button onclick="handleLogout()" class="btn btn-outline btn-sm" style="cursor: pointer; padding: 4px 10px;" title="Tizimdan chiqish">
+              Chiqish
+            </button>
           </div>
         </div>
       </header>
@@ -1075,16 +1116,52 @@
 
     // Default init
     window.addEventListener('DOMContentLoaded', async () => {
+      const token = localStorage.getItem('roffice_token');
+      const role = localStorage.getItem('roffice_role');
+      const fullname = localStorage.getItem('roffice_fullname');
+
+      if (!token) {
+        window.location.href = pageUrl('/login');
+        return;
+      }
+
+      currentToken = token;
+
+      if (fullname) {
+        const unEl = document.getElementById('topbar-username');
+        if (unEl) unEl.innerText = fullname;
+      }
+      if (role) {
+        const roleEl = document.getElementById('topbar-role');
+        if (roleEl) roleEl.innerText = role.toUpperCase();
+      }
+
       const d = new Date();
       d.setDate(d.getDate() + 1);
-      if (d.getDay() === 0) d.setDate(d.getDate() + 1); // Yakshanba kunini o'tkazib yuborish
-      document.getElementById('queue-date').value = d.toISOString().split('T')[0];
+      if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+      const qd = document.getElementById('queue-date');
+      if (qd) qd.value = d.toISOString().split('T')[0];
 
       await loadEducationPolicy();
       await loadServices();
-      await switchDemoUser('kunduzgi');
+
+      if (role === 'student') {
+        switchTab('talaba');
+      } else {
+        switchTab('xodim');
+      }
+
       loadHolidays();
     });
+
+    function handleLogout() {
+      localStorage.removeItem('roffice_token');
+      localStorage.removeItem('roffice_role');
+      localStorage.removeItem('roffice_fullname');
+      localStorage.removeItem('roffice_user_id');
+      localStorage.removeItem('roffice_must_change_password');
+      window.location.href = pageUrl('/login');
+    }
 
     // Education Form Policy API
     async function loadEducationPolicy() {
@@ -1141,21 +1218,12 @@
         newAllowed = newAllowed.filter(x => x !== code);
       }
 
-      // Always authenticate as Head/Admin for policy change
-      const loginResp = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: "akrom_head", password: "HeadPass123!" })
-      });
-      const loginData = await loginResp.json();
-      const adminToken = loginData.access_token;
-
       try {
         const resp = await fetch('/api/v1/appeals/policy/education-forms', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + adminToken
+            'Authorization': 'Bearer ' + currentToken
           },
           body: JSON.stringify({ allowed_forms: newAllowed })
         });
@@ -1585,10 +1653,11 @@
     }
 
     async function assignToMe(id) {
+      const myId = parseInt(localStorage.getItem('roffice_user_id') || '1');
       await fetch(`/api/v1/appeals/${id}/assign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
-        body: JSON.stringify({ staff_id: 4 })
+        body: JSON.stringify({ staff_id: myId })
       });
       loadStaffAppeals();
     }

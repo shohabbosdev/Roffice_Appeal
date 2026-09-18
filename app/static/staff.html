@@ -4,6 +4,40 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Xodim va rahbariyat ish stoli — Registrator ofisi</title>
+  
+  <script>
+    (function() {
+      const isSub = window.location.pathname.startsWith('/roffice-appeal');
+      window.APP_BASE = isSub ? '/roffice-appeal' : '';
+      let b = document.querySelector('base');
+      if (!b) {
+        b = document.createElement('base');
+        document.head.prepend(b);
+      }
+      b.href = isSub ? '/roffice-appeal/' : '/';
+
+      if (window.APP_BASE) {
+        const origFetch = window.fetch;
+        window.fetch = function(inp, init) {
+          if (typeof inp === 'string' && (inp.startsWith('/api/') || inp.startsWith('/static/'))) {
+            inp = window.APP_BASE + inp;
+          }
+          return origFetch(inp, init);
+        };
+      }
+    })();
+    function apiUrl(p) {
+      if (!p || p.startsWith('http')) return p || '';
+      return (window.APP_BASE || '') + (p.startsWith('/') ? p : '/' + p);
+    }
+    function pageUrl(p) {
+      if (!p || p.startsWith('http')) return p || '';
+      return (window.APP_BASE || '') + (p.startsWith('/') ? p : '/' + p);
+    }
+  </script>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="static/img/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -49,9 +83,7 @@
       <div>
         <!-- Brand Header -->
         <div class="p-5 border-b border-slate-800 flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-emerald-600 flex items-center justify-center font-extrabold text-white text-base shadow-md shadow-emerald-500/20">
-            R
-          </div>
+          <img src="static/img/logo.png" alt="O'zMU JF" class="w-9 h-9 object-contain drop-shadow">
           <div>
             <h1 class="text-sm font-bold text-white tracking-tight">Registrator ofisi</h1>
             <p class="text-[11px] text-slate-400">Xodim va rahbariyat portali</p>
