@@ -85,7 +85,7 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     must_change_password: Mapped[bool] = mapped_column(Boolean, default=False)
     assigned_duties: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Student specific fields (HEMIS integration - strictly academic, NO PII/passport)
     hemis_student_id: Mapped[Optional[str]] = mapped_column(String(50), unique=True, index=True, nullable=True)
@@ -100,7 +100,7 @@ class User(Base):
     # Telegram Bot Integratsiyasi
     telegram_chat_id: Mapped[Optional[int]] = mapped_column(BigInteger, nullable=True, index=True)
     telegram_username: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    telegram_connected_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    telegram_connected_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     department = relationship("Department", back_populates="users")
     appeals_created = relationship("Appeal", foreign_keys="Appeal.student_id", back_populates="student")
@@ -144,7 +144,7 @@ class EmployeeKPITarget(Base):
     total_appointments_completed: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     average_rating: Mapped[float] = mapped_column(Float, default=5.0, nullable=False)
     kpi_percentage: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     employee = relationship("User", back_populates="kpi_records")
 
@@ -171,12 +171,12 @@ class Appeal(Base):
     clarification_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Dates & Timers
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    assigned_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    closed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    sla_deadline_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
-    confirmation_deadline_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    assigned_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    closed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    sla_deadline_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    confirmation_deadline_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Rating & Anti-Corruption Feedback
     rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) # 1 to 5
@@ -203,12 +203,12 @@ class Appointment(Base):
     window_number: Mapped[str] = mapped_column(String(50), nullable=False) # e.g. "1-qavat, 104-xona, 2-darcha"
     appointment_date: Mapped[str] = mapped_column(String(10), nullable=False) # "YYYY-MM-DD"
     time_slot: Mapped[str] = mapped_column(String(20), nullable=False) # "10:15 - 10:30"
-    scheduled_start: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, index=True)
-    scheduled_end: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    scheduled_start: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True, index=True)
+    scheduled_end: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     status: Mapped[AppointmentStatus] = mapped_column(SQLEnum(AppointmentStatus), default=AppointmentStatus.BOOKED, nullable=False)
     
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     earned_kpi_points: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
@@ -231,7 +231,7 @@ class AuditLog(Base):
     entity_id: Mapped[int] = mapped_column(Integer, nullable=False)
     action: Mapped[str] = mapped_column(String(100), nullable=False) # "created", "status_changed", "assigned"
     details: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
 # 8. Holiday & Calendar Model (Bayramlar va dam olish kunlari kalendari)
@@ -242,7 +242,7 @@ class Holiday(Base):
     holiday_date: Mapped[str] = mapped_column(String(10), unique=True, index=True, nullable=False) # "YYYY-MM-DD"
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     is_working_day: Mapped[bool] = mapped_column(Boolean, default=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
 # 9. System Setting Model (Tizim konfiguratsiyalari va cheklov siyosatlari)
@@ -252,6 +252,6 @@ class SystemSetting(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     key: Mapped[str] = mapped_column(String(100), unique=True, index=True, nullable=False)
     value: Mapped[str] = mapped_column(Text, nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
