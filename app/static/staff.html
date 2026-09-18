@@ -490,45 +490,84 @@
 
 
 
-        <!-- TAB 2: MENING XIZMATLARIM & BO'LIM REESTRI -->
+        <!-- TAB 2: XIZMATLAR VA BO'LIMLAR REESTRI (TO'LAQONLI CRUD) -->
         <div id="tab-services" class="tab-pane hidden space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
-              <h3 class="text-lg font-bold text-white tracking-tight">Bo'lim va biriktirilgan xizmatlar</h3>
-              <p class="text-xs text-slate-400">Xodim biriktirilgan bo'lim yoki sektor bo'yicha ko'rsatiladigan rasmiy xizmatlar ro'yxati</p>
+              <h3 class="text-lg font-bold text-white tracking-tight">Xizmatlar katalogi va reglamentlar</h3>
+              <p class="text-xs text-slate-400">Registrator ofisi rasmiy xizmatlari, SLA ijro muddati (soatda) va xodimlar KPI ballari boshqaruvi</p>
             </div>
-            <div class="flex items-center gap-2">
-              <button id="add-service-btn" onclick="openAddServiceModal()" class="hidden px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition cursor-pointer">
-                Yangi xizmat qo'shish
+            <div class="flex items-center gap-2 flex-wrap">
+              <button id="add-service-btn" onclick="openCreateServiceModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Yangi xizmat qo'shish</span>
               </button>
-              <button onclick="loadMyServices()" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer">
+              <button id="add-dept-btn" onclick="openCreateDeptModal()" class="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-blue-600/20">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <span>Yangi bo'lim yaratish</span>
+              </button>
+              <button onclick="loadAllServicesAndDepts()" class="px-3 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer">
                 Yangilash
               </button>
             </div>
           </div>
 
-          <!-- Employee Department Info Card -->
-          <div id="my-dept-card" class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
-            <div class="flex items-center justify-between">
-              <div>
-                <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Biriktirilgan bo'lim / sektor</span>
-                <h4 id="my-dept-name" class="text-base font-bold text-white mt-0.5">Yuklanmoqda...</h4>
-              </div>
-              <span id="my-dept-window" class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                1-darcha
-              </span>
+          <!-- Services / Departments Subtabs & Filters -->
+          <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5">
+            <div class="flex items-center gap-2">
+              <button
+                onclick="switchServicesSubtab('services')"
+                id="subtab-services-btn"
+                class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white transition cursor-pointer"
+              >
+                Xizmatlar reyestri (<span id="total-services-count">0</span>)
+              </button>
+              <button
+                onclick="switchServicesSubtab('departments')"
+                id="subtab-departments-btn"
+                class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                Bo'limlar va darchalar (<span id="total-depts-count">0</span>)
+              </button>
             </div>
-            <p id="my-dept-desc" class="text-xs text-slate-400 leading-relaxed">
-              Ushbu sektor talabalarning rasmiy hujjatlari va murojaatlarini qabul qiladi.
-            </p>
+
+            <!-- Filter & Search for Services -->
+            <div id="services-filter-bar" class="flex items-center gap-2 flex-wrap flex-1 justify-end">
+              <div class="relative min-w-[200px] flex-1 max-w-xs">
+                <input
+                  type="text"
+                  id="services-search-input"
+                  oninput="filterServicesCatalog()"
+                  placeholder="Xizmat nomi yoki kodi..."
+                  class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                >
+                <svg class="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+
+              <select
+                id="services-dept-filter"
+                onchange="filterServicesCatalog()"
+                class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500 cursor-pointer"
+              >
+                <option value="">Barcha bo'limlar</option>
+              </select>
+            </div>
           </div>
 
-          <!-- Assigned Services List -->
-          <div class="space-y-3">
-            <h4 class="text-sm font-bold text-white tracking-tight">Sektor xizmatlari reyestri</h4>
-            <div id="my-services-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Services Grid View -->
+          <div id="services-view-pane" class="space-y-4">
+            <div id="all-services-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="p-8 text-center text-xs text-slate-500 col-span-2 border border-slate-800/80 rounded-2xl bg-slate-900/40">
                 Xizmatlar yuklanmoqda...
+              </div>
+            </div>
+          </div>
+
+          <!-- Departments Grid View -->
+          <div id="departments-view-pane" class="hidden space-y-4">
+            <div id="all-departments-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="p-8 text-center text-xs text-slate-500 col-span-3 border border-slate-800/80 rounded-2xl bg-slate-900/40">
+                Bo'limlar yuklanmoqda...
               </div>
             </div>
           </div>
@@ -566,10 +605,10 @@
             </div>
 
             <div class="flex gap-2">
-              <button onclick="alert('Talaba qabulga chaqirildi. Darcha displeyida e\'lon berildi.')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer">
+              <button onclick="showToast('Talaba qabulga chaqirildi. Darcha displeyida e\'lon berildi.', 'info')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer">
                 Chaqirish
               </button>
-              <button onclick="alert('Qabul yakunlandi. Xodimga 3 KPI balli qo\'shildi.')" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-200 text-xs font-medium transition cursor-pointer">
+              <button onclick="showToast('Qabul yakunlandi. Xodimga 3 KPI balli qo\'shildi.', 'success')" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-200 text-xs font-medium transition cursor-pointer">
                 Qabulni yakunlash
               </button>
             </div>
@@ -649,6 +688,24 @@
                   <button type="button" onclick="loadNizomDutiesForCreate()" class="text-[11px] text-blue-400 hover:text-blue-300 underline">
                     Nizom katalogidan avtomatik to'ldirish
                   </button>
+                </div>
+              <!-- Password Option: Auto OTP or Custom Password -->
+              <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-2.5">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <label class="text-xs font-semibold text-slate-300">Tizimga kirish paroli</label>
+                  <div class="flex items-center gap-3 text-xs">
+                    <label class="flex items-center gap-1.5 text-slate-300 cursor-pointer">
+                      <input type="radio" name="new_staff_pwd_mode" value="auto" checked onchange="toggleNewStaffPasswordInput()" class="text-blue-600 focus:ring-0">
+                      <span>8 belgili avtomatik OTP</span>
+                    </label>
+                    <label class="flex items-center gap-1.5 text-slate-300 cursor-pointer">
+                      <input type="radio" name="new_staff_pwd_mode" value="custom" onchange="toggleNewStaffPasswordInput()" class="text-blue-600 focus:ring-0">
+                      <span>Admin o'rnatadigan maxsus parol</span>
+                    </label>
+                  </div>
+                </div>
+                <div id="new-staff-custom-pwd-wrap" class="hidden">
+                  <input type="text" id="new-staff-custom-password" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Maxsus xavfsiz parolni kiriting (kamida 6 belgi)">
                 </div>
               </div>
 
@@ -1083,6 +1140,264 @@
     </div>
   </div>
 
+  <!-- MODAL: APP CONFIRMATION (RESPONSIVE CUSTOM CONFIRM DIALOG) -->
+  <div id="app-confirm-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-start gap-3">
+        <div id="confirm-modal-icon-wrap" class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 id="confirm-modal-title" class="text-sm font-bold text-white tracking-tight">Tasdiqlash</h3>
+          <p id="confirm-modal-msg" class="text-xs text-slate-400 mt-1 leading-relaxed">Ushbu amalni bajarishga ishonchingiz komilmi?</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="closeAppConfirm(false)" id="confirm-modal-cancel" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-300 text-xs font-semibold transition cursor-pointer">
+          Bekor qilish
+        </button>
+        <button type="button" onclick="closeAppConfirm(true)" id="confirm-modal-ok" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition cursor-pointer shadow-lg shadow-rose-600/20">
+          Tasdiqlash
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div id="app-toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+
+  <!-- MODAL: SERVICE CREATE / EDIT (XIZMATLAR REGLAMENTI VA KPI) -->
+  <div id="service-crud-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          </div>
+          <div>
+            <h3 id="service-modal-heading" class="text-sm font-bold text-white tracking-tight">Yangi xizmat qo'shish</h3>
+            <p class="text-xs text-slate-400">Vaqt reglamenti (SLA) va KPI ballari</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeServiceModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+      </div>
+
+      <form onsubmit="handleSaveService(event)" class="space-y-4">
+        <input type="hidden" id="service-crud-id">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Xizmat kodi <span class="text-rose-400">*</span></label>
+            <input type="text" id="service-code" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white uppercase font-mono focus:outline-none focus:border-emerald-500" placeholder="Masalan: TK-01" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Biriktirilgan bo'lim / darcha <span class="text-rose-400">*</span></label>
+            <select id="service-dept" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer" required>
+              <option value="">Bo'limni tanlang</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Rasmiy xizmat nomi <span class="text-rose-400">*</span></label>
+          <input type="text" id="service-title" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Masalan: Transkript (baholar ko'chirmasi) berish" required>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">SLA muddati (soatda) <span class="text-rose-400">*</span></label>
+            <input type="number" id="service-sla-hours" min="1" max="720" value="24" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+            <span class="text-[10px] text-slate-500">24, 48, 72 soat</span>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Xodim KPI balli <span class="text-rose-400">*</span></label>
+            <input type="number" id="service-kpi-points" min="1" max="25" value="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+            <span class="text-[10px] text-slate-500">1 dan 25 ballgacha</span>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Ijro formati <span class="text-rose-400">*</span></label>
+            <select id="service-resolution-mode" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer">
+              <option value="both">Onlayn va Darcha</option>
+              <option value="online_only">Faqat Onlayn</option>
+              <option value="in_person_only">Faqat Darchada</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Talab qilinadigan hujjatlar (ixtiyoriy)</label>
+          <input type="text" id="service-required-docs" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Masalan: Shaxsni tasdiqlovchi hujjat, to'lov kvitansiyasi">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Xizmat tavsifi va maqsadi</label>
+          <textarea id="service-desc" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-emerald-500 resize-none" placeholder="Ushbu xizmat talabalarga qanday tartibda ko'rsatiladi..."></textarea>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer shadow-md shadow-emerald-600/20">
+            Xizmatni saqlash
+          </button>
+          <button type="button" onclick="closeServiceModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer">
+            Bekor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: DEPARTMENT CREATE / EDIT (BO'LIMLAR VA DARCHALAR) -->
+  <div id="dept-crud-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          </div>
+          <div>
+            <h3 id="dept-modal-heading" class="text-sm font-bold text-white tracking-tight">Yangi bo'lim yaratish</h3>
+            <p class="text-xs text-slate-400">Front yoki Back office sohasi</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeDeptModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+      </div>
+
+      <form onsubmit="handleSaveDepartment(event)" class="space-y-3.5">
+        <input type="hidden" id="dept-crud-id">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Bo'lim / Sektor nomi <span class="text-rose-400">*</span></label>
+          <input type="text" id="dept-name" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Talabalarga xizmat ko'rsatish sektori" required>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Unikal kodi <span class="text-rose-400">*</span></label>
+            <input type="text" id="dept-code" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-blue-500" placeholder="front_office_1" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Soha turi <span class="text-rose-400">*</span></label>
+            <select id="dept-type" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer">
+              <option value="front_office">Front-ofis (Darcha)</option>
+              <option value="back_office">Back-ofis (Ijro)</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Darcha raqami (Front-ofis uchun)</label>
+          <input type="text" id="dept-window" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Masalan: 1-darcha, 2-darcha">
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition cursor-pointer shadow-md shadow-blue-600/20">
+            Bo'limni saqlash
+          </button>
+          <button type="button" onclick="closeDeptModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer">
+            Bekor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT STAFF PROFILE, ROLES & PASSWORDS -->
+  <div id="edit-staff-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-tight">Xodim profilini tahrirlash</h3>
+            <p class="text-xs text-slate-400">Rollar, bo'lim va parolni boshqarish</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeEditStaffModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+      </div>
+
+      <form onsubmit="handleUpdateStaff(event)" class="space-y-3.5">
+        <input type="hidden" id="edit-staff-id">
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Xodim F.I.Sh. <span class="text-rose-400">*</span></label>
+            <input type="text" id="edit-staff-name" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500" required>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Foydalanuvchi logini <span class="text-rose-400">*</span></label>
+            <input type="text" id="edit-staff-username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500" required>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Biriktirilgan rol <span class="text-rose-400">*</span></label>
+            <select id="edit-staff-role" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer">
+              <option value="front_staff">Front-ofis darcha xodimi</option>
+              <option value="back_staff">Back-ofis ijrochi xodim</option>
+              <option value="office_head">Registrator ofisi boshlig'i</option>
+              <option value="vice_rector">O'quv ishlari bo'yicha prorektor</option>
+              <option value="admin">Tizim administratori</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Biriktirilgan bo'lim / sektor</label>
+            <select id="edit-staff-dept" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer">
+              <option value="">Bo'lim biriktirilmagan</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Elektron pochta</label>
+            <input type="email" id="edit-staff-email" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Telefon raqami</label>
+            <input type="text" id="edit-staff-phone" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Nizomiy xizmat vazifalari</label>
+          <textarea id="edit-staff-duties" rows="2" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+        </div>
+
+        <!-- Password Management Section -->
+        <div class="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+              Parolni boshqarish va qayta tiklash
+            </span>
+            <label class="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer">
+              <input type="checkbox" id="edit-staff-reset-otp" class="rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-0">
+              <span>8 belgili yangi OTP generatsiya qilish</span>
+            </label>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Yoki admin tomonidan yangi maxsus parol o'rnatish (kamida 6 belgi):</label>
+            <input type="text" id="edit-staff-new-password" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-1.5 text-xs text-white focus:outline-none focus:border-amber-500" placeholder="Bo'sh qoldirilsa joriy parol o'zgarishsiz qoladi">
+          </div>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition cursor-pointer shadow-md shadow-indigo-600/20">
+            O'zgarishlarni saqlash
+          </button>
+          <button type="button" onclick="closeEditStaffModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer">
+            Bekor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     let token = localStorage.getItem('roffice_token');
     let userRole = localStorage.getItem('roffice_role') || "office_head";
@@ -1093,6 +1408,102 @@
 
     if (!token) {
       window.location.href = pageUrl('/login');
+    }
+
+    // === GLOBAL DIALOG & NOTIFICATION SYSTEM ===
+    let appConfirmResolve = null;
+
+    function openAppConfirm({
+      title = "Tasdiqlash",
+      message = "Ushbu amalni bajarishga ishonchingiz komilmi?",
+      confirmText = "Tasdiqlash",
+      cancelText = "Bekor qilish",
+      isDanger = true
+    } = {}) {
+      return new Promise((resolve) => {
+        appConfirmResolve = resolve;
+        const modal = document.getElementById('app-confirm-modal');
+        const titleEl = document.getElementById('confirm-modal-title');
+        const msgEl = document.getElementById('confirm-modal-msg');
+        const okBtn = document.getElementById('confirm-modal-ok');
+        const cancelBtn = document.getElementById('confirm-modal-cancel');
+        const iconWrap = document.getElementById('confirm-modal-icon-wrap');
+
+        if (titleEl) titleEl.innerText = title;
+        if (msgEl) msgEl.innerText = message;
+        if (okBtn) {
+          okBtn.innerText = confirmText;
+          okBtn.className = isDanger
+            ? "px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition cursor-pointer shadow-lg shadow-rose-600/20"
+            : "px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-lg shadow-emerald-600/20";
+        }
+        if (cancelBtn) cancelBtn.innerText = cancelText;
+        if (iconWrap) {
+          iconWrap.className = isDanger
+            ? "w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0"
+            : "w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0";
+        }
+        if (modal) modal.classList.remove('hidden');
+      });
+    }
+
+    function closeAppConfirm(result) {
+      const modal = document.getElementById('app-confirm-modal');
+      if (modal) modal.classList.add('hidden');
+      if (appConfirmResolve) {
+        appConfirmResolve(Boolean(result));
+        appConfirmResolve = null;
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('app-toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      const typeStyles = {
+        success: 'bg-emerald-950/95 border-emerald-500/40 text-emerald-200',
+        error: 'bg-rose-950/95 border-rose-500/40 text-rose-200',
+        warning: 'bg-amber-950/95 border-amber-500/40 text-amber-200',
+        info: 'bg-slate-900/95 border-slate-700 text-slate-200'
+      };
+      const typeIcons = {
+        success: '✓',
+        error: '✕',
+        warning: '!',
+        info: 'ℹ'
+      };
+
+      const styleCls = typeStyles[type] || typeStyles.info;
+      const icon = typeIcons[type] || typeIcons.info;
+
+      toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-medium pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 ${styleCls}`;
+      toast.innerHTML = `
+        <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center font-bold text-[11px] flex-shrink-0">${icon}</span>
+        <span class="flex-1 leading-snug">${message}</span>
+      `;
+
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    function toggleNewStaffPasswordInput() {
+      const mode = document.querySelector('input[name="new_staff_pwd_mode"]:checked')?.value;
+      const wrap = document.getElementById('new-staff-custom-pwd-wrap');
+      if (wrap) {
+        if (mode === 'custom') {
+          wrap.classList.remove('hidden');
+        } else {
+          wrap.classList.add('hidden');
+        }
+      }
     }
 
     // 1. Core Tab Router with URL Hash and LocalStorage Persistence
@@ -1134,7 +1545,7 @@
       closeSidebar();
 
       if (tabId === 'appeals') loadStaffAppeals();
-      if (tabId === 'services') loadMyServices();
+      if (tabId === 'services') loadAllServicesAndDepts();
       if (tabId === 'policy') loadEducationPolicy();
       if (tabId === 'users') loadStaffUsers();
       if (tabId === 'kpi') loadKPIOverview();
@@ -1171,7 +1582,7 @@
 
     async function toggleBrowserNotifications() {
       if (!("Notification" in window)) {
-        alert("Sizning brauzeringiz bildirishnomalarni qo'llab-quvvatlamaydi.");
+        showToast("Sizning brauzeringiz bildirishnomalarni qo'llab-quvvatlamaydi.", "warning");
         return;
       }
 
@@ -1362,50 +1773,411 @@
       o.classList.add('hidden');
     }
 
-    // 4. TAB: MENING XIZMATLARIM
-    async function loadMyServices() {
-      const container = document.getElementById('my-services-list');
-      try {
-        const resp = await fetch('/api/v1/services/my-services', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await resp.json();
+    // 4. TAB: SERVICES & DEPARTMENTS FULL CRUD
+    let allServicesList = [];
+    let allDepartmentsList = [];
 
-        if (data.department) {
-          document.getElementById('my-dept-name').innerText = data.department.name;
-          document.getElementById('header-user-dept').innerText = data.department.name;
-          document.getElementById('my-dept-window').innerText = data.department.window_number || "Darcha belgilanmagan";
-        } else {
-          document.getElementById('my-dept-name').innerText = "Umumiy registrator ofisi boshqaruvi";
-          document.getElementById('header-user-dept').innerText = "Markaziy ma'muriyat";
-          document.getElementById('my-dept-window').innerText = "Markaziy";
+    async function loadAllServicesAndDepts() {
+      await Promise.all([loadDepartmentsList(), loadServicesCatalog()]);
+    }
+
+    function switchServicesSubtab(tab) {
+      const sPane = document.getElementById('services-view-pane');
+      const dPane = document.getElementById('departments-view-pane');
+      const sBtn = document.getElementById('subtab-services-btn');
+      const dBtn = document.getElementById('subtab-departments-btn');
+      const filterBar = document.getElementById('services-filter-bar');
+
+      if (tab === 'services') {
+        sPane?.classList.remove('hidden');
+        dPane?.classList.add('hidden');
+        filterBar?.classList.remove('hidden');
+        if (sBtn) sBtn.className = "px-3.5 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white transition cursor-pointer";
+        if (dBtn) dBtn.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer";
+      } else {
+        sPane?.classList.add('hidden');
+        dPane?.classList.remove('hidden');
+        filterBar?.classList.add('hidden');
+        if (dBtn) dBtn.className = "px-3.5 py-2 rounded-xl text-xs font-semibold bg-blue-600 text-white transition cursor-pointer";
+        if (sBtn) sBtn.className = "px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer";
+      }
+    }
+
+    async function loadDepartmentsList() {
+      try {
+        const resp = await fetch('/api/v1/services/departments');
+        if (!resp.ok) return;
+        allDepartmentsList = await resp.json();
+
+        // Update counts
+        const cntEl = document.getElementById('total-depts-count');
+        if (cntEl) cntEl.innerText = allDepartmentsList.length;
+
+        // Populate dropdowns in modals & filters
+        const deptFilter = document.getElementById('services-dept-filter');
+        if (deptFilter) {
+          const curVal = deptFilter.value;
+          deptFilter.innerHTML = '<option value="">Barcha bo\'limlar</option>' +
+            allDepartmentsList.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+          deptFilter.value = curVal;
         }
 
-        if (!data.services || data.services.length === 0) {
-          container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 col-span-2 border border-slate-800/80 rounded-2xl bg-slate-900/40">Ushbu bo\'limga biriktirilgan xizmatlar mavjud emas.</div>';
+        const serviceDeptSelect = document.getElementById('service-dept');
+        if (serviceDeptSelect) {
+          serviceDeptSelect.innerHTML = '<option value="">Bo\'limni tanlang</option>' +
+            allDepartmentsList.map(d => `<option value="${d.id}">${d.name} (${d.department_type === 'front_office' ? 'Front: ' + (d.window_number || 'Darcha') : 'Back: Ijro'})</option>`).join('');
+        }
+
+        const newStaffDeptSelect = document.getElementById('new-staff-department');
+        if (newStaffDeptSelect) {
+          newStaffDeptSelect.innerHTML = '<option value="">Bo\'limni tanlang (ixtiyoriy)</option>' +
+            allDepartmentsList.map(d => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('');
+        }
+
+        const editStaffDeptSelect = document.getElementById('edit-staff-dept');
+        if (editStaffDeptSelect) {
+          editStaffDeptSelect.innerHTML = '<option value="">Bo\'lim biriktirilmagan</option>' +
+            allDepartmentsList.map(d => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('');
+        }
+
+        // Render departments grid
+        const grid = document.getElementById('all-departments-grid');
+        if (!grid) return;
+
+        if (allDepartmentsList.length === 0) {
+          grid.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 col-span-3 border border-slate-800/80 rounded-2xl bg-slate-900/40">Bo\'limlar mavjud emas.</div>';
           return;
         }
 
-        container.innerHTML = data.services.map(s => `
-          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
+        grid.innerHTML = allDepartmentsList.map(d => `
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 relative group hover:border-slate-700 transition">
             <div class="flex items-center justify-between">
-              <span class="font-mono text-xs font-bold text-emerald-400">${s.code}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                ${s.is_paid ? s.fee_amount + " so'm" : "Bepul xizmat"}
+              <span class="font-mono text-xs font-bold text-blue-400">${d.code}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${d.department_type === 'front_office' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}">
+                ${d.department_type === 'front_office' ? 'Front-ofis (Darcha)' : 'Back-ofis (Ijro)'}
               </span>
             </div>
             <div>
-              <h5 class="text-sm font-bold text-white">${s.title}</h5>
-              <p class="text-xs text-slate-400 mt-1">${s.description || 'Nizom bo\'yicha standart ta\'lim xizmati'}</p>
+              <h5 class="text-sm font-bold text-white">${d.name}</h5>
+              <p class="text-xs text-slate-400 mt-1">Darcha: <strong class="text-slate-200">${d.window_number || 'Belgilanmagan'}</strong></p>
             </div>
-            <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
-              <span>SLA muddati: <strong class="text-white">${s.sla_hours} soat</strong></span>
-              <span>Darcha: <strong class="text-white">${s.requires_in_person ? "Kelib hal etish" : "Onlayn"}</strong></span>
+            <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
+              <button onclick="openEditDeptModal(${d.id})" class="px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                Tahrirlash
+              </button>
+              <button onclick="deleteDepartment(${d.id}, '${encodeURIComponent(d.name)}')" class="px-2.5 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+                O'chirish
+              </button>
             </div>
           </div>
         `).join('');
       } catch (e) {
-        container.innerHTML = '<div class="p-8 text-center text-xs text-rose-400 col-span-2">Xizmatlarni yuklab bo\'lmadi.</div>';
+        console.error("Bo'limlarni yuklashda xatolik:", e);
+      }
+    }
+
+    async function loadServicesCatalog() {
+      try {
+        const resp = await fetch('/api/v1/services');
+        if (!resp.ok) return;
+        allServicesList = await resp.json();
+
+        const cntEl = document.getElementById('total-services-count');
+        if (cntEl) cntEl.innerText = allServicesList.length;
+
+        filterServicesCatalog();
+      } catch (e) {
+        console.error("Xizmatlarni yuklashda xatolik:", e);
+      }
+    }
+
+    function filterServicesCatalog() {
+      const q = document.getElementById('services-search-input')?.value.toLowerCase().trim() || "";
+      const deptId = document.getElementById('services-dept-filter')?.value;
+      const grid = document.getElementById('all-services-grid');
+      if (!grid) return;
+
+      const filtered = allServicesList.filter(s => {
+        const matchesQ = !q || s.title.toLowerCase().includes(q) || s.code.toLowerCase().includes(q);
+        const matchesDept = !deptId || s.department_id == deptId;
+        return matchesQ && matchesDept;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 col-span-2 border border-slate-800/80 rounded-2xl bg-slate-900/40">Mos keluvchi xizmatlar topilmadi.</div>';
+        return;
+      }
+
+      grid.innerHTML = filtered.map(s => {
+        const dept = allDepartmentsList.find(d => d.id === s.department_id);
+        const deptName = dept ? dept.name : (s.department_code || "Bo'lim belgilanmagan");
+        const modeLabel = s.requires_in_person && s.can_be_resolved_online ? "Onlayn va Darcha" : (s.requires_in_person ? "Faqat Darchada" : "Faqat Onlayn");
+
+        return `
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3.5 relative group hover:border-slate-700 transition">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">${s.code}</span>
+                <span class="text-xs text-slate-400">• ${deptName}</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                  KPI: +${s.kpi_points || 3} ball
+                </span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${s.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">
+                  ${s.is_active ? 'Faol' : 'Nofaol'}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <h5 class="text-sm font-bold text-white leading-snug">${s.title}</h5>
+              <p class="text-xs text-slate-400 mt-1 leading-relaxed">${s.description || 'Nizomiy reglament asosidagi standart xizmat'}</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-xs bg-slate-950/60 p-3 rounded-xl border border-slate-800/80">
+              <div>
+                <span class="text-slate-500">SLA reglamenti:</span>
+                <span class="font-semibold text-white ml-1">${s.sla_hours} soat</span>
+              </div>
+              <div>
+                <span class="text-slate-500">Ijro formati:</span>
+                <span class="font-semibold text-white ml-1">${modeLabel}</span>
+              </div>
+              ${s.required_documents ? `
+              <div class="col-span-2 pt-1 border-t border-slate-800/60 text-[11px]">
+                <span class="text-slate-500">Hujjatlar:</span>
+                <span class="text-slate-300 ml-1">${s.required_documents}</span>
+              </div>` : ''}
+            </div>
+
+            <div class="pt-2 border-t border-slate-800 flex items-center justify-end gap-2">
+              <button onclick="openEditServiceModal(${s.id})" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                Tahrirlash (SLA/KPI)
+              </button>
+              <button onclick="deleteService(${s.id}, '${encodeURIComponent(s.title)}')" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+                O'chirish
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Modal Service CRUD
+    function openCreateServiceModal() {
+      document.getElementById('service-modal-heading').innerText = "Yangi xizmat qo'shish";
+      document.getElementById('service-crud-id').value = "";
+      document.getElementById('service-code').value = "";
+      document.getElementById('service-title').value = "";
+      document.getElementById('service-sla-hours').value = "24";
+      document.getElementById('service-kpi-points').value = "3";
+      document.getElementById('service-resolution-mode').value = "both";
+      document.getElementById('service-required-docs').value = "";
+      document.getElementById('service-desc').value = "";
+      document.getElementById('service-crud-modal').classList.remove('hidden');
+    }
+
+    function openEditServiceModal(id) {
+      const s = allServicesList.find(item => item.id === id);
+      if (!s) return;
+
+      document.getElementById('service-modal-heading').innerText = "Xizmatni tahrirlash (SLA va KPI)";
+      document.getElementById('service-crud-id').value = s.id;
+      document.getElementById('service-code').value = s.code;
+      document.getElementById('service-dept').value = s.department_id || "";
+      document.getElementById('service-title').value = s.title;
+      document.getElementById('service-sla-hours').value = s.sla_hours || 24;
+      document.getElementById('service-kpi-points').value = s.kpi_points || 3;
+
+      let mode = 'both';
+      if (s.requires_in_person && !s.can_be_resolved_online) mode = 'in_person_only';
+      if (!s.requires_in_person && s.can_be_resolved_online) mode = 'online_only';
+      document.getElementById('service-resolution-mode').value = mode;
+
+      document.getElementById('service-required-docs').value = s.required_documents || "";
+      document.getElementById('service-desc').value = s.description || "";
+
+      document.getElementById('service-crud-modal').classList.remove('hidden');
+    }
+
+    function closeServiceModal() {
+      document.getElementById('service-crud-modal').classList.add('hidden');
+    }
+
+    async function handleSaveService(e) {
+      e.preventDefault();
+      const id = document.getElementById('service-crud-id').value;
+      const code = document.getElementById('service-code').value.trim().toUpperCase();
+      const deptId = parseInt(document.getElementById('service-dept').value);
+      const title = document.getElementById('service-title').value.trim();
+      const slaHours = parseInt(document.getElementById('service-sla-hours').value) || 24;
+      const kpiPoints = parseInt(document.getElementById('service-kpi-points').value) || 3;
+      const mode = document.getElementById('service-resolution-mode').value;
+      const reqDocs = document.getElementById('service-required-docs').value.trim() || null;
+      const desc = document.getElementById('service-desc').value.trim() || null;
+
+      const requiresInPerson = mode === 'in_person_only' || mode === 'both';
+      const canOnline = mode === 'online_only' || mode === 'both';
+
+      const payload = {
+        code: code,
+        title: title,
+        department_id: deptId,
+        sla_hours: slaHours,
+        kpi_points: kpiPoints,
+        requires_in_person: requiresInPerson,
+        can_be_resolved_online: canOnline,
+        required_documents: reqDocs,
+        description: desc
+      };
+
+      try {
+        const url = id ? `/api/v1/services/${id}` : `/api/v1/services`;
+        const method = id ? 'PUT' : 'POST';
+        const resp = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await resp.json();
+        if (resp.ok) {
+          showToast(id ? "Xizmat muvaffaqiyatli yangilandi!" : "Yangi xizmat muvaffaqiyatli yaratildi!", "success");
+          closeServiceModal();
+          loadServicesCatalog();
+        } else {
+          showToast(data.detail || "Xizmatni saqlashda xatolik yuz berdi.", "error");
+        }
+      } catch (err) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      }
+    }
+
+    async function deleteService(id, encTitle) {
+      const title = decodeURIComponent(encTitle);
+      const ok = await openAppConfirm({
+        title: "Xizmatni o'chirish",
+        message: `Haqiqatan ham "${title}" xizmatini o'chirmoqchimisiz? Ushbu xizmat bo'yicha yangi murojaat qabul qilinmaydi.`,
+        confirmText: "O'chirish",
+        cancelText: "Bekor qilish",
+        isDanger: true
+      });
+      if (!ok) return;
+
+      try {
+        const resp = await fetch(`/api/v1/services/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resp.ok) {
+          showToast("Xizmat muvaffaqiyatli o'chirildi.", "success");
+          loadServicesCatalog();
+        } else {
+          const err = await resp.json();
+          showToast(err.detail || "Xizmatni o'chirishda xatolik yuz berdi.", "error");
+        }
+      } catch (e) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      }
+    }
+
+    // Modal Department CRUD
+    function openCreateDeptModal() {
+      document.getElementById('dept-modal-heading').innerText = "Yangi bo'lim yaratish";
+      document.getElementById('dept-crud-id').value = "";
+      document.getElementById('dept-name').value = "";
+      document.getElementById('dept-code').value = "";
+      document.getElementById('dept-type').value = "front_office";
+      document.getElementById('dept-window').value = "";
+      document.getElementById('dept-crud-modal').classList.remove('hidden');
+    }
+
+    function openEditDeptModal(id) {
+      const d = allDepartmentsList.find(item => item.id === id);
+      if (!d) return;
+
+      document.getElementById('dept-modal-heading').innerText = "Bo'limni tahrirlash";
+      document.getElementById('dept-crud-id').value = d.id;
+      document.getElementById('dept-name').value = d.name;
+      document.getElementById('dept-code').value = d.code;
+      document.getElementById('dept-type').value = d.department_type || "front_office";
+      document.getElementById('dept-window').value = d.window_number || "";
+      document.getElementById('dept-crud-modal').classList.remove('hidden');
+    }
+
+    function closeDeptModal() {
+      document.getElementById('dept-crud-modal').classList.add('hidden');
+    }
+
+    async function handleSaveDepartment(e) {
+      e.preventDefault();
+      const id = document.getElementById('dept-crud-id').value;
+      const name = document.getElementById('dept-name').value.trim();
+      const code = document.getElementById('dept-code').value.trim();
+      const deptType = document.getElementById('dept-type').value;
+      const windowNum = document.getElementById('dept-window').value.trim() || null;
+
+      const payload = {
+        name: name,
+        code: code,
+        department_type: deptType,
+        window_number: windowNum
+      };
+
+      try {
+        const url = id ? `/api/v1/services/departments/${id}` : `/api/v1/services/departments`;
+        const method = id ? 'PUT' : 'POST';
+        const resp = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await resp.json();
+        if (resp.ok) {
+          showToast(id ? "Bo'lim muvaffaqiyatli yangilandi!" : "Yangi bo'lim muvaffaqiyatli yaratildi!", "success");
+          closeDeptModal();
+          loadDepartmentsList();
+        } else {
+          showToast(data.detail || "Bo'limni saqlashda xatolik yuz berdi.", "error");
+        }
+      } catch (err) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      }
+    }
+
+    async function deleteDepartment(id, encName) {
+      const name = decodeURIComponent(encName);
+      const ok = await openAppConfirm({
+        title: "Bo'limni o'chirish",
+        message: `Haqiqatan ham "${name}" bo'limini o'chirmoqchimisiz?`,
+        confirmText: "O'chirish",
+        cancelText: "Bekor qilish",
+        isDanger: true
+      });
+      if (!ok) return;
+
+      try {
+        const resp = await fetch(`/api/v1/services/departments/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resp.ok) {
+          showToast("Bo'lim muvaffaqiyatli o'chirildi.", "success");
+          loadDepartmentsList();
+        } else {
+          const err = await resp.json();
+          showToast(err.detail || "Bo'limni o'chirishda xatolik.", "error");
+        }
+      } catch (e) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
 
@@ -1443,14 +2215,14 @@
           localStorage.setItem('roffice_token', token);
           localStorage.setItem('roffice_must_change_password', 'false');
           document.getElementById('first-login-modal').classList.add('hidden');
-          alert("Parolingiz muvaffaqiyatli o'zgartirildi. Tizimga xush kelibsiz!");
+          showToast("Parolingiz muvaffaqiyatli o'zgartirildi. Tizimga xush kelibsiz!", "success");
           loadCurrentUserProfile();
         } else {
           alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
           alertBox.innerText = data.detail || "Parolni o'zgartirishda xatolik yuz berdi.";
         }
       } catch (err) {
-        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
 
@@ -1497,6 +2269,7 @@
           localStorage.setItem('roffice_token', token);
           alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-emerald-500/10 border-emerald-500/30 text-emerald-400 block';
           alertBox.innerText = "Xavfsizlik ma'lumotlari muvaffaqiyatli yangilandi.";
+          showToast("Profil va parol ma'lumotlari yangilandi!", "success");
           setTimeout(() => {
             closeCredentialsModal();
             loadCurrentUserProfile();
@@ -1506,11 +2279,13 @@
           alertBox.innerText = data.detail || "Xatolik yuz berdi.";
         }
       } catch (err) {
-        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
 
     // 7. TAB: XODIMLAR & ROLLAR & NIZOM VAZIFALARI
+    let allStaffList = [];
+
     const roleNameMap = {
       'front_staff': "Front-ofis xodimi",
       'back_staff': "Back-ofis ijrochi",
@@ -1542,8 +2317,10 @@
         const resp = await fetch('/api/v1/services/departments');
         departmentsList = await resp.json();
         const sel = document.getElementById('new-staff-department');
-        sel.innerHTML = '<option value="">Bo\'limni tanlang (ixtiyoriy)</option>' +
-          departmentsList.map(d => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('');
+        if (sel) {
+          sel.innerHTML = '<option value="">Bo\'limni tanlang (ixtiyoriy)</option>' +
+            departmentsList.map(d => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('');
+        }
       } catch (e) {
         console.error("Bo'limlarni yuklab bo'lmadi:", e);
       }
@@ -1576,6 +2353,14 @@
       const phone = document.getElementById('new-staff-phone').value.trim() || null;
       const duties = document.getElementById('new-staff-duties').value.trim() || null;
 
+      const pwdMode = document.querySelector('input[name="new_staff_pwd_mode"]:checked')?.value || 'auto';
+      const customPwd = pwdMode === 'custom' ? (document.getElementById('new-staff-custom-password')?.value.trim() || null) : null;
+
+      if (pwdMode === 'custom' && (!customPwd || customPwd.length < 6)) {
+        showToast("Maxsus parol kamida 6 belgidan iborat bo'lishi kerak.", "warning");
+        return;
+      }
+
       try {
         const resp = await fetch('/api/v1/users/staff', {
           method: 'POST',
@@ -1590,7 +2375,8 @@
             department_id: deptId,
             email: email,
             phone: phone,
-            assigned_duties: duties
+            assigned_duties: duties,
+            custom_password: customPwd
           })
         });
         const data = await resp.json();
@@ -1603,19 +2389,20 @@
           document.getElementById('temp-password-val').innerText = data.temporary_password;
           document.getElementById('temp-password-modal').classList.remove('hidden');
 
+          showToast("Yangi xodim muvaffaqiyatli qo'shildi!", "success");
           loadStaffUsers();
         } else {
-          alert(data.detail || "Xodim qo'shishda xatolik yuz berdi.");
+          showToast(data.detail || "Xodim qo'shishda xatolik yuz berdi.", "error");
         }
       } catch (err) {
-        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
 
     function copyTempPassword() {
       const p = document.getElementById('temp-password-val').innerText;
       navigator.clipboard.writeText(p);
-      alert("Parol nusxalandi: " + p);
+      showToast("Parol nusxalandi: " + p, "success");
     }
 
     function closeTempPasswordModal() {
@@ -1634,36 +2421,42 @@
           tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-rose-400">Xodimlarni ko'rish huquqi yetarli emas (faqat Administrator va Boshliq).</td></tr>`;
           return;
         }
-        const users = await resp.json();
-        if (!users || users.length === 0) {
+        allStaffList = await resp.json();
+        if (!allStaffList || allStaffList.length === 0) {
           tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Xodimlar mavjud emas.</td></tr>`;
           return;
         }
 
-        tbody.innerHTML = users.map(u => {
+        tbody.innerHTML = allStaffList.map(u => {
           const dutiesSummary = u.assigned_duties ? u.assigned_duties.split('\n')[0] : "Biriktirilmagan";
+          const dept = allDepartmentsList.find(d => d.id === u.department_id);
+          const deptLabel = dept ? `${dept.name} (${dept.window_number || dept.code})` : 'Bo\'limsiz';
+
           return `
             <tr class="hover:bg-slate-950/40 transition">
               <td class="p-3.5 font-mono text-slate-400">${u.id}</td>
               <td class="p-3.5">
                 <div class="font-semibold text-white">${u.full_name}</div>
-                <div class="text-[11px] text-slate-400">${u.email || u.phone || '-'}</div>
+                <div class="text-[11px] text-slate-400">${u.email || u.phone || '-'} • <span class="text-blue-400 font-medium">${deptLabel}</span></div>
               </td>
-              <td class="p-3.5 font-mono text-blue-400">${u.username}</td>
+              <td class="p-3.5 font-mono text-blue-400 font-medium">${u.username}</td>
               <td class="p-3.5">
                 <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${roleBadgeColor[u.role] || 'border-slate-800'}">
                   ${roleNameMap[u.role] || u.role}
                 </span>
-                ${u.must_change_password ? '<span class="ml-1 text-[10px] text-amber-400">(Vaqtinchalik OTP)</span>' : ''}
+                ${u.must_change_password ? '<span class="ml-1 text-[10px] text-amber-400 font-medium">(Vaqtinchalik OTP)</span>' : ''}
               </td>
               <td class="p-3.5 text-slate-300 text-xs max-w-xs truncate" title="${u.assigned_duties || ''}">
                 ${dutiesSummary}
               </td>
-              <td class="p-3.5 text-right space-x-1.5 whitespace-nowrap">
-                <button onclick="openKpiAwardModal(${u.id}, '${u.full_name}', '${encodeURIComponent(u.assigned_duties || '')}')" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
-                  Vazifalar & KPI
+              <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
+                <button onclick="openEditStaffModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                  Tahrirlash
                 </button>
-                <button onclick="deleteStaffMember(${u.id}, '${u.full_name}')" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+                <button onclick="openKpiAwardModal(${u.id}, '${encodeURIComponent(u.full_name)}', '${encodeURIComponent(u.assigned_duties || '')}')" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                  KPI & Vazifa
+                </button>
+                <button onclick="deleteStaffMember(${u.id}, '${encodeURIComponent(u.full_name)}')" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
                   O'chirish
                 </button>
               </td>
@@ -1675,22 +2468,112 @@
       }
     }
 
-    async function deleteStaffMember(userId, name) {
-      if (!confirm(`Haqiqatan ham "${name}" xodimini tizimdan o'chirmoqchimisiz?`)) return;
+    function openEditStaffModal(userId) {
+      const u = allStaffList.find(item => item.id === userId);
+      if (!u) return;
+
+      document.getElementById('edit-staff-id').value = u.id;
+      document.getElementById('edit-staff-name').value = u.full_name;
+      document.getElementById('edit-staff-username').value = u.username;
+      document.getElementById('edit-staff-role').value = u.role;
+      document.getElementById('edit-staff-dept').value = u.department_id || "";
+      document.getElementById('edit-staff-email').value = u.email || "";
+      document.getElementById('edit-staff-phone').value = u.phone || "";
+      document.getElementById('edit-staff-duties').value = u.assigned_duties || "";
+      document.getElementById('edit-staff-reset-otp').checked = false;
+      document.getElementById('edit-staff-new-password').value = "";
+
+      document.getElementById('edit-staff-modal').classList.remove('hidden');
+    }
+
+    function closeEditStaffModal() {
+      document.getElementById('edit-staff-modal').classList.add('hidden');
+    }
+
+    async function handleUpdateStaff(e) {
+      e.preventDefault();
+      const userId = document.getElementById('edit-staff-id').value;
+      const fullName = document.getElementById('edit-staff-name').value.trim();
+      const username = document.getElementById('edit-staff-username').value.trim();
+      const role = document.getElementById('edit-staff-role').value;
+      const deptId = document.getElementById('edit-staff-dept').value ? parseInt(document.getElementById('edit-staff-dept').value) : null;
+      const email = document.getElementById('edit-staff-email').value.trim() || null;
+      const phone = document.getElementById('edit-staff-phone').value.trim() || null;
+      const duties = document.getElementById('edit-staff-duties').value.trim() || null;
+      const resetOtp = document.getElementById('edit-staff-reset-otp').checked;
+      const newPassword = document.getElementById('edit-staff-new-password').value.trim() || null;
+
+      if (newPassword && newPassword.length < 6) {
+        showToast("Yangi parol kamida 6 ta belgidan iborat bo'lishi kerak.", "warning");
+        return;
+      }
+
+      const payload = {
+        full_name: fullName,
+        username: username,
+        role: role,
+        department_id: deptId,
+        email: email,
+        phone: phone,
+        assigned_duties: duties,
+        reset_password: resetOtp,
+        new_password: newPassword
+      };
+
+      try {
+        const resp = await fetch(`/api/v1/users/staff/${userId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+
+        if (resp.ok) {
+          closeEditStaffModal();
+          if (data.new_temporary_password) {
+            document.getElementById('temp-username-val').innerText = data.user.username;
+            document.getElementById('temp-password-val').innerText = data.new_temporary_password;
+            document.getElementById('temp-password-modal').classList.remove('hidden');
+          } else {
+            showToast("Xodim ma'lumotlari muvaffaqiyatli yangilandi!", "success");
+          }
+          loadStaffUsers();
+        } else {
+          showToast(data.detail || "Xodimni yangilashda xatolik yuz berdi.", "error");
+        }
+      } catch (err) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      }
+    }
+
+    async function deleteStaffMember(userId, encName) {
+      const name = decodeURIComponent(encName);
+      const ok = await openAppConfirm({
+        title: "Xodimni o'chirish",
+        message: `Haqiqatan ham "${name}" xodimini tizimdan o'chirmoqchimisiz? Ushbu xodim tizimga kira olmaydi.`,
+        confirmText: "O'chirish",
+        cancelText: "Bekor qilish",
+        isDanger: true
+      });
+      if (!ok) return;
+
       try {
         const resp = await fetch(`/api/v1/users/${userId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (resp.ok) {
-          alert("Xodim muvaffaqiyatli faolsizlashtirildi.");
+          showToast("Xodim muvaffaqiyatli faolsizlashtirildi.", "success");
           loadStaffUsers();
         } else {
           const err = await resp.json();
-          alert(err.detail || "Xodimni o'chirishda xatolik.");
+          showToast(err.detail || "Xodimni o'chirishda xatolik yuz berdi.", "error");
         }
       } catch (e) {
-        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
 
@@ -1735,14 +2618,14 @@
         });
         const res = await resp.json();
         if (resp.ok) {
-          alert(`Xodimga ${pts} KPI balli muvaffaqiyatli qo'shildi. Joriy foiz: ${res.kpi_percentage}%`);
+          showToast(`Xodimga ${pts} KPI balli muvaffaqiyatli qo'shildi. Joriy foiz: ${res.kpi_percentage}%`, 'success');
           closeKpiAwardModal();
           e.target.reset();
         } else {
-          alert(res.detail || "KPI balli berishda xatolik yuz berdi.");
+          showToast(res.detail || "KPI balli berishda xatolik yuz berdi.", 'error');
         }
       } catch (err) {
-        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", 'error');
       }
     }
 
@@ -2089,7 +2972,7 @@
     // Export to Excel (CSV with UTF-8 BOM)
     function exportAppealsToExcel() {
       if (!allStaffAppeals || allStaffAppeals.length === 0) {
-        alert("Eksport qilish uchun murojaatlar mavjud emas.");
+        showToast("Eksport qilish uchun murojaatlar mavjud emas.", "warning");
         return;
       }
 
@@ -2495,11 +3378,11 @@
           setTimeout(() => { toast.classList.add('hidden'); }, 3500);
         } else {
           const err = await resp.json();
-          alert(err.detail || "Siyosatni o'zgartirib bo'lmadi");
+          showToast(err.detail || "Siyosatni o'zgartirib bo'lmadi", "error");
           checkbox.checked = !isAllowed;
         }
       } catch (e) {
-        alert("Ulanish xatosi: " + e);
+        showToast("Ulanish xatosi: " + e, "error");
         checkbox.checked = !isAllowed;
       }
     }

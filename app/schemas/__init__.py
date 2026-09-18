@@ -85,6 +85,7 @@ class StaffCreateResponse(BaseModel):
 
 class StaffUpdate(BaseModel):
     full_name: Optional[str] = None
+    username: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     department_id: Optional[int] = None
@@ -92,6 +93,7 @@ class StaffUpdate(BaseModel):
     is_active: Optional[bool] = None
     assigned_duties: Optional[str] = None
     reset_password: Optional[bool] = False  # If True, generates new 8-char OTP
+    new_password: Optional[str] = None  # If provided, sets custom password directly
 
 
 class UpdateCredentialsRequest(BaseModel):

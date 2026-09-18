@@ -205,8 +205,8 @@ async def create_staff(
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ushbu login band.")
 
-    # 8-character secure alphanumeric OTP generation
-    if data.custom_password and len(data.custom_password.strip()) >= 8:
+    # 8-character secure alphanumeric OTP generation or admin-provided custom password (min 6 chars)
+    if data.custom_password and len(data.custom_password.strip()) >= 6:
         temporary_password = data.custom_password.strip()
     else:
         chars = string.ascii_letters + string.digits
@@ -249,6 +249,13 @@ async def update_staff(
 
     if data.full_name is not None:
         user.full_name = data.full_name
+    if data.username is not None and data.username.strip():
+        new_u = data.username.strip()
+        if new_u != user.username:
+            existing = await db.execute(select(User).where(User.username == new_u))
+            if existing.scalar_one_or_none():
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ushbu login band.")
+            user.username = new_u
     if data.email is not None:
         user.email = data.email
     if data.phone is not None:
@@ -262,8 +269,11 @@ async def update_staff(
     if data.assigned_duties is not None:
         user.assigned_duties = data.assigned_duties
 
-    # Agar admin parolni qayta tiklashni so'rasa
-    if data.reset_password:
+    # Agar admin xodimga yangi parol belgilasa
+    if data.new_password and len(data.new_password.strip()) >= 6:
+        user.hashed_password = hash_password(data.new_password.strip())
+        user.must_change_password = False
+    elif data.reset_password:
         chars = string.ascii_letters + string.digits
         new_otp = "".join(secrets.choice(chars) for _ in range(8))
         user.hashed_password = hash_password(new_otp)
