@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 def _appeal_options():
     return (
-        selectinload(Appeal.service),
+        selectinload(Appeal.service).selectinload(Service.department),
         selectinload(Appeal.student),
         selectinload(Appeal.assigned_staff)
     )
