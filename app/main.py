@@ -39,6 +39,16 @@ async def lifespan(app: FastAPI):
             await conn.execute(text("ALTER TABLE users ADD COLUMN telegram_connected_at DATETIME DEFAULT NULL"))
         except Exception:
             pass
+        try:
+            await conn.execute(text("""
+                CREATE TABLE IF NOT EXISTS user_services (
+                    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                    service_id INTEGER NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+                    PRIMARY KEY (user_id, service_id)
+                )
+            """))
+        except Exception:
+            pass
 
     # Start background tasks
     bot_task = asyncio.create_task(run_telegram_bot_poller())

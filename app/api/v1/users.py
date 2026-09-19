@@ -4,13 +4,14 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
-from app.models import User, UserRole
+from app.models import User, UserRole, Service
 from app.schemas import (
     UserOut, UserRoleUpdate, StaffCreate, StaffCreateResponse,
-    StaffUpdate, UpdateCredentialsRequest
+    StaffUpdate, UpdateCredentialsRequest, ServiceOut, StaffServiceAssignRequest
 )
 from app.api.deps import require_role, get_current_user
 
@@ -172,9 +173,13 @@ async def get_staff_list(
     db: AsyncSession = Depends(get_db)
 ):
     """Admin yoki Boshliq uchun barcha xodimlarni ko'rish va boshqarish ro'yxati."""
-    result = await db.execute(
-        select(User).where(User.role != UserRole.STUDENT).order_by(User.id.asc())
+    query = (
+        select(User)
+        .options(selectinload(User.department), selectinload(User.assigned_services))
+        .where(User.role != UserRole.STUDENT)
+        .order_by(User.id.asc())
     )
+    result = await db.execute(query)
     return result.scalars().all()
 
 
@@ -184,10 +189,72 @@ async def get_user_detail(
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.OFFICE_HEAD)),
     db: AsyncSession = Depends(get_db)
 ):
-    user = await db.get(User, user_id)
+    query = (
+        select(User)
+        .options(selectinload(User.department), selectinload(User.assigned_services))
+        .where(User.id == user_id)
+    )
+    user = (await db.execute(query)).scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foydalanuvchi topilmadi.")
     return user
+
+
+@router.get("/{user_id}/services", response_model=List[ServiceOut], summary="Xodimga biriktirilgan xizmatlar ro'yxati")
+async def get_staff_services(
+    user_id: int,
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.OFFICE_HEAD, UserRole.FRONT_STAFF, UserRole.BACK_STAFF)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Xodimga biriktirilgan xizmatlar katalogi."""
+    query = (
+        select(User)
+        .options(selectinload(User.assigned_services).selectinload(Service.department))
+        .where(User.id == user_id)
+    )
+    user = (await db.execute(query)).scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Xodim topilmadi.")
+    return user.assigned_services
+
+
+@router.put("/{user_id}/services", response_model=List[ServiceOut], summary="Xodimga xizmatlarni biriktirish (Admin / Boshliq)")
+async def assign_staff_services(
+    user_id: int,
+    data: StaffServiceAssignRequest,
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.OFFICE_HEAD)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Xodimga bitta yoki bir nechta xizmatlarni dinamik biriktirish."""
+    query = (
+        select(User)
+        .options(selectinload(User.assigned_services))
+        .where(User.id == user_id)
+    )
+    user = (await db.execute(query)).scalar_one_or_none()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Xodim topilmadi.")
+
+    if data.service_ids:
+        services_query = (
+            select(Service)
+            .options(selectinload(Service.department))
+            .where(Service.id.in_(data.service_ids), Service.is_active == True)
+        )
+        services = (await db.execute(services_query)).scalars().all()
+        user.assigned_services = list(services)
+    else:
+        user.assigned_services = []
+
+    await db.commit()
+
+    query = (
+        select(User)
+        .options(selectinload(User.assigned_services).selectinload(Service.department))
+        .where(User.id == user_id)
+    )
+    reloaded = (await db.execute(query)).scalar_one()
+    return reloaded.assigned_services
 
 
 @router.post("/staff", response_model=StaffCreateResponse, status_code=status.HTTP_201_CREATED, summary="Yangi xodim qo'shish (bir martalik 8 belgili parol bilan)")
@@ -224,12 +291,25 @@ async def create_staff(
         must_change_password=True,
         is_active=True
     )
+
+    if data.service_ids:
+        services_res = await db.execute(
+            select(Service).where(Service.id.in_(data.service_ids), Service.is_active == True)
+        )
+        new_staff.assigned_services = list(services_res.scalars().all())
+
     db.add(new_staff)
     await db.commit()
-    await db.refresh(new_staff)
+
+    query = (
+        select(User)
+        .options(selectinload(User.department), selectinload(User.assigned_services))
+        .where(User.id == new_staff.id)
+    )
+    reloaded_user = (await db.execute(query)).scalar_one()
 
     return StaffCreateResponse(
-        user=new_staff,
+        user=reloaded_user,
         temporary_password=temporary_password,
         must_change_password=True
     )
@@ -243,7 +323,12 @@ async def update_staff(
     db: AsyncSession = Depends(get_db)
 ):
     """Admin yoki Boshliq tomonidan xodim ma'lumotlarini, rolini yoki biriktirilgan xizmat vazifalarini yangilash."""
-    user = await db.get(User, user_id)
+    query = (
+        select(User)
+        .options(selectinload(User.department), selectinload(User.assigned_services))
+        .where(User.id == user_id)
+    )
+    user = (await db.execute(query)).scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Xodim topilmadi.")
 
@@ -269,6 +354,15 @@ async def update_staff(
     if data.assigned_duties is not None:
         user.assigned_duties = data.assigned_duties
 
+    if data.service_ids is not None:
+        if data.service_ids:
+            services_res = await db.execute(
+                select(Service).where(Service.id.in_(data.service_ids), Service.is_active == True)
+            )
+            user.assigned_services = list(services_res.scalars().all())
+        else:
+            user.assigned_services = []
+
     # Agar admin xodimga yangi parol belgilasa
     if data.new_password and len(data.new_password.strip()) >= 6:
         user.hashed_password = hash_password(data.new_password.strip())
@@ -280,8 +374,13 @@ async def update_staff(
         user.must_change_password = True
 
     await db.commit()
-    await db.refresh(user)
-    return user
+
+    query = (
+        select(User)
+        .options(selectinload(User.department), selectinload(User.assigned_services))
+        .where(User.id == user.id)
+    )
+    return (await db.execute(query)).scalar_one()
 
 
 @router.patch("/{user_id}/role", response_model=UserOut, summary="Xodimning rolini admin tomonidan o'zgartirish")

@@ -112,18 +112,21 @@ async def get_my_services(
     if current_user.department_id:
         dept = await db.get(Department, current_user.department_id)
 
-    query = select(Service).options(selectinload(Service.department)).where(Service.is_active == True)
-
     if current_user.role in [UserRole.OFFICE_HEAD, UserRole.ADMIN, UserRole.VICE_RECTOR]:
         # Rahbariyat va Admin barcha xizmatlarni ko'radi
-        pass
+        query = select(Service).options(selectinload(Service.department)).where(Service.is_active == True).order_by(Service.department_id, Service.id)
+        result = await db.execute(query)
+        services = result.scalars().all()
+    elif current_user.assigned_services:
+        # Xodimga aynan aniq xizmatlar biriktirilgan bo'lsa
+        services = current_user.assigned_services
     elif current_user.department_id:
-        # Xodimning o'z bo'limiga biriktirilgan xizmatlar
-        query = query.where(Service.department_id == current_user.department_id)
-
-    query = query.order_by(Service.department_id, Service.id)
-    result = await db.execute(query)
-    services = result.scalars().all()
+        # Standart holat: bo'limga biriktirilgan barcha xizmatlar
+        query = select(Service).options(selectinload(Service.department)).where(Service.department_id == current_user.department_id, Service.is_active == True).order_by(Service.id)
+        result = await db.execute(query)
+        services = result.scalars().all()
+    else:
+        services = []
 
     return MyServicesResponse(department=dept, services=services)
 

@@ -1163,6 +1163,54 @@
       window.location.href = pageUrl('/login');
     }
 
+    // === GLOBAL RESPONSIVE TOAST NOTIFICATION SYSTEM ===
+    function showPortalToast(message, type = 'info') {
+      let toast = document.getElementById('global-portal-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'global-portal-toast';
+        toast.style.cssText = `
+          position: fixed;
+          bottom: 24px;
+          right: 24px;
+          z-index: 9999;
+          padding: 12px 20px;
+          border-radius: 12px;
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #fff;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+          backdrop-filter: blur(10px);
+          transition: all 0.3s ease;
+          opacity: 0;
+          transform: translateY(10px);
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        `;
+        document.body.appendChild(toast);
+      }
+
+      const colors = {
+        success: { bg: 'rgba(6, 78, 59, 0.95)', border: '#10b981', icon: '✅' },
+        error: { bg: 'rgba(136, 19, 55, 0.95)', border: '#f43f5e', icon: '❌' },
+        warning: { bg: 'rgba(120, 53, 15, 0.95)', border: '#f59e0b', icon: '⚠️' },
+        info: { bg: 'rgba(15, 23, 42, 0.95)', border: '#3b82f6', icon: 'ℹ️' }
+      };
+
+      const c = colors[type] || colors.info;
+      toast.style.background = c.bg;
+      toast.style.border = `1px solid ${c.border}`;
+      toast.innerHTML = `<span>${c.icon}</span><span>${message}</span>`;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+      }, 4000);
+    }
+
     // Education Form Policy API
     async function loadEducationPolicy() {
       const container = document.getElementById('policy-toggles-container');
@@ -1240,11 +1288,11 @@
           checkStudentFormRestriction();
         } else {
           const err = await resp.json();
-          alert(err.detail || "Siyosatni o'zgartirib bo'lmadi");
+          showPortalToast(err.detail || "Siyosatni o'zgartirib bo'lmadi", "error");
           checkbox.checked = !isAllowed;
         }
       } catch (e) {
-        alert("Ulanish xatosi: " + e);
+        showPortalToast("Ulanish xatosi: " + e, "error");
         checkbox.checked = !isAllowed;
       }
     }
@@ -1378,7 +1426,7 @@
           resBox.style.display = 'block';
         }
       } catch (err) {
-        alert("Xatolik yuz berdi: " + err);
+        showPortalToast("Xatolik yuz berdi: " + err, "error");
       }
     }
 
@@ -1558,7 +1606,7 @@
       const serviceId = document.getElementById('queue-service-select').value;
       const dateVal = document.getElementById('queue-date').value;
       if (!selectedSlot) {
-        alert("Iltimos, vaqt oralig'ini tanlang.");
+        showPortalToast("Iltimos, vaqt oralig'ini tanlang.", "warning");
         return;
       }
 
@@ -1581,11 +1629,12 @@
           document.getElementById('ticket-time-val').innerText = res.time_slot;
           box.style.display = 'block';
           loadAvailableSlots();
+          showPortalToast("Elektron navbat taloni muvaffaqiyatli olindi!", "success");
         } else {
-          alert(res.detail || "Xatolik yuz berdi");
+          showPortalToast(res.detail || "Xatolik yuz berdi", "error");
         }
       } catch (e) {
-        alert("Ulanish xatosi: " + e);
+        showPortalToast("Ulanish xatosi: " + e, "error");
       }
     }
 

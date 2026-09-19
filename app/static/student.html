@@ -483,6 +483,45 @@
     let selectedSlot = "";
     let allServices = [];
 
+    // === GLOBAL RESPONSIVE TOAST NOTIFICATION SYSTEM ===
+    function showToast(message, type = 'info') {
+      let container = document.getElementById('student-toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.id = 'student-toast-container';
+        container.className = 'fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full px-4';
+        document.body.appendChild(container);
+      }
+
+      const toast = document.createElement('div');
+      const typeStyles = {
+        success: 'bg-emerald-950/95 border-emerald-500/40 text-emerald-200 shadow-emerald-950/50',
+        error: 'bg-rose-950/95 border-rose-500/40 text-rose-200 shadow-rose-950/50',
+        warning: 'bg-amber-950/95 border-amber-500/40 text-amber-200 shadow-amber-950/50',
+        info: 'bg-slate-900/95 border-slate-700/60 text-slate-200 shadow-slate-950/50'
+      };
+
+      const icons = {
+        success: '✅',
+        error: '❌',
+        warning: '⚠️',
+        info: 'ℹ️'
+      };
+
+      toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl border backdrop-blur-md text-xs font-medium shadow-xl pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 ${typeStyles[type] || typeStyles.info}`;
+      toast.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span class="flex-1">${message}</span>`;
+
+      container.appendChild(toast);
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
     if (!token) {
       window.location.href = '/login';
     }
@@ -514,19 +553,18 @@
       o.classList.add('hidden');
     }
 
-    function initNotifications() {
-      const btn = document.getElementById('notification-btn');
-      const ind = document.getElementById('notif-indicator');
-      const lbl = document.getElementById('notif-label');
-
+    async function initNotifications() {
+      const ind = document.getElementById('notif-status-indicator');
+      const lbl = document.getElementById('notif-status-label');
       if (!("Notification" in window)) {
-        if (btn) btn.style.display = 'none';
+        if (ind) ind.className = 'w-2 h-2 rounded-full bg-slate-500';
+        if (lbl) lbl.innerText = "Qo'llab-quvvatlanmaydi";
         return;
       }
 
       if (Notification.permission === 'granted') {
         if (ind) ind.className = 'w-2 h-2 rounded-full bg-emerald-400';
-        if (lbl) lbl.innerText = "Xabarlar faol";
+        if (lbl) lbl.innerText = "Faol";
       } else if (Notification.permission === 'denied') {
         if (ind) ind.className = 'w-2 h-2 rounded-full bg-rose-400';
         if (lbl) lbl.innerText = "Cheklangan";
@@ -538,7 +576,7 @@
 
     async function toggleBrowserNotifications() {
       if (!("Notification" in window)) {
-        alert("Sizning brauzeringiz bildirishnomalarni qo'llab-quvvatlamaydi.");
+        showToast("Sizning brauzeringiz bildirishnomalarni qo'llab-quvvatlamaydi.", "warning");
         return;
       }
 
@@ -546,6 +584,7 @@
       initNotifications();
 
       if (permission === 'granted') {
+        showToast("Bildirishnomalar muvaffaqiyatli yoqildi!", "success");
         new Notification("Registrator ofisi axborot tizimi", {
           body: "Bildirishnomalar muvaffaqiyatli yoqildi. Murojaatingiz ko'rib chiqilganda sizga xabar beriladi.",
           icon: "/favicon.ico"
@@ -1104,7 +1143,7 @@
       const serviceId = document.getElementById('queue-service-select').value;
       const dateVal = document.getElementById('queue-date').value;
       if (!selectedSlot) {
-        alert("Iltimos, qabul vaqt oralig'ini tanlang.");
+        showToast("Iltimos, qabul vaqt oralig'ini tanlang.", "warning");
         return;
       }
 
@@ -1127,11 +1166,12 @@
           document.getElementById('ticket-time-val').innerText = res.time_slot;
           box.classList.remove('hidden');
           loadAvailableSlots();
+          showToast("Elektron navbat taloni muvaffaqiyatli olindi!", "success");
         } else {
-          alert(res.detail || "Navbat olishda xatolik yuz berdi.");
+          showToast(res.detail || "Navbat olishda xatolik yuz berdi.", "error");
         }
       } catch (e) {
-        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
   </script>

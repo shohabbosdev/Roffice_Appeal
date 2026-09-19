@@ -114,7 +114,13 @@ async def get_appeals(
     if current_user.role == UserRole.STUDENT:
         query = query.where(Appeal.student_id == current_user.id)
     elif current_user.role in [UserRole.FRONT_STAFF, UserRole.BACK_STAFF]:
-        if current_user.department_id:
+        if current_user.assigned_services:
+            assigned_service_ids = [s.id for s in current_user.assigned_services]
+            query = query.where(
+                (Appeal.assigned_staff_id == current_user.id) |
+                ((Appeal.status == AppealStatus.NEW) & (Appeal.assigned_staff_id.is_(None)) & (Appeal.service_id.in_(assigned_service_ids)))
+            )
+        elif current_user.department_id:
             query = query.join(Appeal.service).where(
                 (Appeal.assigned_staff_id == current_user.id) |
                 ((Appeal.status == AppealStatus.NEW) & (Appeal.assigned_staff_id.is_(None)) & (Service.department_id == current_user.department_id))

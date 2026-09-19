@@ -29,6 +29,32 @@ class TokenResponse(BaseModel):
     hemis_refresh_token: Optional[str] = None
 
 
+# Department & Service Schemas (Pre-defined for UserOut)
+class DepartmentOut(BaseModel):
+    id: int
+    name: str
+    code: str
+    dept_type: DepartmentType
+    window_number: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ServiceOut(BaseModel):
+    id: int
+    code: str
+    title: str
+    description: Optional[str] = None
+    department_id: int
+    kpi_points: int
+    sla_hours: int
+    resolution_mode: ResolutionMode
+    required_docs: Optional[str] = None
+    department: Optional[DepartmentOut] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class UserOut(BaseModel):
     id: int
     username: str
@@ -37,6 +63,8 @@ class UserOut(BaseModel):
     phone: Optional[str] = None
     role: UserRole
     department_id: Optional[int] = None
+    department: Optional[DepartmentOut] = None
+    assigned_services: List[ServiceOut] = []
     is_active: bool = True
     must_change_password: bool = False
     assigned_duties: Optional[str] = None
@@ -75,6 +103,7 @@ class StaffCreate(BaseModel):
     phone: Optional[str] = None
     assigned_duties: Optional[str] = None
     custom_password: Optional[str] = None  # If not provided, 8-character OTP is generated
+    service_ids: Optional[List[int]] = None
 
 
 class StaffCreateResponse(BaseModel):
@@ -94,6 +123,11 @@ class StaffUpdate(BaseModel):
     assigned_duties: Optional[str] = None
     reset_password: Optional[bool] = False  # If True, generates new 8-char OTP
     new_password: Optional[str] = None  # If provided, sets custom password directly
+    service_ids: Optional[List[int]] = None
+
+
+class StaffServiceAssignRequest(BaseModel):
+    service_ids: List[int]
 
 
 class UpdateCredentialsRequest(BaseModel):
@@ -109,18 +143,7 @@ class KPIAwardRequest(BaseModel):
     reason: str
 
 
-
 # Department & Service Schemas
-class DepartmentOut(BaseModel):
-    id: int
-    name: str
-    code: str
-    dept_type: DepartmentType
-    window_number: Optional[str] = None
-
-    model_config = ConfigDict(from_attributes=True)
-
-
 class DepartmentCreate(BaseModel):
     name: str
     code: str
@@ -133,21 +156,6 @@ class DepartmentUpdate(BaseModel):
     code: Optional[str] = None
     dept_type: Optional[DepartmentType] = None
     window_number: Optional[str] = None
-
-
-class ServiceOut(BaseModel):
-    id: int
-    code: str
-    title: str
-    description: Optional[str] = None
-    department_id: int
-    kpi_points: int
-    sla_hours: int
-    resolution_mode: ResolutionMode
-    required_docs: Optional[str] = None
-    department: Optional[DepartmentOut] = None
-
-    model_config = ConfigDict(from_attributes=True)
 
 
 class MyServicesResponse(BaseModel):

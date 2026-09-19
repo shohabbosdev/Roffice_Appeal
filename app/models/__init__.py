@@ -3,10 +3,19 @@ from enum import Enum
 from typing import Optional, List
 from sqlalchemy import (
     Column, Integer, BigInteger, String, Boolean, DateTime, ForeignKey, 
-    Text, Float, Enum as SQLEnum, JSON, Index
+    Text, Float, Enum as SQLEnum, JSON, Index, Table
 )
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from app.core.database import Base
+
+
+# Many-to-Many: Xodimlarga aniq xizmatlarni biriktirish jadvali
+user_services = Table(
+    "user_services",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("service_id", Integer, ForeignKey("services.id", ondelete="CASCADE"), primary_key=True)
+)
 
 
 class UserRole(str, Enum):
@@ -102,11 +111,12 @@ class User(Base):
     telegram_username: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     telegram_connected_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    department = relationship("Department", back_populates="users")
+    department = relationship("Department", back_populates="users", lazy="selectin")
     appeals_created = relationship("Appeal", foreign_keys="Appeal.student_id", back_populates="student")
     appeals_assigned = relationship("Appeal", foreign_keys="Appeal.assigned_staff_id", back_populates="assigned_staff")
     kpi_records = relationship("EmployeeKPITarget", back_populates="employee")
     appointments = relationship("Appointment", foreign_keys="Appointment.student_id", back_populates="student")
+    assigned_services = relationship("Service", secondary=user_services, back_populates="assigned_users", lazy="selectin")
 
 
 # 3. Service Model
@@ -125,9 +135,10 @@ class Service(Base):
     required_docs: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
-    department = relationship("Department", back_populates="services")
+    department = relationship("Department", back_populates="services", lazy="selectin")
     appeals = relationship("Appeal", back_populates="service")
     appointments = relationship("Appointment", back_populates="service")
+    assigned_users = relationship("User", secondary=user_services, back_populates="assigned_services", lazy="selectin")
 
 
 # 4. Employee KPI Target Model

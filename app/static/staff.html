@@ -724,7 +724,7 @@
                     <th class="p-3.5">Xodim F.I.SH.</th>
                     <th class="p-3.5">Login</th>
                     <th class="p-3.5">Joriy rol</th>
-                    <th class="p-3.5">Nizomiy vazifalari</th>
+                    <th class="p-3.5">Biriktirilgan xizmatlar va vazifalar</th>
                     <th class="p-3.5 text-right">Amallar</th>
                   </tr>
                 </thead>
@@ -1389,6 +1389,67 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ASSIGN SERVICES TO STAFF (XODIMGA XIZMATLARNI BIRIKTIRISH) -->
+  <div id="staff-services-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-2xl w-full shadow-2xl space-y-4 max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+              <span>Xodimga xizmatlarni biriktirish</span>
+              <span id="assign-services-staff-badge" class="px-2 py-0.5 text-[10px] rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 font-normal"></span>
+            </h3>
+            <p id="assign-services-staff-info" class="text-xs text-slate-400 mt-0.5">Xodim nomiga keladigan barcha yangi arizalar faqat belgilangan xizmatlar bo'yicha tushadi</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeStaffServicesModal()" class="text-slate-400 hover:text-white text-base cursor-pointer p-1">✕</button>
+      </div>
+
+      <input type="hidden" id="assign-services-staff-id">
+
+      <!-- Search & Quick Selection Toolbar -->
+      <div class="flex flex-col sm:flex-row gap-2 pt-1">
+        <div class="relative flex-1">
+          <input type="text" id="assign-services-search" oninput="filterServicesModalList()" placeholder="Xizmat nomi yoki kodi bo'yicha qidirish..." class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500">
+          <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <button type="button" onclick="selectAllServicesInModal(true)" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition cursor-pointer">
+            Barchasini belgilash
+          </button>
+          <button type="button" onclick="selectAllServicesInModal(false)" class="px-3 py-2 rounded-xl border border-slate-800 hover:bg-slate-950 text-slate-400 hover:text-slate-200 text-xs font-medium transition cursor-pointer">
+            Tozalash
+          </button>
+        </div>
+      </div>
+
+      <!-- Scrollable Services Checklist by Department -->
+      <div id="assign-services-list-container" class="flex-1 overflow-y-auto space-y-3 pr-1 min-h-[260px] max-h-[420px]">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Footer Action Buttons -->
+      <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+        <div id="assign-services-count-summary" class="text-xs text-slate-400">
+          Tanlandi: <span class="font-bold text-sky-400" id="assign-services-selected-count">0</span> ta xizmat
+        </div>
+        <div class="flex gap-2">
+          <button type="button" onclick="closeStaffServicesModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer">
+            Bekor qilish
+          </button>
+          <button type="button" id="save-staff-services-btn" onclick="saveStaffAssignedServices()" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-semibold text-xs transition cursor-pointer shadow-lg shadow-sky-600/20">
+            Biriktirishni saqlash
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2583,6 +2644,20 @@
           const dutiesSummary = u.assigned_duties ? u.assigned_duties.split('\n')[0] : "Biriktirilmagan";
           const dept = allDepartmentsList.find(d => d.id === u.department_id);
           const deptLabel = dept ? `${dept.name} (${dept.window_number || dept.code})` : 'Bo\'limsiz';
+          const assignedServices = u.assigned_services || [];
+          const servicesCount = assignedServices.length;
+
+          let servicesBadgesHtml = '';
+          if (servicesCount > 0) {
+            servicesBadgesHtml = `
+              <div class="mt-1 flex flex-wrap gap-1 items-center">
+                ${assignedServices.slice(0, 3).map(s => `<span class="px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/20 text-sky-300 text-[10px] font-mono" title="${s.title}">${s.code}</span>`).join('')}
+                ${servicesCount > 3 ? `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-mono">+${servicesCount - 3}</span>` : ''}
+              </div>
+            `;
+          } else {
+            servicesBadgesHtml = `<div class="mt-1 text-[10px] text-slate-500 italic">Barcha xizmatlar (bo'lim)</div>`;
+          }
 
           return `
             <tr class="hover:bg-slate-950/40 transition">
@@ -2590,6 +2665,7 @@
               <td class="p-3.5">
                 <div class="font-semibold text-white">${u.full_name}</div>
                 <div class="text-[11px] text-slate-400">${u.email || u.phone || '-'} • <span class="text-blue-400 font-medium">${deptLabel}</span></div>
+                ${servicesBadgesHtml}
               </td>
               <td class="p-3.5 font-mono text-blue-400 font-medium">${u.username}</td>
               <td class="p-3.5">
@@ -2602,6 +2678,9 @@
                 ${dutiesSummary}
               </td>
               <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
+                <button onclick="openStaffServicesModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Xizmatlarni biriktirish">
+                  Xizmatlar (${servicesCount})
+                </button>
                 <button onclick="openEditStaffModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-medium transition cursor-pointer">
                   Tahrirlash
                 </button>
@@ -2617,6 +2696,186 @@
         }).join('');
       } catch (err) {
         tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-rose-400">Server bilan aloqa o'rnatib bo'lmadi.</td></tr>`;
+      }
+    }
+
+    // === XODIMGA XIZMATLARNI BIRIKTIRISH MODAL BOSHQARUVI ===
+    let currentStaffAssigningServices = null;
+
+    async function openStaffServicesModal(userId) {
+      const u = allStaffList.find(item => item.id === userId);
+      if (!u) return;
+
+      currentStaffAssigningServices = u;
+      document.getElementById('assign-services-staff-id').value = u.id;
+      const roleName = roleNameMap[u.role] || u.role;
+      document.getElementById('assign-services-staff-badge').innerText = `${u.full_name} (${roleName})`;
+      document.getElementById('assign-services-search').value = "";
+
+      if (!allServicesList || allServicesList.length === 0) {
+        try {
+          const resp = await fetch('/api/v1/services', { headers: { 'Authorization': `Bearer ${token}` } });
+          if (resp.ok) allServicesList = await resp.json();
+        } catch (e) {
+          console.error("Xizmatlarni yuklashda xatolik:", e);
+        }
+      }
+
+      const assignedIds = (u.assigned_services || []).map(s => s.id);
+      renderServicesChecklist(assignedIds);
+
+      document.getElementById('staff-services-modal').classList.remove('hidden');
+    }
+
+    function closeStaffServicesModal() {
+      document.getElementById('staff-services-modal').classList.add('hidden');
+      currentStaffAssigningServices = null;
+    }
+
+    function renderServicesChecklist(selectedIds = []) {
+      const container = document.getElementById('assign-services-list-container');
+      if (!container) return;
+
+      if (!allServicesList || allServicesList.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-500">Tizimda faol xizmatlar mavjud emas.</div>`;
+        updateModalSelectedCount();
+        return;
+      }
+
+      const deptsMap = {};
+      allServicesList.forEach(s => {
+        const dId = s.department_id || 0;
+        const dName = s.department ? `${s.department.name} (${s.department.window_number || s.department.code})` : 'Umumiy xizmatlar';
+        if (!deptsMap[dId]) {
+          deptsMap[dId] = { name: dName, services: [] };
+        }
+        deptsMap[dId].services.push(s);
+      });
+
+      let html = '';
+      Object.keys(deptsMap).forEach(dId => {
+        const group = deptsMap[dId];
+        html += `
+          <div class="service-dept-group bg-slate-950/60 rounded-xl border border-slate-800/80 p-3 space-y-2">
+            <div class="flex items-center justify-between pb-1.5 border-b border-slate-800/60">
+              <span class="text-xs font-bold text-sky-400 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>
+                ${group.name}
+              </span>
+              <span class="text-[11px] text-slate-500 font-mono">${group.services.length} ta xizmat</span>
+            </div>
+            <div class="grid grid-cols-1 gap-1.5">
+        `;
+
+        group.services.forEach(s => {
+          const isChecked = selectedIds.includes(s.id) ? 'checked' : '';
+          const modeLabels = {
+            'online_only': '<span class="text-[10px] text-sky-400 bg-sky-500/10 px-1.5 py-0.5 rounded border border-sky-500/20">Onlayn</span>',
+            'in_person_only': '<span class="text-[10px] text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded border border-purple-500/20">Navbat</span>',
+            'both': '<span class="text-[10px] text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">Onlayn & Navbat</span>'
+          };
+
+          html += `
+            <label class="service-item-row flex items-start gap-3 p-2 rounded-lg hover:bg-slate-900 border border-transparent hover:border-slate-800 transition cursor-pointer" data-title="${(s.title + ' ' + s.code).toLowerCase()}">
+              <input type="checkbox" value="${s.id}" ${isChecked} onchange="updateModalSelectedCount()" class="service-assign-checkbox mt-1 rounded border-slate-700 bg-slate-900 text-sky-600 focus:ring-0 cursor-pointer">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <span class="font-mono text-xs font-semibold text-slate-300">${s.code}</span>
+                  <span class="text-xs font-medium text-white">${s.title}</span>
+                  ${modeLabels[s.resolution_mode] || ''}
+                </div>
+                <div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-3">
+                  <span>Reglament: <strong class="text-slate-300 font-mono">${s.sla_hours} soat</strong></span>
+                  <span>KPI: <strong class="text-emerald-400 font-mono">+${s.kpi_points} ball</strong></span>
+                </div>
+              </div>
+            </label>
+          `;
+        });
+
+        html += `
+            </div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      updateModalSelectedCount();
+    }
+
+    function updateModalSelectedCount() {
+      const checkboxes = document.querySelectorAll('.service-assign-checkbox:checked');
+      const countEl = document.getElementById('assign-services-selected-count');
+      if (countEl) countEl.innerText = checkboxes.length;
+    }
+
+    function selectAllServicesInModal(state) {
+      const checkboxes = document.querySelectorAll('.service-assign-checkbox');
+      checkboxes.forEach(cb => {
+        const row = cb.closest('.service-item-row');
+        if (row && row.style.display !== 'none') {
+          cb.checked = state;
+        }
+      });
+      updateModalSelectedCount();
+    }
+
+    function filterServicesModalList() {
+      const query = (document.getElementById('assign-services-search').value || '').trim().toLowerCase();
+      const rows = document.querySelectorAll('.service-item-row');
+      const groups = document.querySelectorAll('.service-dept-group');
+
+      rows.forEach(r => {
+        const text = r.getAttribute('data-title') || '';
+        if (!query || text.includes(query)) {
+          r.style.display = 'flex';
+        } else {
+          r.style.display = 'none';
+        }
+      });
+
+      groups.forEach(g => {
+        const visibleRows = g.querySelectorAll('.service-item-row[style="display: flex;"], .service-item-row:not([style*="display: none"])');
+        g.style.display = visibleRows.length > 0 ? 'block' : 'none';
+      });
+    }
+
+    async function saveStaffAssignedServices() {
+      const staffId = document.getElementById('assign-services-staff-id').value;
+      if (!staffId) return;
+
+      const checkedBoxes = document.querySelectorAll('.service-assign-checkbox:checked');
+      const selectedIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+
+      const btn = document.getElementById('save-staff-services-btn');
+      const origText = btn.innerHTML;
+      btn.innerHTML = `<span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span> Saqlanmoqda...`;
+      btn.disabled = true;
+
+      try {
+        const resp = await fetch(`/api/v1/users/${staffId}/services`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ service_ids: selectedIds })
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json();
+          showToast(err.detail || "Xizmatlarni biriktirishda xatolik yuz berdi.", "error");
+          return;
+        }
+
+        showToast(`Xodimga ${selectedIds.length} ta xizmat muvaffaqiyatli biriktirildi!`, "success");
+        closeStaffServicesModal();
+        await loadStaffUsers();
+      } catch (e) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      } finally {
+        btn.innerHTML = origText;
+        btn.disabled = false;
       }
     }
 
