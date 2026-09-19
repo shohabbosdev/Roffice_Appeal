@@ -217,6 +217,20 @@ async def get_queue_board():
     return JSONResponse(status_code=404, content={"message": "Queue Board HTML fayli topilmadi"})
 
 
+@app.get("/verify/{qr_hash}", tags=["Asosiy"])
+async def get_verify_page(qr_hash: str):
+    """Hujjatning haqiqiyligini ochiq tekshirish sahifasi (Davlat idoralari va fuqarolar uchun)."""
+    verify_path = Path(__file__).resolve().parent / "static" / "verify.html"
+    HTML_NO_CACHE_HEADERS = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    }
+    if verify_path.exists():
+        return FileResponse(str(verify_path), media_type="text/html", headers=HTML_NO_CACHE_HEADERS)
+    return JSONResponse(status_code=404, content={"message": "Verify HTML fayli topilmadi"})
+
+
 @app.get("/api/info", tags=["Asosiy"])
 async def api_info():
     """Tizim konfiguratsiyasi va ish vaqti parametrlari."""

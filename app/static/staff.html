@@ -1720,6 +1720,10 @@
             <span id="staff-upload-status" class="text-[11px] text-slate-500"></span>
           </div>
           <input type="url" id="resolve-file-url" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Yoki tashqi havola: https://...">
+          <p class="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Fayl yuklanmasa, tizim O'zMU JF andozasidagi rasmiy QR-kodli PDF hujjatni avtomatik generatsiya qiladi.</span>
+          </p>
         </div>
         <div class="flex gap-2 pt-1">
           <button type="submit" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer shadow-md shadow-emerald-600/20">
@@ -4813,12 +4817,26 @@
             </div>
 
             ${app.resolution_text ? `
-              <div class="p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-xl space-y-1.5">
+              <div class="p-4 bg-emerald-950/20 border border-emerald-500/30 rounded-xl space-y-2">
                 <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                   Rasmiy ijro xulosasi:
                 </span>
                 <p class="text-xs text-slate-200 leading-relaxed">${app.resolution_text}</p>
+                ${app.result_file_url ? `
+                  <div class="pt-2 flex flex-wrap items-center gap-2 border-t border-emerald-500/20">
+                    <a href="${app.result_file_url}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-medium transition">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                      <span>Rasmiy PDF hujjat</span>
+                    </a>
+                    ${app.qr_hash ? `
+                      <a href="/verify/${app.qr_hash}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-500/40 bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 text-xs font-medium transition">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M4 8h16M4 16h4m4 0h4"/></svg>
+                        <span>QR-kod verifikatsiyasi</span>
+                      </a>
+                    ` : ''}
+                  </div>
+                ` : ''}
               </div>
             ` : ''}
 

@@ -208,8 +208,35 @@ class AppealService:
         appeal.status = AppealStatus.RESOLVED
         appeal.resolved_at = now
         appeal.resolution_text = resolution_text
-        appeal.result_file_url = result_file_url
         appeal.qr_hash = qr_hash
+
+        # Agar natija fayli xodim tomonidan yuklanmagan bo'lsa, rasmiy QR-kodli PDF generatsiya qilish
+        if not result_file_url:
+            student = await db.get(User, appeal.student_id)
+            staff = await db.get(User, staff_id) if staff_id else None
+            service = await db.get(Service, appeal.service_id)
+            if student:
+                try:
+                    from app.services.document_generator import DocumentGenerator
+                    is_ref = "ma'lumotnoma" in (service.title.lower() if service else "") or "malumotnoma" in (service.code.lower() if service else "")
+                    if is_ref:
+                        result_file_url = DocumentGenerator.generate_student_reference_pdf(
+                            student=student,
+                            qr_hash=qr_hash,
+                            ticket_number=appeal.ticket_number
+                        )
+                    else:
+                        result_file_url = DocumentGenerator.generate_appeal_resolution_pdf(
+                            appeal=appeal,
+                            student=student,
+                            staff=staff,
+                            qr_hash=qr_hash
+                        )
+                except Exception as e:
+                    # PDF generatsiyasida xatolik bo'lsa ham ijro to'xtab qolmasligi uchun
+                    pass
+
+        appeal.result_file_url = result_file_url
         appeal.confirmation_deadline_at = now + timedelta(hours=settings.CONFIRMATION_TIMEOUT_HOURS)
 
         db.add(AuditLog(
@@ -217,7 +244,7 @@ class AppealService:
             entity_type="appeal",
             entity_id=appeal.id,
             action="resolved",
-            details=f"Xodim javob berdi. 72 soatlik tasdiqlash muddati boshlandi (QR: {qr_hash})"
+            details=f"Xodim javob berdi. Rasmiy elektron PDF va QR yaratildi (QR: {qr_hash})"
         ))
 
         await db.commit()

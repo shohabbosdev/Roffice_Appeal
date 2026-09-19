@@ -21,6 +21,7 @@ Mirzo Ulug'bek nomidagi O'zbekiston Milliy universiteti Jizzax filialining Regis
    - [4.7. Nizolarni 3 Bosqichli Eskalatsiya Qilish va Prorektor Qarori](#47-nizolarni-3-bosqichli-eskalatsiya-qilish-va-prorektor-qarori)
    - [4.8. Tizim Xavfsizligi va Markaziy Audit Jurnali](#48-tizim-xavfsizligi-va-markaziy-audit-jurnali)
    - [4.9. Ma'lumotlar Bazasini Avtomatik Zaxiralash (Disaster Recovery) va Tizim Salomatligi](#49-malumotlar-bazasini-avtomatik-zaxiralash-disaster-recovery-va-tizim-salomatligi)
+   - [4.10. Rasmiy QR-kodli Elektron Ma'lumotnomalar va Ochiq Verifikatsiya (Public Verification)](#410-rasmiy-qr-kodli-elektron-malumotnomalar-va-ochiq-verifikatsiya-public-verification)
 5. [Biznes Mantiq, Formula va Algoritmlar](#5-biznes-mantiq-formula-va-algoritmlar)
    - [SLA Ish Vaqti Hisoblash](#sla-ish-vaqti-hisoblash)
    - [Xodimlar KPI Samaradorlik Formulasi](#xodimlar-kpi-samaradorlik-formulasi)
@@ -232,6 +233,28 @@ Tizimning barqaror va xavfsiz faoliyat yuritishini ta'minlash, kutilmagan favqul
    - Real-vaqt progress-barlari, "Hozir zaxira yaratish" tezkor tugmasi;
    - Zaxiralarni yuklab olishda **Path Traversal** hujumlaridan to'liq himoyalangan API (`GET /api/v1/system/backups/{filename}/download`).
 
+### 4.10. Rasmiy QR-kodli Elektron Ma'lumotnomalar va Ochiq Verifikatsiya (Public Verification)
+
+Oliy ta'lim muassasalarida qog'ozbozlik va navbatlarni bartaraf etish, soxta ma'lumotnomalarning oldini olish hamda davlat idoralari (Ish joyi, Moliya, Banklar, Mudofaa ishlari bo'limlari) uchun onlayn tekshiruv imkoniyatini ta'minlash maqsadida **avtomatlashtirilgan PDF va QR-kod verifikatsiya tizimi** joriy etildi:
+
+1. **Davlat Andozasidagi Rasmiy PDF Blanka (`DocumentGenerator`):**
+   - **ReportLab** va **Pillow** orqali yuqori aniqlikdagi vektorli A4 rasmiy blankasi;
+   - O'zbekiston Respublikasi Oliy ta'lim, fan va innovatsiyalar vazirligi hamda Mirzo Ulug'bek nomidagi O'zMU Jizzax filiali rekvizitlari;
+   - **Suv belgisi (Watermark):** Hujjat markazida xira "O'zMU JF REGISTRATOR OFISI • RASMIY ELEKTRON HUJJAT" xavfsizlik foni;
+   - **Akademik parametrlar:** Talabaning F.I.SH., HEMIS ID, Fakultet, Yo'nalish, Kurs, Ta'lim shakli (Kunduzgi, Sirtqi, Kechki), O'quv yili;
+   - **Ro'yxatga olish kodi:** `№ JBNUU-RO-YYYY-XXXXXX` formatidagi unikal identifikator;
+   - **Elektron raqamli shtamp (e-Stamp):** Pastki chap burchakda doira shaklidagi rasmiy ko'k shtamp.
+
+2. **Dinamik Kriptografik QR-kod va Ochiq Verifikatsiya (`verify.html`):**
+   - Har bir yaratilgan ma'lumotnoma va blanka uchun `qr_hash` biriktiriladi;
+   - QR-kod smartfon orqali skanerlanganda to'g'ridan-to'g'ri `https://jbnuu.uz/roffice-appeal/verify/{qr_hash}` ochiq davlat portalini ochadi;
+   - **Autentifikatsiyasiz ochiq tekshirish:** Tashkilot mas'ul xodimi tizimga kirmasdan turib hujjatning haqiqiyligini, berilgan sanasini, talabaning haqiqatan o'qiyotganini ko'rishi va asl PDF faylni yuklab olishi mumkin;
+   - Agar QR-kod bazada mavjud bo'lmasa yoki o'zgartirilgan bo'lsa, qizil rangda **"Hujjat topilmadi yoki qalbakilashtirilgan"** ogohlantirishi chiqadi.
+
+3. **Murojaatlarni Yopishda Avtomatik Generatsiya:**
+   - Xodim murojaatni qanoatlantirganda (`resolve_appeal`), agar xodim o'z faylini yuklamagan bo'lsa, tizim avtomatik ravishda rasmiy ma'lumotnoma yoki ijro blankasini PDF formatda yaratadi va talabaga taqdim etadi;
+   - Talaba portali (`portal.html`, `student.html`) va Xodim ish stoli (`staff.html`) da bir marta bosish bilan "📄 Rasmiy PDF ma'lumotnoma" hamda "🔍 QR-kod verifikatsiyasi" havolalari taqdim etiladi.
+
 ---
 
 ## 5. Biznes Mantiq, Formula va Algoritmlar
@@ -411,6 +434,11 @@ Tizim Monitoringi va Zaxiralash (System & Backups):
   GET    /api/v1/system/backups                     - Mavjud zaxira arxivlari ro'yxati (Admin)
   POST   /api/v1/system/backups                     - Yangi zaxira yaratish va Telegram hisoboti (Admin)
   GET    /api/v1/system/backups/{filename}/download - Zaxira arxivini yuklab olish (Admin)
+
+Hujjatlarni Ochiq Tekshirish (Public Verification):
+  GET    /api/v1/verify/{qr_hash}                   - Hujjat haqiqiyligini tekshirish API (Ochiq)
+  GET    /api/v1/verify/{qr_hash}/download          - Tasdiqlangan asl PDF hujjatni yuklab olish (Ochiq)
+  GET    /verify/{qr_hash}                          - Rasmiy tasdiqlash sahifasi (verify.html)
 ```
 
 ---
@@ -426,31 +454,32 @@ Loyihada **test-driven reliability** tamoyili joriy etilgan. Barcha biznes manti
 
 ### Test natijalari:
 ```
-tests/test_appeals_flow.py ......................... [  5%]
+tests/test_appeals_flow.py ......................... [  4%]
 tests/test_appointments.py ......................... [  8%]
-tests/test_audit_trail_system.py ................... [ 17%]
-tests/test_backup_and_metrics.py ................... [ 20%]
-tests/test_calendar_api.py ......................... [ 22%]
-tests/test_detailed_slots.py ....................... [ 25%]
-tests/test_dispute_escalation.py ................... [ 29%]
-tests/test_education_form_policy.py ................ [ 31%]
-tests/test_executive_analytics.py .................. [ 32%]
-tests/test_hemis_auth.py ........................... [ 36%]
-tests/test_kpi_system.py ........................... [ 43%]
-tests/test_live_badges.py .......................... [ 44%]
-tests/test_live_queue_board.py ..................... [ 46%]
-tests/test_prorektor_decision_desk.py .............. [ 51%]
-tests/test_services_crud.py ........................ [ 55%]
-tests/test_sla_calculator.py ....................... [ 67%]
-tests/test_staff_crud_and_credentials.py ........... [ 72%]
-tests/test_staff_services_assignment.py ............ [ 74%]
-tests/test_student_portal_actions.py ............... [ 79%]
-tests/test_telegram_automated_notifications.py ..... [ 84%]
+tests/test_audit_trail_system.py ................... [ 16%]
+tests/test_backup_and_metrics.py ................... [ 19%]
+tests/test_calendar_api.py ......................... [ 21%]
+tests/test_detailed_slots.py ....................... [ 24%]
+tests/test_dispute_escalation.py ................... [ 27%]
+tests/test_document_generation.py .................. [ 32%]
+tests/test_education_form_policy.py ................ [ 34%]
+tests/test_executive_analytics.py .................. [ 36%]
+tests/test_hemis_auth.py ........................... [ 39%]
+tests/test_kpi_system.py ........................... [ 45%]
+tests/test_live_badges.py .......................... [ 47%]
+tests/test_live_queue_board.py ..................... [ 49%]
+tests/test_prorektor_decision_desk.py .............. [ 54%]
+tests/test_services_crud.py ........................ [ 57%]
+tests/test_sla_calculator.py ....................... [ 68%]
+tests/test_staff_crud_and_credentials.py ........... [ 73%]
+tests/test_staff_services_assignment.py ............ [ 75%]
+tests/test_student_portal_actions.py ............... [ 80%]
+tests/test_telegram_automated_notifications.py ..... [ 85%]
 tests/test_telegram_integration.py ................. [ 93%]
-tests/test_uploads.py .............................. [ 94%]
+tests/test_uploads.py .............................. [ 95%]
 tests/test_users_and_unified_login.py .............. [100%]
 
-============================== 58 passed in 8.62s ==============================
+============================== 61 passed in 9.79s ==============================
 ```
 
 ---

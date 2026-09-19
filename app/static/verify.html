@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hujjat Haqiqiyligini Tekshirish — Registrator Ofisi | O'zMU Jizzax filiali</title>
+  
+  <!-- Fonts & Tailwind -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans min-h-screen flex flex-col antialiased selection:bg-blue-500 selection:text-white">
+
+  <!-- Background glow effects -->
+  <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+    <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[350px] bg-blue-600/15 blur-[120px] rounded-full"></div>
+    <div class="absolute bottom-0 right-10 w-[400px] h-[300px] bg-indigo-600/10 blur-[120px] rounded-full"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-xl sticky top-0 z-20">
+    <div class="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-base shadow-lg shadow-blue-500/20">
+          RO
+        </div>
+        <div>
+          <h1 class="text-xs sm:text-sm font-bold text-white tracking-tight leading-snug">
+            O'zMU Jizzax Filiali • Registrator Ofisi
+          </h1>
+          <p class="text-[10px] sm:text-[11px] text-slate-400">Elektron Hujjatlarni Ochiq Tekshirish Portali (Public Verification)</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Davlat standarti
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-8 relative z-10">
+
+    <!-- Loading State -->
+    <div id="state-loading" class="bg-slate-900/60 border border-slate-800 rounded-2xl p-12 text-center shadow-2xl backdrop-blur-xl">
+      <div class="w-12 h-12 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin mx-auto mb-4"></div>
+      <h2 class="text-base font-bold text-white">QR-kod ma'lumotlari tekshirilmoqda...</h2>
+      <p class="text-xs text-slate-400 mt-1">Registrator ofisi ma'lumotlar bazasidan elektron hujjat tasdiqlanmoqda</p>
+    </div>
+
+    <!-- Verified Success State -->
+    <div id="state-verified" class="hidden space-y-6">
+      <!-- Status Banner -->
+      <div class="bg-gradient-to-r from-emerald-950/40 via-slate-900/80 to-emerald-950/40 border border-emerald-500/30 rounded-2xl p-6 shadow-2xl backdrop-blur-xl text-center">
+        <div class="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-emerald-500/10">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 mb-2">
+          Haqiqiyligi Tasdiqlangan
+        </span>
+        <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight" id="doc-type-title">
+          Elektron Ma'lumotnoma
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto mt-1">
+          Ushbu rasmiy hujjat haqiqatan ham O'zbekiston Milliy universiteti Jizzax filiali Registrator ofisi tomonidan berilgan va qonuniy kuchga ega.
+        </p>
+
+        <div class="mt-4 inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono text-slate-300">
+          <span>Hujjat kodi:</span>
+          <span id="doc-code-val" class="font-bold text-blue-400">JBNUU-RO-2026-XXXXX</span>
+        </div>
+      </div>
+
+      <!-- Student & Academic Details Card -->
+      <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-xl">
+        <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+          <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+          </svg>
+          Talaba va Ta'lim Ma'lumotlari
+        </h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
+            <div class="text-[11px] text-slate-500 mb-0.5">Talabaning to'liq F.I.SH.</div>
+            <div id="det-student-name" class="font-bold text-sm text-white">—</div>
+          </div>
+
+          <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
+            <div class="text-[11px] text-slate-500 mb-0.5">HEMIS talaba ID raqami</div>
+            <div id="det-hemis-id" class="font-mono font-bold text-blue-400">—</div>
+          </div>
+
+          <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
+            <div class="text-[11px] text-slate-500 mb-0.5">Fakultet</div>
+            <div id="det-faculty" class="font-semibold text-slate-200">—</div>
+          </div>
+
+          <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
+            <div class="text-[11px] text-slate-500 mb-0.5">Ta'lim yo'nalishi / Mutaxassisligi</div>
+            <div id="det-specialty" class="font-semibold text-slate-200">—</div>
+          </div>
+
+          <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
+            <div class="text-[11px] text-slate-500 mb-0.5">Bosqich (kurs) va ta'lim shakli</div>
+            <div id="det-course-form" class="font-semibold text-slate-200">—</div>
+          </div>
+
+          <div class="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/80">
+            <div class="text-[11px] text-slate-500 mb-0.5">Rasmiy berilgan sana</div>
+            <div id="det-issued-date" class="font-mono text-slate-300">—</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+        <button
+          id="btn-download-pdf"
+          onclick="downloadOriginalPdf()"
+          class="w-full sm:w-auto px-6 py-3 rounded-xl text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+          <span>Asl PDF Hujjatni Yuklab Olish</span>
+        </button>
+
+        <button
+          onclick="window.print()"
+          class="w-full sm:w-auto px-5 py-3 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center justify-center gap-2 cursor-pointer"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+          </svg>
+          <span>Chop etish</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Invalid / Not Found State -->
+    <div id="state-invalid" class="hidden bg-gradient-to-r from-rose-950/40 via-slate-900/80 to-rose-950/40 border border-rose-500/30 rounded-2xl p-8 sm:p-12 text-center shadow-2xl backdrop-blur-xl">
+      <div class="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-rose-500/10">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+        </svg>
+      </div>
+      <span class="inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-500/15 text-rose-400 border border-rose-500/30 mb-2">
+        Hujjat Topilmadi
+      </span>
+      <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+        QR-kod Tizimda Tasdiqlanmadi
+      </h2>
+      <p class="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto mt-2">
+        Ushbu havola yoki QR-kodga mos keluvchi rasmiy elektron hujjat Registrator ofisi tizimida mavjud emas. Ehtiyot bo'ling, hujjat muddati o'tgan, bekor qilingan yoki qalbakilashtirilgan bo'lishi mumkin.
+      </p>
+      <div class="mt-6">
+        <a
+          href="https://jbnuu.uz"
+          class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+        >
+          Universitet rasmiy saytiga o'tish
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800/80 py-6 text-center text-xs text-slate-500 relative z-10">
+    <p>Mirzo Ulug'bek nomidagi O'zbekiston Milliy universiteti Jizzax filiali • Registrator ofisi</p>
+    <p class="text-[11px] mt-1 text-slate-600">O'zbekiston Respublikasi Oliy ta'lim, fan va innovatsiyalar vazirligining 73-sonli buyrug'i asosida</p>
+  </footer>
+
+  <script>
+    let currentQrHash = '';
+
+    function getHashFromPath() {
+      const parts = window.location.pathname.split('/');
+      return parts[parts.length - 1] || '';
+    }
+
+    async function verifyDocument() {
+      const hash = getHashFromPath();
+      currentQrHash = hash;
+
+      if (!hash) {
+        showInvalid();
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/v1/verify/${encodeURIComponent(hash)}`);
+        if (!res.ok) {
+          showInvalid();
+          return;
+        }
+
+        const data = await res.json();
+        showVerified(data);
+      } catch (e) {
+        console.error("Verifikatsiya so'rovida xatolik:", e);
+        showInvalid();
+      }
+    }
+
+    function showVerified(data) {
+      document.getElementById('state-loading').classList.add('hidden');
+      document.getElementById('state-invalid').classList.add('hidden');
+      const verEl = document.getElementById('state-verified');
+      verEl.classList.remove('hidden');
+
+      // To'ldirish
+      document.getElementById('doc-type-title').innerText = data.document_type || "Rasmiy Elektron Hujjat";
+      document.getElementById('doc-code-val').innerText = data.doc_code || `JBNUU-RO-${data.qr_hash.slice(0,8).toUpperCase()}`;
+
+      const st = data.student || {};
+      document.getElementById('det-student-name').innerText = st.full_name || "—";
+      document.getElementById('det-hemis-id').innerText = st.hemis_student_id || "—";
+      document.getElementById('det-faculty').innerText = st.faculty || "Mavjud emas";
+      document.getElementById('det-specialty').innerText = st.specialty || "Mavjud emas";
+      document.getElementById('det-course-form').innerText = `${st.course || 1}-bosqich (${st.education_form || 'Kunduzgi'}, ${st.education_type || 'Bakalavriat'})`;
+
+      if (data.issued_at) {
+        try {
+          const d = new Date(data.issued_at);
+          document.getElementById('det-issued-date').innerText = `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+        } catch(e) {
+          document.getElementById('det-issued-date').innerText = data.issued_at;
+        }
+      }
+    }
+
+    function showInvalid() {
+      document.getElementById('state-loading').classList.add('hidden');
+      document.getElementById('state-verified').classList.add('hidden');
+      document.getElementById('state-invalid').classList.remove('hidden');
+    }
+
+    function downloadOriginalPdf() {
+      if (!currentQrHash) return;
+      window.location.href = `/api/v1/verify/${encodeURIComponent(currentQrHash)}/download`;
+    }
+
+    window.addEventListener('DOMContentLoaded', verifyDocument);
+  </script>
+</body>
+</html>
