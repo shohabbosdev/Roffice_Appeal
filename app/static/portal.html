@@ -725,6 +725,193 @@
         padding: 1rem;
       }
     }
+
+    /* ====================================================== */
+    /* PORTAL MODALS & RATING & PRINT TICKET STYLES           */
+    /* ====================================================== */
+    .portal-modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 16px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .portal-modal-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .portal-modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.65);
+      overflow: hidden;
+      transform: translateY(16px) scale(0.97);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .portal-modal-backdrop.open .portal-modal-card {
+      transform: translateY(0) scale(1);
+    }
+    .portal-modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .portal-modal-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .portal-modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 4px;
+      line-height: 1;
+      border-radius: 6px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .portal-modal-close:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.1);
+    }
+    .portal-modal-body {
+      padding: 1.25rem 1.5rem;
+    }
+    .portal-modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      background: rgba(0, 0, 0, 0.15);
+    }
+    /* Star Rating */
+    .star-rating-box {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 14px 0 16px;
+    }
+    .star-item {
+      font-size: 2.2rem;
+      color: #4b5563;
+      cursor: pointer;
+      transition: transform 0.15s, color 0.15s;
+      user-select: none;
+    }
+    .star-item:hover,
+    .star-item.active {
+      color: #fbbf24;
+      transform: scale(1.15);
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.45);
+    }
+    /* Printable Ticket styles */
+    .printable-ticket {
+      background: #ffffff;
+      color: #0f172a;
+      border: 2px dashed #94a3b8;
+      border-radius: 12px;
+      padding: 22px;
+      text-align: center;
+      max-width: 440px;
+      margin: 0 auto;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    .printable-ticket .ticket-header-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #334155;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .printable-ticket .ticket-main-code {
+      font-size: 36px;
+      font-weight: 900;
+      color: #312e81;
+      letter-spacing: 2px;
+      margin: 8px 0 4px;
+      font-family: 'Courier New', Courier, monospace;
+    }
+    .printable-ticket .ticket-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      text-align: left;
+      font-size: 12px;
+      margin: 14px 0;
+      padding: 10px 0;
+      border-top: 1px dashed #cbd5e1;
+      border-bottom: 1px dashed #cbd5e1;
+      color: #1e293b;
+    }
+    .printable-ticket .ticket-meta-grid div strong {
+      display: block;
+      color: #475569;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+    .printable-ticket .ticket-qr-img {
+      width: 140px;
+      height: 140px;
+      margin: 10px auto;
+      display: block;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      padding: 4px;
+      background: #fff;
+    }
+    .printable-ticket .ticket-notice {
+      font-size: 11px;
+      color: #64748b;
+      margin-top: 8px;
+      line-height: 1.4;
+    }
+
+    /* Print Media Query */
+    @media print {
+      body * {
+        visibility: hidden !important;
+      }
+      #ticket-print-area, #ticket-print-area * {
+        visibility: visible !important;
+      }
+      #ticket-print-area {
+        position: fixed !important;
+        left: 50% !important;
+        top: 20px !important;
+        transform: translateX(-50%) !important;
+        width: 380px !important;
+        box-shadow: none !important;
+        border: 2px dashed #000 !important;
+        padding: 20px !important;
+        background: #fff !important;
+        color: #000 !important;
+      }
+      .no-print, .portal-modal-footer, .portal-modal-close {
+        display: none !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -998,6 +1185,36 @@
                 <div>Vaqt: <strong id="ticket-time-val">-</strong></div>
               </div>
               <p style="margin-top: 1rem; font-size: 0.75rem; color: #94a3b8;">Belgilangan vaqtdan 5 daqiqa oldin 104-xonaga yetib keling.</p>
+              <div style="margin-top: 1rem;">
+                <button class="btn btn-primary btn-sm" id="btn-open-active-ticket" onclick="openActiveTicketModal()" style="display: inline-flex; align-items: center; gap: 6px;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                  </svg>
+                  <span>Chop etish va QR-kodli talonni ko'rish</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mening navbat talonlarim kartochkasi -->
+          <div class="card" style="max-width: 720px; margin: 1.5rem auto 0;">
+            <div class="card-title">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Mening navbat talonlarim</span>
+              </div>
+              <button class="btn btn-outline btn-sm" onclick="loadStudentAppointments()" style="font-size: 0.75rem;">Yangilash</button>
+            </div>
+            <p class="card-desc">Siz olgan barcha qabul talonlari tarixi. Istalgan vaqtda talonni ochib, chop etishingiz yoki QR kodini xodimga ko'rsatishingiz mumkin.</p>
+            <div id="student-appointments-list">
+              <p style="color: var(--text-muted); font-size: 0.85rem;">Talonlar yuklanmoqda...</p>
             </div>
           </div>
         </div>
@@ -1082,12 +1299,162 @@
 
   </div>
 
+  <!-- ====================================================== -->
+  <!-- MODAL 1: PRINTABLE QUEUE TICKET (Chop etish va QR kod)   -->
+  <!-- ====================================================== -->
+  <div id="ticket-modal" class="portal-modal-backdrop" onclick="if(event.target === this) closeTicketModal()">
+    <div class="portal-modal-card" style="max-width: 480px;">
+      <div class="portal-modal-header no-print">
+        <div class="portal-modal-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          <span>Elektron navbat taloni</span>
+        </div>
+        <button class="portal-modal-close" onclick="closeTicketModal()">✕</button>
+      </div>
+
+      <div class="portal-modal-body">
+        <div id="ticket-print-area" class="printable-ticket">
+          <div class="ticket-header-title">O'zMU Jizzax filiali • Registrator ofisi</div>
+          <div style="font-size: 11px; color: #64748b; margin-top: 2px;">Darcha qabuli elektron navbat taloni</div>
+          <div class="ticket-main-code" id="modal-ticket-code">TALON-A-101</div>
+          <div style="font-size: 14px; font-weight: 700; color: #059669; margin-bottom: 6px;" id="modal-ticket-window">104-xona, 1-darcha</div>
+          
+          <img id="modal-ticket-qr" class="ticket-qr-img" src="" alt="QR Kod">
+
+          <div class="ticket-meta-grid">
+            <div>
+              <strong>Xizmat turi</strong>
+              <span id="modal-ticket-service">-</span>
+            </div>
+            <div>
+              <strong>Talaba (F.I.Sh)</strong>
+              <span id="modal-ticket-student">-</span>
+            </div>
+            <div>
+              <strong>Tashrif sanasi</strong>
+              <span id="modal-ticket-date">-</span>
+            </div>
+            <div>
+              <strong>Qabul vaqti</strong>
+              <span id="modal-ticket-time">-</span>
+            </div>
+          </div>
+
+          <div class="ticket-notice">
+            ⚠️ <strong>Muhim eslatma:</strong> Belgilangan vaqtdan 5 daqiqa oldin 104-xonaga yetib keling va tablodagi chaqiruvni kuting. Kech qolingan taqdirda navbat bekor bo'lishi mumkin.
+          </div>
+        </div>
+      </div>
+
+      <div class="portal-modal-footer no-print">
+        <button class="btn btn-outline" onclick="closeTicketModal()">Yopish</button>
+        <button class="btn btn-primary" onclick="window.print()" style="display: flex; align-items: center; gap: 6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          <span>Chop etish (Print / PDF)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- MODAL 2: APPEAL RATING & CONFIRMATION                  -->
+  <!-- ====================================================== -->
+  <div id="appeal-rating-modal" class="portal-modal-backdrop" onclick="if(event.target === this) closeRatingModal()">
+    <div class="portal-modal-card">
+      <div class="portal-modal-header">
+        <div class="portal-modal-title">
+          <span>⭐️ Murojaat natijasini baholash</span>
+        </div>
+        <button class="portal-modal-close" onclick="closeRatingModal()">✕</button>
+      </div>
+      <div class="portal-modal-body">
+        <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+          Murojaatingiz <strong id="rating-modal-ticket" style="color: #818cf8;">#—</strong> muvaffaqiyatli hal etildi. Xizmat ko'rsatish sifati va tezkorligini 1 dan 5 gacha baholang:
+        </div>
+
+        <div class="star-rating-box" id="rating-star-container">
+          <span class="star-item active" data-val="1" onclick="setRatingValue(1)" onmouseover="hoverRating(1)" onmouseout="resetHoverRating()">★</span>
+          <span class="star-item active" data-val="2" onclick="setRatingValue(2)" onmouseover="hoverRating(2)" onmouseout="resetHoverRating()">★</span>
+          <span class="star-item active" data-val="3" onclick="setRatingValue(3)" onmouseover="hoverRating(3)" onmouseout="resetHoverRating()">★</span>
+          <span class="star-item active" data-val="4" onclick="setRatingValue(4)" onmouseover="hoverRating(4)" onmouseout="resetHoverRating()">★</span>
+          <span class="star-item active" data-val="5" onclick="setRatingValue(5)" onmouseover="hoverRating(5)" onmouseout="resetHoverRating()">★</span>
+        </div>
+        <div style="text-align: center; font-size: 0.85rem; font-weight: 700; color: #fbbf24; margin-bottom: 1rem;" id="rating-label">
+          A'lo darajada (5 yulduz)
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Qo'shimcha fikr yoki taklifingiz (ixtiyoriy):</label>
+          <textarea id="rating-comment-text" class="form-control" rows="3" placeholder="Xizmat ko'rsatish tez va sifatli bo'ldi..."></textarea>
+        </div>
+      </div>
+      <div class="portal-modal-footer">
+        <button class="btn btn-outline" onclick="closeRatingModal()">Bekor qilish</button>
+        <button class="btn btn-primary" onclick="submitAppealRating()" id="btn-submit-rating">
+          <span>Tasdiqlash va baholash</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- MODAL 3: APPEAL DISPUTE                                -->
+  <!-- ====================================================== -->
+  <div id="appeal-dispute-modal" class="portal-modal-backdrop" onclick="if(event.target === this) closeDisputeModal()">
+    <div class="portal-modal-card">
+      <div class="portal-modal-header">
+        <div class="portal-modal-title" style="color: #f87171;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>Murojaat yuzasidan e'tiroz (nizo) bildirish</span>
+        </div>
+        <button class="portal-modal-close" onclick="closeDisputeModal()">✕</button>
+      </div>
+      <div class="portal-modal-body">
+        <div class="alert alert-warning" style="margin-bottom: 12px; font-size: 0.8rem;">
+          ⚠️ <strong>Eslatma:</strong> E'tiroz yuborilgach, murojaat holati <em>Nizoli (disputed)</em> holatiga o'tadi va Registrator ofisi boshlig'i hamda Prorektor tomonidan alohida nazoratga olinadi.
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+          Talon: <strong id="dispute-modal-ticket" style="color: #818cf8;">#—</strong>
+        </p>
+
+        <div class="form-group">
+          <label class="form-label">E'tiroz sababini batafsil yozing:</label>
+          <textarea id="dispute-reason-text" class="form-control" rows="4" placeholder="Masalan: Taqdim etilgan ma'lumotnomada xatolik mavjud yoki masalam to'liq hal etilmadi..."></textarea>
+        </div>
+      </div>
+      <div class="portal-modal-footer">
+        <button class="btn btn-outline" onclick="closeDisputeModal()">Bekor qilish</button>
+        <button class="btn btn-primary" style="background: #dc2626; border-color: #dc2626;" onclick="submitAppealDispute()" id="btn-submit-dispute">
+          <span>E'tirozni yuborish</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let currentToken = "";
     let currentUser = null;
     let selectedSlot = "";
     let allServices = [];
     let currentPolicy = null;
+    let activeTicketData = null;
+    let studentAppointmentsList = [];
+    let currentRatingAppealId = null;
+    let currentRatingValue = 5;
+    let currentDisputeAppealId = null;
 
     // Switch Tabs
     function switchTab(tabId) {
@@ -1112,6 +1479,8 @@
 
       closeSidebar();
 
+      if (tabId === 'talaba') loadStudentAppeals();
+      if (tabId === 'navbat') loadStudentAppointments();
       if (tabId === 'kpi') loadKPIOverview();
       if (tabId === 'kalendar') loadHolidays();
       if (tabId === 'xodim') {
@@ -1168,6 +1537,7 @@
 
       if (role === 'student') {
         switchTab('talaba');
+        loadStudentAppointments();
       } else {
         switchTab('xodim');
       }
@@ -1367,6 +1737,7 @@
           currentToken = data.access_token;
           await fetchUserProfile();
           loadStudentAppeals();
+          loadStudentAppointments();
         }
       } catch (e) {
         console.error("Login xatoligi:", e);
@@ -1490,7 +1861,11 @@
       }
     }
 
-    // Load student appeals
+    // ======================================================
+    // TALABA MUROJAATLARI VA IJRO JAVOBLARI (LOAD & ACTIONS)
+    // ======================================================
+    let currentStudentAppeals = [];
+
     async function loadStudentAppeals() {
       const list = document.getElementById('student-appeals-list');
       try {
@@ -1498,55 +1873,366 @@
           headers: { 'Authorization': 'Bearer ' + currentToken }
         });
         const data = await resp.json();
+        currentStudentAppeals = data || [];
         if (!data || data.length === 0) {
           list.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Hozircha faol murojaatlar yo\'q.</p>';
           return;
         }
         list.innerHTML = '';
-        data.forEach(app => {
-          let badgeClass = 'tag-highlight';
-          if (app.status === 'completed') badgeClass = 'tag-success';
-          list.innerHTML += `
-            <div style="background: var(--surface-card); padding: 12px; border-radius: 8px; border: 1px solid var(--border); margin-bottom: 8px;">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <strong style="color: #818cf8;">#${app.ticket_number}</strong>
-                <span class="tag ${badgeClass}">${app.status.toUpperCase()}</span>
+
+        const statusMap = {
+          'new': { label: 'Yangi', class: 'tag-highlight' },
+          'in_progress': { label: 'Jarayonda', class: 'tag-highlight' },
+          'clarification_requested': { label: 'Aniqlik kiritish kutilmoqda', class: 'tag-highlight' },
+          'resolved': { label: 'Hal etildi (Baholang)', class: 'tag-success' },
+          'completed': { label: 'Yakunlangan', class: 'tag-success' },
+          'disputed': { label: 'E\'tiroz bildirilgan (Nizoli)', class: 'tag' },
+          'escalated_prorektor': { label: 'Prorektor nazoratida', class: 'tag-highlight' }
+        };
+
+        data.forEach((app, idx) => {
+          const st = statusMap[app.status] || { label: app.status.toUpperCase(), class: 'tag-highlight' };
+
+          // Biriktirilgan dastlabki fayllar
+          let attachHtml = '';
+          if (app.attachment_urls) {
+            try {
+              const urls = typeof app.attachment_urls === 'string' && app.attachment_urls.startsWith('[') ? JSON.parse(app.attachment_urls) : [app.attachment_urls];
+              if (Array.isArray(urls) && urls.length > 0) {
+                attachHtml = '<div style="margin-top: 6px; display: flex; gap: 8px; flex-wrap: wrap;">';
+                urls.forEach((u, uIdx) => {
+                  attachHtml += `<a href="${u}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.72rem; padding: 2px 8px; color: #a5b4fc; text-decoration: none;">📎 Ilova hujjat #${uIdx+1}</a>`;
+                });
+                attachHtml += '</div>';
+              }
+            } catch (e) {
+              attachHtml = `<a href="${app.attachment_urls}" target="_blank" class="btn btn-outline btn-sm" style="font-size: 0.72rem; padding: 2px 8px; color: #a5b4fc; text-decoration: none;">📎 Ilova hujjat</a>`;
+            }
+          }
+
+          // Rasmiy ijro javobi va fayli
+          let resultHtml = '';
+          if (app.resolution_text) {
+            resultHtml += `
+              <div style="background: rgba(16, 185, 129, 0.08); border-left: 3px solid #10b981; border-radius: 6px; padding: 8px 12px; margin-top: 8px; font-size: 0.8rem;">
+                <div style="font-weight: 700; color: #34d399; margin-bottom: 2px;">Rasmiy ijro javobi:</div>
+                <div style="color: #e2e8f0; line-height: 1.4;">${app.resolution_text}</div>
               </div>
-              <p style="font-size: 0.85rem; font-weight: 600; margin: 4px 0;">${app.subject}</p>
-              <p style="font-size: 0.75rem; color: var(--text-muted);">${app.service ? app.service.title : ''}</p>
+            `;
+          }
+
+          if (app.result_file_url) {
+            resultHtml += `
+              <div style="margin-top: 6px;">
+                <a href="${app.result_file_url}" target="_blank" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; color: #60a5fa; border-color: rgba(96, 165, 250, 0.4); text-decoration: none;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Rasmiy javob fayli (PDF / Hujjatni yuklab olish)</span>
+                </a>
+              </div>
+            `;
+          }
+
+          // Aniqlik so'ralgan bo'lsa
+          let clarifyHtml = '';
+          if (app.clarification_message) {
+            clarifyHtml = `
+              <div style="background: rgba(245, 158, 11, 0.08); border-left: 3px solid #f59e0b; border-radius: 6px; padding: 8px 12px; margin-top: 8px; font-size: 0.8rem; color: #fde68a;">
+                <strong>Xodim aniqlik so'radi:</strong> ${app.clarification_message}
+              </div>
+            `;
+          }
+
+          // Nizoli bo'lsa
+          let disputeHtml = '';
+          if (app.dispute_reason) {
+            disputeHtml = `
+              <div style="background: rgba(239, 68, 68, 0.08); border-left: 3px solid #ef4444; border-radius: 6px; padding: 8px 12px; margin-top: 8px; font-size: 0.8rem; color: #fca5a5;">
+                <strong>Bildirilgan e'tiroz:</strong> ${app.dispute_reason}
+              </div>
+            `;
+          }
+
+          // Baholash ko'rsatkichi (agar yakunlangan bo'lsa)
+          let ratingHtml = '';
+          if (app.status === 'completed' && app.rating) {
+            const stars = '★'.repeat(app.rating) + '☆'.repeat(5 - app.rating);
+            ratingHtml = `
+              <div style="margin-top: 6px; font-size: 0.8rem; color: #fbbf24; font-weight: 600;">
+                Bahoingiz: ${stars} (${app.rating}/5)
+                ${app.rating_comment ? `<span style="color: var(--text-muted); font-weight: 400; margin-left: 6px;">«${app.rating_comment}»</span>` : ''}
+              </div>
+            `;
+          }
+
+          list.innerHTML += `
+            <div style="background: var(--surface-card); padding: 14px; border-radius: 10px; border: 1px solid var(--border); margin-bottom: 10px; transition: border-color 0.2s;">
+              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px;">
+                <strong style="color: #818cf8; font-size: 0.95rem;">#${app.ticket_number}</strong>
+                <span class="tag ${st.class}">${st.label}</span>
+              </div>
+              <p style="font-size: 0.9rem; font-weight: 600; margin: 6px 0 2px;">${app.subject}</p>
+              <p style="font-size: 0.78rem; color: var(--text-muted);">${app.service ? app.service.title : ''}</p>
+              
+              ${attachHtml}
+              ${clarifyHtml}
+              ${resultHtml}
+              ${disputeHtml}
+              ${ratingHtml}
+
               ${app.status === 'resolved' ? `
-                <div style="margin-top: 8px; display: flex; gap: 8px;">
-                  <button class="btn btn-primary btn-sm" onclick="confirmAppeal(${app.id})">Tasdiqlash (5★)</button>
-                  <button class="btn btn-outline btn-sm" style="color: #f87171;" onclick="disputeAppeal(${app.id})">Hal bo'lmadi (e'tiroz)</button>
+                <div style="margin-top: 12px; padding-top: 10px; border-top: 1px dashed var(--border); display: flex; gap: 8px; flex-wrap: wrap;">
+                  <button class="btn btn-primary btn-sm" onclick="openRatingModal(${app.id}, '${app.ticket_number}')" style="display: inline-flex; align-items: center; gap: 6px;">
+                    <span>⭐️ Tasdiqlash va baholash</span>
+                  </button>
+                  <button class="btn btn-outline btn-sm" style="color: #f87171; border-color: rgba(248, 113, 113, 0.4);" onclick="openDisputeModal(${app.id}, '${app.ticket_number}')">
+                    <span>⚠️ Hal bo'lmadi (e'tiroz)</span>
+                  </button>
                 </div>
               ` : ''}
             </div>
           `;
         });
       } catch (e) {
-        list.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">Yuklashda xatolik.</p>';
+        list.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">Yuklashda xatolik: ' + e + '</p>';
       }
     }
 
-    // Confirm & Dispute
-    async function confirmAppeal(id) {
-      await fetch(`/api/v1/appeals/${id}/confirm`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
-        body: JSON.stringify({ rating: 5, rating_comment: "Tez va a'lo darajada bajarildi" })
-      });
-      loadStudentAppeals();
+    // ======================================================
+    // PRINTABLE QUEUE TICKET MODAL HANDLERS
+    // ======================================================
+    function openTicketModal(ticket) {
+      if (!ticket) return;
+      activeTicketData = ticket;
+      document.getElementById('modal-ticket-code').innerText = ticket.ticket_code || "-";
+      document.getElementById('modal-ticket-window').innerText = ticket.window_number || "104-xona, 1-darcha";
+      const sTitle = ticket.service ? ticket.service.title : (ticket.service_title || "Registrator ofisi qabul xizmati");
+      document.getElementById('modal-ticket-service').innerText = sTitle;
+      const stName = ticket.student ? ticket.student.full_name : (currentUser ? currentUser.full_name : (localStorage.getItem('roffice_fullname') || 'Talaba'));
+      document.getElementById('modal-ticket-student').innerText = stName;
+      document.getElementById('modal-ticket-date').innerText = ticket.appointment_date || "-";
+      document.getElementById('modal-ticket-time').innerText = ticket.time_slot || "-";
+
+      // QR Code Generator (Universitet tekshiruv standarti)
+      const qrPayload = encodeURIComponent(`JBNUU-ROFFICE|TICKET:${ticket.ticket_code}|DATE:${ticket.appointment_date}|TIME:${ticket.time_slot}|WINDOW:${ticket.window_number || '1'}`);
+      document.getElementById('modal-ticket-qr').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${qrPayload}`;
+
+      document.getElementById('ticket-modal').classList.add('open');
     }
 
-    async function disputeAppeal(id) {
-      const reason = prompt("E'tiroz sababini yozing:");
-      if (!reason) return;
-      await fetch(`/api/v1/appeals/${id}/dispute`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
-        body: JSON.stringify({ dispute_reason: reason })
+    function openActiveTicketModal() {
+      if (activeTicketData) {
+        openTicketModal(activeTicketData);
+      } else {
+        showPortalToast("Hozircha faol navbat taloni mavjud emas.", "warning");
+      }
+    }
+
+    function closeTicketModal() {
+      document.getElementById('ticket-modal').classList.remove('open');
+    }
+
+    // ======================================================
+    // RATING MODAL (5 YULDUZCHA VA IZOH)
+    // ======================================================
+    const ratingLabels = {
+      1: "Juda qoniqarsiz (1 yulduz)",
+      2: "Qoniqarsiz (2 yulduz)",
+      3: "O'rtacha (3 yulduz)",
+      4: "Yaxshi (4 yulduz)",
+      5: "A'lo darajada (5 yulduz)"
+    };
+
+    function openRatingModal(appealId, ticketNumber) {
+      currentRatingAppealId = appealId;
+      document.getElementById('rating-modal-ticket').innerText = '#' + ticketNumber;
+      document.getElementById('rating-comment-text').value = '';
+      setRatingValue(5);
+      document.getElementById('appeal-rating-modal').classList.add('open');
+    }
+
+    function closeRatingModal() {
+      document.getElementById('appeal-rating-modal').classList.remove('open');
+      currentRatingAppealId = null;
+    }
+
+    function setRatingValue(val) {
+      currentRatingValue = val;
+      const stars = document.querySelectorAll('#rating-star-container .star-item');
+      stars.forEach(star => {
+        const sVal = parseInt(star.getAttribute('data-val'));
+        if (sVal <= val) {
+          star.classList.add('active');
+        } else {
+          star.classList.remove('active');
+        }
       });
-      loadStudentAppeals();
+      const lbl = document.getElementById('rating-label');
+      if (lbl) lbl.innerText = ratingLabels[val] || `${val} yulduz`;
+    }
+
+    function hoverRating(val) {
+      const stars = document.querySelectorAll('#rating-star-container .star-item');
+      stars.forEach(star => {
+        const sVal = parseInt(star.getAttribute('data-val'));
+        if (sVal <= val) {
+          star.style.color = '#fbbf24';
+        } else {
+          star.style.color = '#4b5563';
+        }
+      });
+    }
+
+    function resetHoverRating() {
+      const stars = document.querySelectorAll('#rating-star-container .star-item');
+      stars.forEach(star => {
+        star.style.color = '';
+      });
+      setRatingValue(currentRatingValue);
+    }
+
+    async function submitAppealRating() {
+      if (!currentRatingAppealId) return;
+      const comment = document.getElementById('rating-comment-text').value.trim();
+      const btn = document.getElementById('btn-submit-rating');
+      btn.disabled = true;
+      btn.innerText = "Yuborilmoqda...";
+
+      try {
+        const resp = await fetch(`/api/v1/appeals/${currentRatingAppealId}/confirm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+          body: JSON.stringify({
+            rating: currentRatingValue,
+            rating_comment: comment || "Xizmat ko'rsatildi va qoniqarli yakunlandi"
+          })
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          showPortalToast("Murojaat muvaffaqiyatli baholandi va yakunlandi! Rahmat.", "success");
+          closeRatingModal();
+          loadStudentAppeals();
+        } else {
+          showPortalToast(res.detail || "Baholashda xatolik yuz berdi", "error");
+        }
+      } catch (e) {
+        showPortalToast("Ulanish xatosi: " + e, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Tasdiqlash va baholash";
+      }
+    }
+
+    // ======================================================
+    // DISPUTE MODAL (E'TIROZ VA NIZO BILDIRISH)
+    // ======================================================
+    function openDisputeModal(appealId, ticketNumber) {
+      currentDisputeAppealId = appealId;
+      document.getElementById('dispute-modal-ticket').innerText = '#' + ticketNumber;
+      document.getElementById('dispute-reason-text').value = '';
+      document.getElementById('appeal-dispute-modal').classList.add('open');
+    }
+
+    function closeDisputeModal() {
+      document.getElementById('appeal-dispute-modal').classList.remove('open');
+      currentDisputeAppealId = null;
+    }
+
+    async function submitAppealDispute() {
+      if (!currentDisputeAppealId) return;
+      const reason = document.getElementById('dispute-reason-text').value.trim();
+      if (!reason || reason.length < 5) {
+        showPortalToast("Iltimos, e'tiroz sababini to'liqroq yozing (kamida 5 ta belgi).", "warning");
+        return;
+      }
+      const btn = document.getElementById('btn-submit-dispute');
+      btn.disabled = true;
+      btn.innerText = "Yuborilmoqda...";
+
+      try {
+        const resp = await fetch(`/api/v1/appeals/${currentDisputeAppealId}/dispute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + currentToken },
+          body: JSON.stringify({ dispute_reason: reason })
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          showPortalToast("E'tirozingiz qabul qilindi. Boshliq va Prorektor nazoratiga uzatildi.", "warning");
+          closeDisputeModal();
+          loadStudentAppeals();
+        } else {
+          showPortalToast(res.detail || "Xatolik yuz berdi", "error");
+        }
+      } catch (e) {
+        showPortalToast("Ulanish xatosi: " + e, "error");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "E'tirozni yuborish";
+      }
+    }
+
+    // ======================================================
+    // TALABANING NAVBAT TALONLARI (MY APPOINTMENTS)
+    // ======================================================
+    async function loadStudentAppointments() {
+      const container = document.getElementById('student-appointments-list');
+      if (!container) return;
+      try {
+        const resp = await fetch('/api/v1/appointments', {
+          headers: { 'Authorization': 'Bearer ' + currentToken }
+        });
+        if (!resp.ok) {
+          container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Talonlarni yuklab bo\'lmadi.</p>';
+          return;
+        }
+        const data = await resp.json();
+        studentAppointmentsList = data || [];
+        if (studentAppointmentsList.length === 0) {
+          container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.85rem;">Hozircha darcha qabuli uchun navbat taloni olmagansiz.</p>';
+          return;
+        }
+        let html = '<div style="display: grid; gap: 10px;">';
+        studentAppointmentsList.forEach((apt, idx) => {
+          let statusBadge = '<span class="tag tag-highlight">Kutilmoqda</span>';
+          if (apt.status === 'called') statusBadge = '<span class="tag" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: #3b82f6;">Chaqirildi (Darchaga marhamat)</span>';
+          if (apt.status === 'completed') statusBadge = '<span class="tag tag-success">Qabul yakunlandi</span>';
+          if (apt.status === 'cancelled') statusBadge = '<span class="tag" style="color: #f87171;">Bekor qilingan</span>';
+
+          html += `
+            <div style="background: var(--surface-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <strong style="color: #818cf8; font-size: 1.05rem; font-family: monospace;">${apt.ticket_code}</strong>
+                  ${statusBadge}
+                </div>
+                <div style="font-size: 0.88rem; font-weight: 600; margin: 4px 0;">${apt.service ? apt.service.title : 'Registrator qabul xizmati'}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); display: flex; gap: 12px; flex-wrap: wrap;">
+                  <span>📅 Sana: <strong style="color: var(--text);">${apt.appointment_date}</strong></span>
+                  <span>⏰ Vaqt: <strong style="color: var(--text);">${apt.time_slot}</strong></span>
+                  <span>🚪 Darcha: <strong style="color: #34d399;">${apt.window_number}</strong></span>
+                </div>
+              </div>
+              <div>
+                <button class="btn btn-outline btn-sm" onclick="openTicketModal(studentAppointmentsList[${idx}])" style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.8rem;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 6 2 18 2 18 9"></polyline>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+                    <rect x="6" y="14" width="12" height="8"></rect>
+                  </svg>
+                  <span>Chop etish / QR</span>
+                </button>
+              </div>
+            </div>
+          `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      } catch (e) {
+        container.innerHTML = '<p style="color: var(--danger); font-size: 0.8rem;">Talonlar yuklashda xatolik yuz berdi.</p>';
+      }
     }
 
     function selectPortalSlot(btnEl, slotTime) {
@@ -1682,13 +2368,17 @@
         });
         const res = await resp.json();
         if (resp.ok) {
+          activeTicketData = res;
           const box = document.getElementById('ticket-display');
           document.getElementById('ticket-code-val').innerText = res.ticket_code;
           document.getElementById('ticket-window-val').innerText = res.window_number;
           document.getElementById('ticket-date-val').innerText = res.appointment_date;
           document.getElementById('ticket-time-val').innerText = res.time_slot;
           box.style.display = 'block';
+
           loadAvailableSlots();
+          loadStudentAppointments();
+          openTicketModal(res);
           showPortalToast("Elektron navbat taloni muvaffaqiyatli olindi!", "success");
         } else {
           showPortalToast(res.detail || "Xatolik yuz berdi", "error");
