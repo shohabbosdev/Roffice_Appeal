@@ -50,14 +50,17 @@ async def test_telegram_deep_link_binding():
         await db.refresh(user)
         test_user_id = user.id
 
-    # Simulate deep-link /start bind_<user_id>
+    from app.core.security import create_telegram_bind_token
+    bind_token = create_telegram_bind_token(test_user_id)
+
+    # Simulate deep-link /start bind_<token>
     update = {
         "update_id": 1001,
         "message": {
             "message_id": 1,
             "from": {"id": unique_chat_id, "username": f"user_{unique_suffix}"},
             "chat": {"id": unique_chat_id},
-            "text": f"/start bind_{test_user_id}"
+            "text": f"/start bind_{bind_token}"
         }
     }
 

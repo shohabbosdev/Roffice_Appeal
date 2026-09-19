@@ -6,6 +6,7 @@ import httpx
 from sqlalchemy import select, or_
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
+from app.core.security import verify_telegram_bind_token
 from app.models import User
 from app.services.telegram_service import TelegramService
 
@@ -28,12 +29,24 @@ async def handle_telegram_update(update: dict):
         return
 
     async with AsyncSessionLocal() as db:
-        # 1. /start buyrug'i (yoki deep-link: /start bind_123)
+        # 1. /start buyrug'i (yoki xavfsiz vaqtinchalik deep-link: /start bind_TOKEN)
         if text.startswith("/start"):
             if "bind_" in text:
                 try:
-                    user_id_str = text.split("bind_")[1].strip()
-                    user_id = int(user_id_str)
+                    token_str = text.split("bind_")[1].strip()
+                    user_id = verify_telegram_bind_token(token_str)
+
+                    # Agar token yaroqsiz, soxta yoki 15 daqiqadan oshgan bo'lsa
+                    if not user_id:
+                        err_link_msg = (
+                            "❌ <b>Xavfsizlik ogohlantirishi:</b>\n\n"
+                            "Ushbu bog'lanish havolasi eskirgan, yaroqsiz yoki noto'g'ri.\n\n"
+                            "Iltimos, Registrator ofisi portalidagi shaxsiy kabinetingizga kirib, "
+                            "yangilangan 'Telegram botga ulanish' tugmasi orqali qayta o'ting."
+                        )
+                        await TelegramService.send_telegram_message(chat_id, err_link_msg)
+                        return
+
                     user = await db.get(User, user_id)
                     if user:
                         user.telegram_chat_id = chat_id
@@ -44,6 +57,7 @@ async def handle_telegram_update(update: dict):
                         msg = (
                             f"Assalomu alaykum, <b>{user.full_name}</b>!\n\n"
                             f"Registrator ofisi axborot tizimidagi profilingiz botga muvaffaqiyatli bog'landi! ✅\n\n"
+                            f"• <b>Foydalanuvchi logini:</b> {user.username}\n"
                             f"• <b>Rolingiz:</b> {user.role.value}\n"
                             f"• <b>Bog'langan vaqt:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
                             f"Endi barcha arizalar, ijro holatlari va elektron navbat talonlari "
@@ -90,6 +104,20 @@ async def handle_telegram_update(update: dict):
 
         # 2. Foydalanuvchi kontakt (telefon raqam) yuborganida
         if contact:
+            sender_id = user_info.get("id")
+            contact_user_id = contact.get("user_id")
+
+            # Xavfsizlik: Boshqa shaxsning kontakt kartasini forward qilib yuborishning oldini olish
+            if contact_user_id and sender_id and contact_user_id != sender_id:
+                warn_msg = (
+                    "❌ <b>Xavfsizlik talabi:</b>\n\n"
+                    "Siz boshqa shaxsning kontakt ma'lumotini yubordingiz. "
+                    "Iltimos, faqat o'zingizning Telegram akkauntingizga biriktirilgan telefon raqamni "
+                    "pastdagi <b>'📱 Telefon raqamni yuborish'</b> tugmasi orqali jo'nating."
+                )
+                await TelegramService.send_telegram_message(chat_id, warn_msg)
+                return
+
             phone_raw = contact.get("phone_number", "")
             formatted_phone = TelegramService.format_phone_number(phone_raw)
 

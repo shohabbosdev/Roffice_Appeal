@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.core.database import get_db
 from app.core.config import settings
-from app.core.security import verify_password, hash_password, create_access_token
+from app.core.security import verify_password, hash_password, create_access_token, create_telegram_bind_token
 from app.models import User, UserRole
 from app.schemas import (
     UserLogin, HemisStudentLogin, TokenResponse, HemisTokenResponse,
@@ -269,7 +269,8 @@ async def get_me(current_user: User = Depends(get_current_user)):
 async def get_telegram_info(current_user: User = Depends(get_current_user)):
     """Foydalanuvchining Telegram botga ulanganligi holati va bot havolasi."""
     bot_user = settings.TELEGRAM_BOT_USERNAME
-    deep_link = f"https://t.me/{bot_user}?start=bind_{current_user.id}"
+    bind_token = create_telegram_bind_token(current_user.id)
+    deep_link = f"https://t.me/{bot_user}?start=bind_{bind_token}"
     return TelegramConnectInfo(
         bot_username=bot_user,
         is_connected=bool(current_user.telegram_chat_id),

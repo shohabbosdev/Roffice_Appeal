@@ -52,3 +52,21 @@ def decode_access_token(token: str) -> Optional[Dict[str, Any]]:
         return payload
     except jwt.PyJWTError:
         return None
+
+
+def create_telegram_bind_token(user_id: int) -> str:
+    """Generate 15-minute cryptographically signed token for Telegram account binding."""
+    expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    to_encode = {"sub": str(user_id), "type": "tg_bind", "exp": expire}
+    return jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+
+
+def verify_telegram_bind_token(token_str: str) -> Optional[int]:
+    """Verify signed Telegram bind token and return user_id if valid."""
+    try:
+        payload = jwt.decode(token_str, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        if payload.get("type") != "tg_bind":
+            return None
+        return int(payload.get("sub"))
+    except Exception:
+        return None
