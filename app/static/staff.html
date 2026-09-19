@@ -99,14 +99,17 @@
         <nav class="px-3 space-y-1">
           <button
             onclick="switchStaffTab('appeals')"
-            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-white bg-emerald-600 shadow-sm transition cursor-pointer"
+            class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-white bg-emerald-600 shadow-sm transition cursor-pointer"
             data-tab="appeals"
             id="nav-appeals-btn"
           >
-            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-            </svg>
-            <span>Murojaatlar monitoringi</span>
+            <div class="flex items-center gap-3 min-w-0">
+              <svg class="w-4 h-4 flex-shrink-0 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+              </svg>
+              <span class="truncate">Murojaatlar monitoringi</span>
+            </div>
+            <span id="badge-appeals-count" class="hidden px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-rose-500/20 text-rose-300 border border-rose-500/30">0</span>
           </button>
 
           <button
@@ -123,14 +126,17 @@
 
           <button
             onclick="switchStaffTab('queue')"
-            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
             data-tab="queue"
             id="nav-queue-btn"
           >
-            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
-            </svg>
-            <span>Darcha qabuli (navbat)</span>
+            <div class="flex items-center gap-3 min-w-0">
+              <svg class="w-4 h-4 flex-shrink-0 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+              </svg>
+              <span class="truncate">Darcha qabuli (navbat)</span>
+            </div>
+            <span id="badge-queue-count" class="hidden px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-500/20 text-blue-300 border border-blue-500/30">0</span>
           </button>
 
           <button
@@ -226,7 +232,30 @@
           </div>
         </div>
 
-        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="flex items-center gap-2 sm:gap-2.5 flex-shrink-0">
+          <!-- SLA Urgent Warning Pill -->
+          <div
+            id="header-urgent-pill"
+            class="hidden px-2.5 py-1.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 text-xs font-bold items-center gap-1.5 animate-pulse cursor-pointer shadow-sm shadow-rose-500/10"
+            onclick="switchStaffTab('appeals')"
+            title="SLA muddati 2 soatdan kam qolgan arizalar mavjud! Ko'rish uchun bosing."
+          >
+            <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+            <span id="header-urgent-count">0</span>
+            <span class="hidden lg:inline text-[11px] font-medium text-rose-200">shoshilinch SLA</span>
+          </div>
+
+          <!-- Sound Notification Toggle -->
+          <button
+            id="sound-toggle-btn"
+            onclick="toggleAudioAlerts()"
+            title="Ovozli ogohlantirish (chime)"
+            class="px-2 py-1.5 rounded-xl border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 transition cursor-pointer flex items-center gap-1.5 text-xs shadow-sm"
+          >
+            <span id="sound-toggle-icon" class="text-xs">🔔</span>
+            <span class="hidden xl:inline text-[11px]" id="sound-toggle-label">Ovoz yoqiq</span>
+          </button>
+
           <!-- Notification Bell -->
           <button
             id="notification-btn"
@@ -2010,7 +2039,65 @@
       if (h) switchStaffTab(h, false);
     });
 
-    // 2. Notification System
+    // 2. Real-time Audio Alerts & Live Badges Notification System
+    let isAudioAlertEnabled = localStorage.getItem('roffice_audio_alert') !== 'false';
+    let lastKnownAppealId = 0;
+    let liveBadgesInterval = null;
+
+    function initAudioAlertUI() {
+      const icon = document.getElementById('sound-toggle-icon');
+      const lbl = document.getElementById('sound-toggle-label');
+      if (icon) icon.innerText = isAudioAlertEnabled ? '🔔' : '🔕';
+      if (lbl) lbl.innerText = isAudioAlertEnabled ? 'Ovoz yoqiq' : 'Ovoz o\'chiq';
+    }
+
+    function toggleAudioAlerts() {
+      isAudioAlertEnabled = !isAudioAlertEnabled;
+      localStorage.setItem('roffice_audio_alert', isAudioAlertEnabled ? 'true' : 'false');
+      initAudioAlertUI();
+      if (isAudioAlertEnabled) {
+        playNotificationChime();
+        showToast("Ovozli bildirishnomalar yoqildi", "info");
+      } else {
+        showToast("Ovozli bildirishnomalar o'chirildi", "info");
+      }
+    }
+
+    function playNotificationChime() {
+      if (!isAudioAlertEnabled) return;
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+
+        // 3-tonli executive shaffof chime: C5 (523Hz), E5 (659Hz), G5 (784Hz)
+        const notes = [
+          { freq: 523.25, start: 0.0, dur: 0.25 },
+          { freq: 659.25, start: 0.1, dur: 0.30 },
+          { freq: 783.99, start: 0.2, dur: 0.45 }
+        ];
+
+        notes.forEach(n => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(n.freq, ctx.currentTime + n.start);
+
+          gain.gain.setValueAtTime(0.001, ctx.currentTime + n.start);
+          gain.gain.exponentialRampToValueAtTime(0.18, ctx.currentTime + n.start + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + n.start + n.dur);
+
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc.start(ctx.currentTime + n.start);
+          osc.stop(ctx.currentTime + n.start + n.dur + 0.05);
+        });
+      } catch (err) {
+        console.warn("Audio chime failed:", err);
+      }
+    }
+
     function initNotifications() {
       const btn = document.getElementById('notification-btn');
       const ind = document.getElementById('notif-indicator');
@@ -2048,6 +2135,99 @@
           icon: "/favicon.ico"
         });
       }
+    }
+
+    async function fetchLiveBadges() {
+      if (!token) return;
+
+      try {
+        const resp = await fetch('/api/v1/appeals/live-badges', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!resp.ok) return;
+
+        const data = await resp.json();
+
+        // 1. Murojaatlar menyusi ko'rsatkichi (Badge)
+        const appealsBadge = document.getElementById('badge-appeals-count');
+        const appealsCount = (currentUser && currentUser.role === 'back_staff')
+          ? (data.my_assigned || 0)
+          : (data.new_appeals || 0);
+
+        if (appealsBadge) {
+          if (appealsCount > 0) {
+            appealsBadge.innerText = appealsCount > 99 ? '99+' : appealsCount;
+            appealsBadge.classList.remove('hidden');
+          } else {
+            appealsBadge.classList.add('hidden');
+          }
+        }
+
+        // 2. Darcha qabuli ko'rsatkichi (Badge)
+        const queueBadge = document.getElementById('badge-queue-count');
+        const queueCount = data.today_waiting_appointments || 0;
+        if (queueBadge) {
+          if (queueCount > 0) {
+            queueBadge.innerText = queueCount > 99 ? '99+' : queueCount;
+            queueBadge.classList.remove('hidden');
+          } else {
+            queueBadge.classList.add('hidden');
+          }
+        }
+
+        // 3. Shoshilinch SLA ogohlantirish belgisi
+        const urgentPill = document.getElementById('header-urgent-pill');
+        const urgentCount = document.getElementById('header-urgent-count');
+        if (urgentPill && urgentCount) {
+          if (data.urgent_sla_appeals > 0) {
+            urgentCount.innerText = data.urgent_sla_appeals;
+            urgentPill.classList.remove('hidden');
+            urgentPill.classList.add('flex');
+          } else {
+            urgentPill.classList.add('hidden');
+            urgentPill.classList.remove('flex');
+          }
+        }
+
+        // 4. Yangi ariza kelib tushishini aniqlash va ogohlantirish
+        if (lastKnownAppealId > 0 && data.last_appeal_id > lastKnownAppealId) {
+          playNotificationChime();
+          showToast("Yangi murojaat kelib tushdi!", "info");
+
+          if (Notification.permission === 'granted') {
+            new Notification("Registrator ofisi axborot tizimi", {
+              body: "Yangi talaba murojaati qabul qilindi.",
+              icon: "/favicon.ico"
+            });
+          }
+
+          // Agar foydalanuvchi "Murojaatlar" oynasida tursa, ro'yxatni avtomatik yangilash
+          const currentTab = localStorage.getItem('roffice_staff_tab') || 'appeals';
+          if (currentTab === 'appeals') {
+            loadStaffAppeals();
+          }
+        }
+
+        lastKnownAppealId = data.last_appeal_id || lastKnownAppealId;
+
+      } catch (err) {
+        console.warn("Live badges fetch failed:", err);
+      }
+    }
+
+    function startLiveBadgesPolling() {
+      initAudioAlertUI();
+      fetchLiveBadges();
+
+      if (liveBadgesInterval) clearInterval(liveBadgesInterval);
+      liveBadgesInterval = setInterval(fetchLiveBadges, 30000);
+
+      // Aqlli fon rejimi: tabga qaytilgan paytda darhol yangilash
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          fetchLiveBadges();
+        }
+      });
     }
 
     // 3. Current User and Role Info
@@ -5140,6 +5320,7 @@
     window.addEventListener('DOMContentLoaded', async () => {
       initNotifications();
       await loadCurrentUserProfile();
+      startLiveBadgesPolling();
 
       // Determine initial tab from hash or localStorage
       const hashTab = window.location.hash.replace('#', '');

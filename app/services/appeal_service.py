@@ -6,7 +6,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
-from app.models import Appeal, AppealStatus, Service, User, UserRole, AuditLog, Appointment
+from app.models import Appeal, AppealStatus, Service, User, UserRole, AuditLog, Appointment, AppointmentStatus
 from app.services.sla_service import SLAService
 from app.services.kpi_service import KPIService
 from app.core.config import settings
@@ -528,3 +528,88 @@ class AppealService:
             "by_status": dict(status_counts),
             "trends": trends
         }
+
+    @classmethod
+    async def get_live_badges_summary(
+        cls, db: AsyncSession, current_user: User
+    ) -> Dict[str, Any]:
+        """Xodimlar uchun yengil va tezkor real-vaqt bildirishnomalari hisoblagichi."""
+        now = datetime.now(timezone.utc)
+        today_str = now.strftime("%Y-%m-%d")
+        urgent_threshold = now + timedelta(hours=2)
+
+        # 1. Yangi arizalar (status == new)
+        new_stmt = select(func.count(Appeal.id)).where(Appeal.status == AppealStatus.NEW)
+        new_appeals = (await db.execute(new_stmt)).scalar() or 0
+
+        # 2. Xodimning o'ziga biriktirilgan faol arizalari
+        my_stmt = select(func.count(Appeal.id)).where(
+            Appeal.assigned_staff_id == current_user.id,
+            Appeal.status.in_([
+                AppealStatus.ASSIGNED,
+                AppealStatus.IN_PROGRESS,
+                AppealStatus.CLARIFICATION_NEEDED,
+                AppealStatus.PENDING_EXTERNAL
+            ])
+        )
+        my_assigned = (await db.execute(my_stmt)).scalar() or 0
+
+        # 3. Nizoli / Rahbariyatga oshirilgan arizalar
+        dispute_stmt = select(func.count(Appeal.id)).where(
+            Appeal.status.in_([
+                AppealStatus.DISPUTED,
+                AppealStatus.ESCALATED_HEAD,
+                AppealStatus.ESCALATED_PROREKTOR
+            ])
+        )
+        disputed_appeals = (await db.execute(dispute_stmt)).scalar() or 0
+
+        # 4. SLA muddati tugashiga 2 soat qolgan shoshilinch arizalar
+        open_statuses = [
+            AppealStatus.NEW,
+            AppealStatus.ASSIGNED,
+            AppealStatus.IN_PROGRESS,
+            AppealStatus.CLARIFICATION_NEEDED,
+            AppealStatus.PENDING_EXTERNAL,
+            AppealStatus.DISPUTED,
+            AppealStatus.ESCALATED_HEAD,
+            AppealStatus.ESCALATED_PROREKTOR
+        ]
+        urgent_stmt = select(func.count(Appeal.id)).where(
+            Appeal.status.in_(open_statuses),
+            Appeal.sla_deadline_at.isnot(None),
+            Appeal.sla_deadline_at >= now,
+            Appeal.sla_deadline_at <= urgent_threshold
+        )
+        if current_user.role == UserRole.BACK_STAFF:
+            urgent_stmt = urgent_stmt.where(Appeal.assigned_staff_id == current_user.id)
+        urgent_sla_appeals = (await db.execute(urgent_stmt)).scalar() or 0
+
+        # 5. Bugungi darcha navbatida kutayotganlar
+        queue_stmt = select(func.count(Appointment.id)).where(
+            Appointment.appointment_date == today_str,
+            Appointment.status.in_([
+                AppointmentStatus.BOOKED,
+                AppointmentStatus.CHECKED_IN,
+                AppointmentStatus.IN_SERVICE
+            ])
+        )
+        today_waiting_appointments = (await db.execute(queue_stmt)).scalar() or 0
+
+        # 6. Oxirgi ariza ID si va yaratilgan vaqti
+        last_appeal_stmt = select(Appeal.id, Appeal.created_at).order_by(Appeal.id.desc()).limit(1)
+        last_res = (await db.execute(last_appeal_stmt)).first()
+        last_appeal_id = last_res[0] if last_res else 0
+        last_appeal_created_at = last_res[1].isoformat() if last_res and last_res[1] else None
+
+        return {
+            "new_appeals": new_appeals,
+            "my_assigned": my_assigned,
+            "disputed_appeals": disputed_appeals,
+            "urgent_sla_appeals": urgent_sla_appeals,
+            "today_waiting_appointments": today_waiting_appointments,
+            "last_appeal_id": last_appeal_id,
+            "last_appeal_created_at": last_appeal_created_at,
+            "server_time": now.isoformat()
+        }
+

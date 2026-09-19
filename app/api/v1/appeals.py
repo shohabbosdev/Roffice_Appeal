@@ -113,6 +113,26 @@ async def get_executive_analytics(
     return await AppealService.get_executive_analytics(db=db, period_filter=period)
 
 
+@router.get("/live-badges", summary="Xodimlar uchun tezkor real-vaqt bildirishnomalari hisoblagichi")
+async def get_live_badges(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Xodimlar va rahbarlar ish stoli uchun yengil (1-2ms) badge ko'rsatkichlari:
+    - Yangi murojaatlar soni
+    - Xodimning o'ziga biriktirilgan faol arizalari
+    - Nizoli / Eskalatsiya qilingan arizalar
+    - SLA muddati 2 soatdan kam qolgan shoshilinch arizalar
+    - Bugungi kunda kutayotgan darcha qabullari
+    - Oxirgi ariza ID va sanasi
+    """
+    if current_user.role == UserRole.STUDENT:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Ushbu ma'lumot faqat xodimlar uchun.")
+    return await AppealService.get_live_badges_summary(db=db, current_user=current_user)
+
+
+
 @router.get("", response_model=List[AppealOut], summary="Murojaatlar ro'yxatini olish (rolga mos filtrlangan)")
 async def get_appeals(
     appeal_status: Optional[AppealStatus] = Query(None, description="Murojaat holati bo'yicha filter"),
