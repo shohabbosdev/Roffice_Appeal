@@ -5850,7 +5850,8 @@
       csv += `"Fakultet","Jami murojaat","Bajarilgan","Nizoli","O'rtacha baho","Bajarilish foizi"\n`;
       (data.by_faculty || []).forEach(f => {
         const pct = f.total > 0 ? Math.round((f.completed / f.total) * 100) : 0;
-        csv += `"${f.faculty.replace(/"/g, '""')}","${f.total}","${f.completed}","${f.disputed}","${f.avg_rating}","${pct}%"\n`;
+        const facName = (f.faculty || 'Boshqa / Belgilanmagan').replace(/"/g, '""');
+        csv += `"${facName}","${f.total || 0}","${f.completed || 0}","${f.disputed || 0}","${f.avg_rating || 5.0}","${pct}%"\n`;
       });
       csv += `\n`;
 
@@ -5858,7 +5859,8 @@
       csv += `"3. TOP-5 TALABGIR XIZMATLAR"\n`;
       csv += `"Xizmat kodi","Xizmat nomi","Murojaatlar soni","Ulushi (%)"\n`;
       (data.top_services || []).forEach(s => {
-        csv += `"${s.code || ''}","${s.title.replace(/"/g, '""')}","${s.count}","${s.percentage}%"\n`;
+        const sTitle = (s.title || 'Xizmat').replace(/"/g, '""');
+        csv += `"${s.code || ''}","${sTitle}","${s.count || 0}","${s.percentage || 0}%"\n`;
       });
 
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });

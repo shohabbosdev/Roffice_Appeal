@@ -194,6 +194,7 @@ async def get_portal():
 
 
 @app.get("/queue-board", tags=["Asosiy"])
+@app.get("/board", tags=["Asosiy"])
 @app.get("/display", tags=["Asosiy"])
 async def get_queue_board():
     """Kutish zali va darchalar uchun katta ekran Jonli Navbat Tablosi (TV Display)."""

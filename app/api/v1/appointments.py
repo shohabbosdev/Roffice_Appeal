@@ -103,6 +103,38 @@ async def get_appointments(
     return result.scalars().all()
 
 
+@router.get("/today", response_model=List[AppointmentOut], summary="Bugungi kunga olingan navbatlar")
+async def get_today_appointments(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Bugungi kun bo'yicha barcha faol navbatlar (live badge va monitoring uchun)."""
+    now = QueueService.get_now()
+    today_str = now.strftime("%Y-%m-%d")
+    result = await db.execute(
+        select(Appointment)
+        .options(selectinload(Appointment.service), selectinload(Appointment.student))
+        .where(Appointment.appointment_date == today_str)
+        .order_by(Appointment.scheduled_start.asc(), Appointment.id.asc())
+    )
+    return result.scalars().all()
+
+
+@router.get("/my", response_model=List[AppointmentOut], summary="Talabaning barcha olingan navbat talonlari")
+async def get_my_appointments(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Joriy talabaning barcha olingan talonlari ro'yxati."""
+    result = await db.execute(
+        select(Appointment)
+        .options(selectinload(Appointment.service), selectinload(Appointment.student))
+        .where(Appointment.student_id == current_user.id)
+        .order_by(Appointment.appointment_date.desc(), Appointment.time_slot.desc())
+    )
+    return result.scalars().all()
+
+
 @router.get("/live-board", summary="Kutish zali monitori (TV Display) uchun jonli navbat ma'lumotlari")
 async def get_live_queue_board(
     db: AsyncSession = Depends(get_db)
@@ -233,7 +265,8 @@ async def complete_appointment(
     return reloaded_appointment
 
 
-@router.post("/{appointment_id}/cancel", response_model=AppointmentOut, summary="Navbatni bekor qilish")
+@router.delete("/{appointment_id}", response_model=AppointmentOut, summary="Navbatni bekor qilish (DELETE)")
+@router.post("/{appointment_id}/cancel", response_model=AppointmentOut, summary="Navbatni bekor qilish (POST)")
 async def cancel_appointment(
     appointment_id: int,
     current_user: User = Depends(get_current_user),

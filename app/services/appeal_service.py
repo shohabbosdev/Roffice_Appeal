@@ -62,12 +62,13 @@ class AppealService:
             earned_kpi_points=service.kpi_points
         )
         db.add(appeal)
+        await db.flush()
 
         # Audit log
         log = AuditLog(
             user_id=student_id,
             entity_type="appeal",
-            entity_id=0,
+            entity_id=appeal.id,
             action="created",
             details=f"Yangi murojaat yaratildi (#{ticket_number}), SLA muddati: {sla_deadline.strftime('%Y-%m-%d %H:%M')}"
         )

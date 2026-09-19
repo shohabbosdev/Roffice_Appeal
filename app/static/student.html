@@ -728,6 +728,7 @@
       await fetchUserProfile();
       await loadEducationPolicy();
       await loadServices();
+      loadStudentAppointments();
 
       // Determine initial tab from hash or localStorage
       const hashTab = window.location.hash.replace('#', '');

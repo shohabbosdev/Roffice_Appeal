@@ -129,3 +129,52 @@ async def test_appointment_booking_and_completion(client: AsyncClient, test_db: 
     assert cancel_resp.status_code == 200
     assert cancel_resp.json()["status"] == AppointmentStatus.CANCELLED.value
 
+
+@pytest.mark.asyncio
+async def test_today_and_my_appointments_endpoints(client: AsyncClient, test_db: AsyncSession, seed_test_data: dict):
+    """GET /today, GET /my va DELETE /appointments/{id} endpointlarini sinovdan o'tkazish."""
+    student = seed_test_data["student"]
+    staff = seed_test_data["staff"]
+    service = seed_test_data["service"]
+
+    student_token = create_token_for_user(student.id, UserRole.STUDENT)
+    staff_token = create_token_for_user(staff.id, UserRole.FRONT_STAFF)
+
+    # 1. GET /today - dastlab bo'sh
+    resp_today = await client.get(
+        "/api/v1/appointments/today",
+        headers={"Authorization": f"Bearer {staff_token}"}
+    )
+    assert resp_today.status_code == 200
+    assert isinstance(resp_today.json(), list)
+
+    # 2. GET /my - talabaning talonlari
+    resp_my = await client.get(
+        "/api/v1/appointments/my",
+        headers={"Authorization": f"Bearer {student_token}"}
+    )
+    assert resp_my.status_code == 200
+    assert isinstance(resp_my.json(), list)
+
+    # 3. Yangi navbat olamiz va DELETE orqali bekor qilamiz
+    book_resp = await client.post(
+        "/api/v1/appointments/book",
+        headers={"Authorization": f"Bearer {student_token}"},
+        json={
+            "service_id": service.id,
+            "appointment_date": "2026-09-24",
+            "time_slot": "14:15 - 14:30"
+        }
+    )
+    assert book_resp.status_code == 201
+    apt_id = book_resp.json()["id"]
+
+    # DELETE /appointments/{id}
+    del_resp = await client.delete(
+        f"/api/v1/appointments/{apt_id}",
+        headers={"Authorization": f"Bearer {student_token}"}
+    )
+    assert del_resp.status_code == 200
+    assert del_resp.json()["status"] == "cancelled"
+
+

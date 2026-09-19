@@ -122,3 +122,50 @@ async def test_audit_logging_on_auth_login(client: AsyncClient, test_db: AsyncSe
     assert logs[0]["entity_type"] == "auth"
     assert logs[0]["user_id"] == head.id
     assert logs[0]["user_full_name"] == head.full_name
+
+
+@pytest.mark.asyncio
+async def test_appeal_creation_audit_logging(client: AsyncClient, test_db: AsyncSession, seed_test_data: dict):
+    """Murojaat yaratilganda audit jurnali yozilishi va entity_id to'g'ri bog'lanishi."""
+    student = seed_test_data["student"]
+    head = seed_test_data["head"]
+    service = seed_test_data["service"]
+
+    student_token = create_token_for_user(student.id, UserRole.STUDENT)
+    head_token = create_token_for_user(head.id, UserRole.OFFICE_HEAD)
+
+    # 1. Talaba yangi ariza yuboradi
+    appeal_resp = await client.post(
+        "/api/v1/appeals",
+        headers={"Authorization": f"Bearer {student_token}"},
+        json={
+            "service_id": service.id,
+            "subject": "Ma'lumotnoma olish so'rovi",
+            "message": "Iltimos, stipendiya to'g'risida ma'lumotnoma bering."
+        }
+    )
+    assert appeal_resp.status_code == 201
+    appeal_data = appeal_resp.json()
+    appeal_id = appeal_data["id"]
+
+    # 2. Audit jurnali orqali tekshirish
+    audit_resp = await client.get(
+        f"/api/v1/audit-logs?entity_type=appeal&action=created",
+        headers={"Authorization": f"Bearer {head_token}"}
+    )
+    assert audit_resp.status_code == 200
+    logs = audit_resp.json()
+    created_log = next((l for l in logs if l["entity_id"] == appeal_id), None)
+    assert created_log is not None
+    assert created_log["action"] == "created"
+    assert created_log["user_id"] == student.id
+    assert created_log["entity_id"] > 0
+
+
+@pytest.mark.asyncio
+async def test_board_page_route(client: AsyncClient):
+    """GET /board marshruti 200 OK qaytarishini tekshirish."""
+    resp = await client.get("/board")
+    assert resp.status_code == 200
+    assert "html" in resp.headers.get("content-type", "").lower()
+

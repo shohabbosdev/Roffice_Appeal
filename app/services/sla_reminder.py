@@ -8,7 +8,7 @@ import logging
 from datetime import datetime, timezone, timedelta
 from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import selectinload
 from app.core.database import AsyncSessionLocal
 from app.models import Appeal, AppealStatus, User, Appointment, AppointmentStatus
@@ -117,20 +117,27 @@ async def _process_sla_reminders(db: AsyncSession):
                     f"-> xodim {staff.full_name} (TG: {staff.telegram_chat_id})"
                 )
 
-        # 4. Bugungi darcha qabuliga 15-45 daqiqa qolgan talabalarga eslatma
-        today_str = now.strftime("%Y-%m-%d")
-        start_window = now + timedelta(minutes=15)
-        end_window = now + timedelta(minutes=45)
+        # 4. Bugungi darcha qabuliga 10-45 daqiqa qolgan talabalarga eslatma
+        now_utc = datetime.now(timezone.utc)
+        now_tashkent = QueueService.get_now()
+        dates_to_check = list({now_utc.strftime("%Y-%m-%d"), now_tashkent.strftime("%Y-%m-%d")})
+
+        start_utc = now_utc + timedelta(minutes=10)
+        end_utc = now_utc + timedelta(minutes=45)
+        start_tashkent = now_tashkent + timedelta(minutes=10)
+        end_tashkent = now_tashkent + timedelta(minutes=45)
 
         appt_stmt = (
             select(Appointment)
             .options(selectinload(Appointment.student), selectinload(Appointment.service))
             .where(
-                Appointment.appointment_date == today_str,
+                Appointment.appointment_date.in_(dates_to_check),
                 Appointment.status == AppointmentStatus.BOOKED,
                 Appointment.scheduled_start.isnot(None),
-                Appointment.scheduled_start >= start_window,
-                Appointment.scheduled_start <= end_window
+                or_(
+                    and_(Appointment.scheduled_start >= start_utc, Appointment.scheduled_start <= end_utc),
+                    and_(Appointment.scheduled_start >= start_tashkent, Appointment.scheduled_start <= end_tashkent)
+                )
             )
         )
         appts_to_remind = (await db.execute(appt_stmt)).scalars().all()
@@ -162,8 +169,8 @@ async def _process_sla_reminders(db: AsyncSession):
 
 
 async def run_sla_reminder_loop():
-    """Har 15 daqiqada SLA deadline eslatmalarini va avto-yopilishni tekshirib turuvchi fon vazifasi."""
-    logger.info("SLA Reminder va Auto-Close xizmati ishga tushirildi (har 15 daqiqada tekshiriladi).")
+    """Har 2 daqiqada SLA deadline eslatmalarini va avto-yopilishni tekshirib turuvchi fon vazifasi."""
+    logger.info("SLA Reminder va Auto-Close xizmati ishga tushirildi (har 2 daqiqada tekshiriladi).")
     while True:
         try:
             await check_and_send_sla_reminders()
@@ -172,5 +179,5 @@ async def run_sla_reminder_loop():
             break
         except Exception as e:
             logger.error(f"SLA reminder loop xatosi: {e}")
-        await asyncio.sleep(15 * 60)  # 15 daqiqa
+        await asyncio.sleep(120)  # Har 2 daqiqa (120 soniya)
 
