@@ -1249,7 +1249,7 @@
   </div>
 
   <!-- MODAL: APP CONFIRMATION (RESPONSIVE CUSTOM CONFIRM DIALOG) -->
-  <div id="app-confirm-modal" style="display: none;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 items-center justify-center p-4">
+  <div id="app-confirm-modal" style="display: none;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[110] items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <div class="flex items-start gap-3">
         <div id="confirm-modal-icon-wrap" class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0">
@@ -1274,10 +1274,10 @@
   </div>
 
   <!-- TOAST CONTAINER -->
-  <div id="app-toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
+  <div id="app-toast-container" class="fixed bottom-5 right-5 z-[120] flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
 
   <!-- MODAL: SERVICE CREATE / EDIT (XIZMATLAR REGLAMENTI VA KPI) -->
-  <div id="service-crud-modal" style="display: none;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 items-center justify-center p-4">
+  <div id="service-crud-modal" style="display: none;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -1357,7 +1357,7 @@
   </div>
 
   <!-- MODAL: DEPARTMENT CREATE / EDIT (BO'LIMLAR VA DARCHALAR) -->
-  <div id="dept-crud-modal" style="display: none;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 items-center justify-center p-4">
+  <div id="dept-crud-modal" style="display: none;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -2195,7 +2195,7 @@
             <button type="button" onclick="openEditDeptModal(${d.id})" class="px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-xs font-medium transition cursor-pointer">
               Tahrirlash
             </button>
-            <button type="button" onclick="deleteDepartment(${d.id}, '${encodeURIComponent(d.name)}')" class="px-2.5 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+            <button type="button" onclick="deleteDepartment(${d.id})" class="px-2.5 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
               O'chirish
             </button>
           </div>
@@ -2373,7 +2373,7 @@
               <button type="button" onclick="openEditServiceModal(${s.id})" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
                 Tahrirlash (SLA/KPI)
               </button>
-              <button type="button" onclick="deleteService(${s.id}, '${encodeURIComponent(s.title)}')" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+              <button type="button" onclick="deleteService(${s.id})" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
                 O'chirish
               </button>
             </div>
@@ -2394,7 +2394,10 @@
     }
 
     // Modal Service CRUD
-    function openCreateServiceModal() {
+    async function openCreateServiceModal() {
+      if (!allDepartmentsList || allDepartmentsList.length === 0) {
+        await loadDepartmentsList();
+      }
       const heading = document.getElementById('service-modal-heading');
       if (heading) heading.innerText = "Yangi xizmat qo'shish";
       const idEl = document.getElementById('service-crud-id');
@@ -2421,8 +2424,19 @@
       }
     }
 
-    function openEditServiceModal(id) {
-      const s = allServicesList.find(item => item.id == id);
+    async function openEditServiceModal(id) {
+      if (!allDepartmentsList || allDepartmentsList.length === 0) {
+        await loadDepartmentsList();
+      }
+      let s = allServicesList.find(item => item.id == id);
+      if (!s) {
+        try {
+          const resp = await fetch(`/api/v1/services/${id}`, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          if (resp.ok) s = await resp.json();
+        } catch (e) {}
+      }
       if (!s) {
         showToast("Xizmat ma'lumotlari topilmadi.", "error");
         return;
@@ -2542,8 +2556,9 @@
       }
     }
 
-    async function deleteService(id, encTitle) {
-      const title = decodeURIComponent(encTitle);
+    async function deleteService(id) {
+      const s = (allServicesList || []).find(item => item.id == id);
+      const title = s ? s.title : "Xizmat";
       const ok = await openAppConfirm({
         title: "Xizmatni o'chirish",
         message: `Haqiqatan ham "${title}" xizmatini o'chirmoqchimisiz? Agar ushbu xizmat bo'yicha murojaatlar bo'lmasa butunlay o'chiriladi, aks holda nofaol holatga o'tkaziladi.`,
@@ -2592,8 +2607,19 @@
       }
     }
 
-    function openEditDeptModal(id) {
-      const d = allDepartmentsList.find(item => item.id == id);
+    async function openEditDeptModal(id) {
+      let d = (allDepartmentsList || []).find(item => item.id == id);
+      if (!d) {
+        try {
+          const resp = await fetch('/api/v1/services/departments', {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+          });
+          if (resp.ok) {
+            allDepartmentsList = await resp.json();
+            d = allDepartmentsList.find(item => item.id == id);
+          }
+        } catch (e) {}
+      }
       if (!d) {
         showToast("Bo'lim ma'lumotlari topilmadi.", "error");
         return;
@@ -2672,8 +2698,9 @@
       }
     }
 
-    async function deleteDepartment(id, encName) {
-      const name = decodeURIComponent(encName);
+    async function deleteDepartment(id) {
+      const d = (allDepartmentsList || []).find(item => item.id == id);
+      const name = d ? d.name : "Bo'lim";
       const ok = await openAppConfirm({
         title: "Bo'limni o'chirish",
         message: `Haqiqatan ham "${name}" bo'limini o'chirmoqchimisiz?`,
@@ -2684,7 +2711,7 @@
       if (!ok) return;
 
       try {
-        const resp = await fetch(`/api/v1/services/departments/${id}`, {
+        const resp = await fetch(`/api/v1/services/departments/${id}?hard_delete=true`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -3169,10 +3196,10 @@
                 <button onclick="openEditStaffModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-medium transition cursor-pointer">
                   Tahrirlash
                 </button>
-                <button onclick="openKpiAwardModal(${u.id}, '${encodeURIComponent(u.full_name)}', '${encodeURIComponent(u.assigned_duties || '')}')" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                <button onclick="openKpiAwardModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
                   KPI & Vazifa
                 </button>
-                <button onclick="deleteStaffMember(${u.id}, '${encodeURIComponent(u.full_name)}')" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+                <button onclick="deleteStaffMember(${u.id})" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
                   O'chirish
                 </button>
               </td>
@@ -3445,8 +3472,9 @@
       }
     }
 
-    async function deleteStaffMember(userId, encName) {
-      const name = decodeURIComponent(encName);
+    async function deleteStaffMember(userId) {
+      const u = (allStaffList || []).find(item => item.id === userId);
+      const name = u ? u.full_name : "Xodim";
       const ok = await openAppConfirm({
         title: "Xodimni o'chirish",
         message: `Haqiqatan ham "${name}" xodimini tizimdan o'chirmoqchimisiz? Ushbu xodim tizimga kira olmaydi.`,
@@ -3474,13 +3502,15 @@
     }
 
     // 8. KPI AWARD MODAL
-    function openKpiAwardModal(empId, empName, encodedDuties) {
+    function openKpiAwardModal(empId) {
+      const u = (allStaffList || []).find(item => item.id === empId);
+      const empName = u ? u.full_name : "Xodim";
+      const duties = u ? (u.assigned_duties || "") : "";
       document.getElementById('kpi-target-employee-id').value = empId;
       document.getElementById('kpi-modal-staff-name').innerText = empName;
-      const decoded = decodeURIComponent(encodedDuties);
       const listEl = document.getElementById('kpi-modal-duties-list');
-      if (decoded && decoded.trim()) {
-        listEl.innerHTML = decoded.split('\n').map(d => `<div class="flex items-center gap-2"><span class="text-emerald-400">•</span> <span>${d}</span></div>`).join('');
+      if (duties && duties.trim()) {
+        listEl.innerHTML = duties.split('\n').map(d => `<div class="flex items-center gap-2"><span class="text-emerald-400">•</span> <span>${d}</span></div>`).join('');
       } else {
         listEl.innerHTML = '<span class="text-slate-500">Nizom bo\'yicha alohida xizmat vazifalari biriktirilmagan. Standart registrator xizmatlari qo\'llaniladi.</span>';
       }
@@ -3840,7 +3870,7 @@
             <div class="flex items-center gap-2.5 pt-2 flex-wrap border-t border-slate-800/80">
               ${isAdminOrHead ? `
                 <button
-                  onclick="openReassignModal(${app.id}, '${app.ticket_number}', '${(app.student?.full_name||'Talaba').replace(/'/g,"\\'")}', '${(app.service?.title||'—').replace(/'/g,"\\'")}', ${app.assigned_staff_id || 'null'})"
+                  onclick="openReassignModal(${app.id})"
                   class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-2 shadow-md shadow-indigo-600/20"
                   title="Murojaatni ijrochi xodimga biriktirish yoki boshqasiga o'tkazish"
                 >
@@ -3856,7 +3886,7 @@
               ` : ''}
 
               ${['assigned','in_progress'].includes(app.status) ? `
-                <button onclick="openResolveModal(${app.id}, '${app.ticket_number}', '${(app.subject||'').replace(/'/g,"\\'")}', '${(app.service?.title||'—').replace(/'/g,"\\'")}' )" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
+                <button onclick="openResolveModal(${app.id})" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-600/20">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
                   <span>Javob berish va yakunlash</span>
                 </button>
@@ -3928,7 +3958,13 @@
     }
 
     // Reassign Modal Logic
-    async function openReassignModal(appealId, ticket, studentName, serviceTitle, currentStaffId) {
+    async function openReassignModal(appealId) {
+      const app = (allStaffAppeals || []).find(a => a.id === appealId);
+      const ticket = app ? app.ticket_number : '—';
+      const studentName = app && app.student ? app.student.full_name : 'Talaba';
+      const serviceTitle = app && app.service ? app.service.title : '—';
+      const currentStaffId = app ? app.assigned_staff_id : null;
+
       document.getElementById('reassign-appeal-id').value = appealId;
       document.getElementById('reassign-modal-ticket').textContent = 'Talon: #' + ticket;
       document.getElementById('reassign-info-student').textContent = studentName || '—';
@@ -4025,7 +4061,12 @@
     }
 
     // Resolve Modal
-    function openResolveModal(id, ticket, subject, service) {
+    function openResolveModal(id) {
+      const app = (allStaffAppeals || []).find(a => a.id === id);
+      const ticket = app ? app.ticket_number : '—';
+      const subject = app ? (app.subject || '—') : '—';
+      const service = app && app.service ? app.service.title : '—';
+
       document.getElementById('resolve-appeal-id').value = id;
       document.getElementById('resolve-modal-ticket').textContent = `Talon: #${ticket}`;
       document.getElementById('resolve-info-subject').textContent = subject;
@@ -4426,8 +4467,11 @@
       }
     }
 
-    async function deleteHoliday(id, encTitle) {
-      const title = decodeURIComponent(encTitle);
+    let allHolidaysList = [];
+
+    async function deleteHoliday(id) {
+      const h = (allHolidaysList || []).find(item => item.id === id);
+      const title = h ? h.title : "Bayram";
       const ok = await openAppConfirm({
         title: "Bayramni o'chirish",
         message: `Haqiqatan ham "${title}" sanasini taqvimdan o'chirmoqchimisiz? Ushbu sanada SLA hisoblash qayta tiklanadi.`,
@@ -4467,6 +4511,7 @@
       try {
         const resp = await fetch('/api/v1/calendar/holidays');
         const holidays = await resp.json();
+        allHolidaysList = holidays || [];
         if (!holidays || holidays.length === 0) {
           container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 col-span-full border border-slate-800/80 rounded-2xl bg-slate-900/40">Taqvimda kiritilgan bayramlar mavjud emas.</div>';
           return;
@@ -4487,7 +4532,7 @@
             <div class="pt-2 border-t border-slate-800 flex justify-end">
               <button
                 type="button"
-                onclick="deleteHoliday(${h.id}, '${encodeURIComponent(h.title)}')"
+                onclick="deleteHoliday(${h.id})"
                 class="px-2.5 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer"
               >
                 O'chirish
