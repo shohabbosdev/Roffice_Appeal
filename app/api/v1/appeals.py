@@ -264,7 +264,18 @@ async def request_clarification(
         clarification_message=data.clarification_message
     )
     result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
-    return result.scalar_one()
+    reloaded_clarify = result.scalar_one()
+
+    # Talabaga qo'shimcha ma'lumot so'ralgani haqida Telegram xabar
+    if reloaded_clarify.student and reloaded_clarify.student.telegram_chat_id:
+        asyncio.create_task(TelegramService.notify_clarification_requested(
+            student_chat_id=reloaded_clarify.student.telegram_chat_id,
+            appeal_ticket=reloaded_clarify.ticket_number,
+            clarification_message=data.clarification_message,
+            service_title=reloaded_clarify.service.title if reloaded_clarify.service else "Murojaat"
+        ))
+
+    return reloaded_clarify
 
 
 @router.post("/{appeal_id}/provide-clarification", response_model=AppealOut, summary="Talaba tomonidan so'ralgan ma'lumotni kiritish")
@@ -286,7 +297,18 @@ async def provide_clarification(
         additional_info=data.additional_info
     )
     result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
-    return result.scalar_one()
+    reloaded_provided = result.scalar_one()
+
+    # Mas'ul ijrochiga talaba ma'lumot kiritgani haqida Telegram xabar
+    if reloaded_provided.assigned_staff and reloaded_provided.assigned_staff.telegram_chat_id:
+        asyncio.create_task(TelegramService.notify_clarification_provided(
+            staff_chat_id=reloaded_provided.assigned_staff.telegram_chat_id,
+            appeal_ticket=reloaded_provided.ticket_number,
+            student_name=current_user.full_name,
+            clarification_response=data.additional_info
+        ))
+
+    return reloaded_provided
 
 
 @router.post("/{appeal_id}/resolve", response_model=AppealOut, summary="Murojaatni ijro etish va natijani yuklash (72 soatlik tasdiqlash boshlanadi)")
@@ -362,7 +384,19 @@ async def dispute_resolution(
         dispute_reason=data.dispute_reason
     )
     result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
-    return result.scalar_one()
+    reloaded_dispute = result.scalar_one()
+
+    # Registrator ofisi boshliqlariga Telegram orqali xabar berish
+    head_res = await db.execute(select(User).where(User.role == UserRole.OFFICE_HEAD, User.telegram_chat_id.isnot(None)))
+    for head_user in head_res.scalars().all():
+        asyncio.create_task(TelegramService.notify_appeal_disputed(
+            head_chat_id=head_user.telegram_chat_id,
+            appeal_ticket=reloaded_dispute.ticket_number,
+            student_name=current_user.full_name,
+            dispute_reason=data.dispute_reason
+        ))
+
+    return reloaded_dispute
 
 
 @router.post("/{appeal_id}/escalate-prorektor", response_model=AppealOut, summary="Nizoni Prorektorga yo'naltirishi (3-bosqich eskalatsiya)")
@@ -380,7 +414,19 @@ async def escalate_prorektor(
         head_note=data.head_note
     )
     result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
-    return result.scalar_one()
+    reloaded_esc = result.scalar_one()
+
+    # Prorektorlarga Telegram xabar
+    pr_res = await db.execute(select(User).where(User.role == UserRole.VICE_RECTOR, User.telegram_chat_id.isnot(None)))
+    for pr_user in pr_res.scalars().all():
+        asyncio.create_task(TelegramService.notify_appeal_escalated_prorektor(
+            prorektor_chat_id=pr_user.telegram_chat_id,
+            appeal_ticket=reloaded_esc.ticket_number,
+            student_name=reloaded_esc.student.full_name if reloaded_esc.student else "Talaba",
+            head_note=data.head_note
+        ))
+
+    return reloaded_esc
 
 
 @router.post("/{appeal_id}/prorektor-decision", response_model=AppealOut, summary="Prorektorning yakuniy majburiy qarori")
@@ -398,4 +444,23 @@ async def prorektor_decision(
         final_decision=data.final_decision
     )
     result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == appeal.id))
-    return result.scalar_one()
+    reloaded_decision = result.scalar_one()
+
+    # Talabaga yakuniy qaror xabari
+    if reloaded_decision.student and reloaded_decision.student.telegram_chat_id:
+        asyncio.create_task(TelegramService.notify_prorektor_decision(
+            chat_id=reloaded_decision.student.telegram_chat_id,
+            appeal_ticket=reloaded_decision.ticket_number,
+            final_decision=data.final_decision,
+            is_student=True
+        ))
+    # Ijrochi xodimga yakuniy qaror xabari
+    if reloaded_decision.assigned_staff and reloaded_decision.assigned_staff.telegram_chat_id:
+        asyncio.create_task(TelegramService.notify_prorektor_decision(
+            chat_id=reloaded_decision.assigned_staff.telegram_chat_id,
+            appeal_ticket=reloaded_decision.ticket_number,
+            final_decision=data.final_decision,
+            is_student=False
+        ))
+
+    return reloaded_decision

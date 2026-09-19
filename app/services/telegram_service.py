@@ -143,3 +143,120 @@ class TelegramService:
             f"<i>Iltimos, ko'rsatilgan vaqtda 104-xonaga ({window_number}) shaxsingizni tasdiqlovchi hujjat bilan tashrif buyuring.</i>"
         )
         await cls.send_telegram_message(student_chat_id, msg)
+
+    @classmethod
+    async def notify_clarification_requested(
+        cls, student_chat_id: Optional[int], appeal_ticket: str, clarification_message: str, service_title: str
+    ):
+        """Xodim qo'shimcha ma'lumot so'raganda talabaga xabar berish."""
+        if not student_chat_id:
+            return
+        msg = (
+            f"❓ <b>Murojaatingiz bo'yicha qo'shimcha ma'lumot so'raldi</b>\n\n"
+            f"Sizning <b>#{appeal_ticket}</b> raqamli murojaatingiz ({service_title}) bo'yicha mas'ul xodim quyidagi ma'lumotlarni aniqlashtirishingizni so'ramoqda:\n\n"
+            f"<b>Xodim xabari:</b>\n{clarification_message}\n\n"
+            f"<i>Iltimos, Registrator ofisi portalidagi shaxsiy kabinetingizga kirib, so'ralgan ma'lumotni kiritishingiz so'raladi. "
+            f"Siz javob bergunga qadar ijro taymeri vaqtincha to'xtatiladi.</i>"
+        )
+        await cls.send_telegram_message(student_chat_id, msg)
+
+    @classmethod
+    async def notify_clarification_provided(
+        cls, staff_chat_id: Optional[int], appeal_ticket: str, student_name: str, clarification_response: str
+    ):
+        """Talaba tushuntirish kiritganda ijrochi xodimga xabar berish."""
+        if not staff_chat_id:
+            return
+        msg = (
+            f"💬 <b>Talaba so'ralgan ma'lumotni kiritdi</b>\n\n"
+            f"• <b>Talon raqami:</b> #{appeal_ticket}\n"
+            f"• <b>Talaba:</b> {student_name}\n\n"
+            f"<b>Talabaning javobi:</b>\n{clarification_response}\n\n"
+            f"<i>Murojaat bo'yicha ijro taymeri qayta tiklandi. Ko'rib chiqishingizni so'raymiz.</i>"
+        )
+        await cls.send_telegram_message(staff_chat_id, msg)
+
+    @classmethod
+    async def notify_appeal_disputed(
+        cls, head_chat_id: Optional[int], appeal_ticket: str, student_name: str, dispute_reason: str
+    ):
+        """Talaba e'tiroz (nizo) ochganda Ofis boshlig'iga xabar berish."""
+        if not head_chat_id:
+            return
+        msg = (
+            f"⚖️ <b>Yangi nizoli murojaat (E'tiroz bildirildi)</b>\n\n"
+            f"Talaba berilgan javobdan qanoatlanmadi va nizo ochdi:\n"
+            f"• <b>Talon raqami:</b> #{appeal_ticket}\n"
+            f"• <b>Talaba:</b> {student_name}\n\n"
+            f"<b>E'tiroz sababi:</b>\n{dispute_reason}\n\n"
+            f"<i>Murojaat 2-bosqich eskalatsiyasiga o'tkazildi. Ofis rahbariyati tomonidan hal etilishi lozim.</i>"
+        )
+        await cls.send_telegram_message(head_chat_id, msg)
+
+    @classmethod
+    async def notify_appeal_escalated_prorektor(
+        cls, prorektor_chat_id: Optional[int], appeal_ticket: str, student_name: str, head_note: str
+    ):
+        """Ofis boshlig'i nizoni Prorektorga oshirganda xabar berish."""
+        if not prorektor_chat_id:
+            return
+        msg = (
+            f"🏛️ <b>Murojaat Prorektor nazoratiga oshirildi</b>\n\n"
+            f"Registrator ofisi boshlig'i tomonidan nizoli murojaat Prorektorga yo'naltirildi:\n"
+            f"• <b>Talon raqami:</b> #{appeal_ticket}\n"
+            f"• <b>Talaba:</b> {student_name}\n\n"
+            f"<b>Ofis boshlig'i xulosasi:</b>\n{head_note}\n\n"
+            f"<i>Mazkur murojaat bo'yicha yakuniy qaror chiqarishingiz so'raladi.</i>"
+        )
+        await cls.send_telegram_message(prorektor_chat_id, msg)
+
+    @classmethod
+    async def notify_prorektor_decision(
+        cls, chat_id: Optional[int], appeal_ticket: str, final_decision: str, is_student: bool = True
+    ):
+        """Prorektorning yakuniy qarori chiqqanda xabar berish."""
+        if not chat_id:
+            return
+        role_label = "Hurmatli talaba," if is_student else "Hurmatli ijrochi xodim,"
+        msg = (
+            f"⚖️ <b>Prorektorning yakuniy qarori</b>\n\n"
+            f"{role_label}\n"
+            f"<b>#{appeal_ticket}</b> raqamli murojaat bo'yicha O'quv ishlari bo'yicha prorektorning yakuniy rasmiy qarori qabul qilindi:\n\n"
+            f"<b>Qaror matni:</b>\n{final_decision}\n\n"
+            f"<i>Ushbu qaror qat'iy va majburiy hisoblanadi. Murojaat to'liq yopildi.</i>"
+        )
+        await cls.send_telegram_message(chat_id, msg)
+
+    @classmethod
+    async def notify_appointment_called(
+        cls, student_chat_id: Optional[int], ticket_code: str, window_number: str
+    ):
+        """Front-ofis xodimi talabani darchaga chaqirganda bildirishnoma."""
+        if not student_chat_id:
+            return
+        msg = (
+            f"📢 <b>Sizning navbatingiz keldi!</b>\n\n"
+            f"Hurmatli talaba, sizning <code>{ticket_code}</code> raqamli taloningiz darchaga chaqirilmoqda:\n\n"
+            f"🏛️ <b>Qabul joyi:</b> {window_number}\n\n"
+            f"<i>Iltimos, zudlik bilan ko'rsatilgan darchaga yetib boring!</i>"
+        )
+        await cls.send_telegram_message(student_chat_id, msg)
+
+    @classmethod
+    async def notify_appointment_reminder(
+        cls, student_chat_id: Optional[int], ticket_code: str, window_number: str, time_slot: str, service_title: str
+    ):
+        """Darcha qabuliga 30 daqiqa qolganda avtomatik eslatma."""
+        if not student_chat_id:
+            return
+        msg = (
+            f"⏰ <b>Qabul navbatingizga 30 daqiqa qoldi!</b>\n\n"
+            f"Hurmatli talaba, bugungi darcha qabulingiz vaqti yaqinlashmoqda:\n"
+            f"• <b>Talon:</b> <code>{ticket_code}</code>\n"
+            f"• <b>Xizmat:</b> {service_title}\n"
+            f"• <b>Darcha:</b> {window_number}\n"
+            f"• <b>Vaqti:</b> {time_slot}\n\n"
+            f"<i>Iltimos, belgilangan vaqtda Registrator ofisiga (104-xona) shaxsingizni tasdiqlovchi hujjat bilan yetib keling.</i>"
+        )
+        await cls.send_telegram_message(student_chat_id, msg)
+

@@ -173,11 +173,21 @@ async def call_appointment(
     db: AsyncSession = Depends(get_db)
 ):
     """Xodim navbatdagi talabani o'z darchasiga chaqiradi. Holat 'in_service' ga o'tadi va jonli tabloga yuboriladi."""
-    return await QueueService.call_appointment(
+    appointment = await QueueService.call_appointment(
         db=db,
         appointment_id=appointment_id,
         staff=current_user
     )
+
+    # Talabaning Telegramiga darhol "Darchaga marhamat" bildirishnomasi
+    if appointment.student and appointment.student.telegram_chat_id:
+        asyncio.create_task(TelegramService.notify_appointment_called(
+            student_chat_id=appointment.student.telegram_chat_id,
+            ticket_code=appointment.ticket_code,
+            window_number=appointment.window_number
+        ))
+
+    return appointment
 
 
 @router.post("/{appointment_id}/complete", response_model=AppointmentOut, summary="Qabulni yakunlash va xodimga KPI ballini yozish")
