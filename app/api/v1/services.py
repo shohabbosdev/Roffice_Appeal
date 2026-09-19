@@ -32,10 +32,10 @@ async def get_departments(
     return result.scalars().all()
 
 
-@router.post("/departments", response_model=DepartmentOut, status_code=status.HTTP_201_CREATED, summary="Yangi bo'lim/soha yaratish (Admin)")
+@router.post("/departments", response_model=DepartmentOut, status_code=status.HTTP_201_CREATED, summary="Yangi bo'lim/soha yaratish (Boshliq / Admin)")
 async def create_department(
     data: DepartmentCreate,
-    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    current_user: User = Depends(require_role(UserRole.OFFICE_HEAD, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     existing = await db.execute(select(Department).where(Department.code == data.code))
@@ -55,11 +55,11 @@ async def create_department(
     return dept
 
 
-@router.put("/departments/{dept_id}", response_model=DepartmentOut, summary="Bo'limni tahrirlash (Admin)")
+@router.put("/departments/{dept_id}", response_model=DepartmentOut, summary="Bo'limni tahrirlash (Boshliq / Admin)")
 async def update_department(
     dept_id: int,
     data: DepartmentUpdate,
-    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    current_user: User = Depends(require_role(UserRole.OFFICE_HEAD, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     dept = await db.get(Department, dept_id)
@@ -80,15 +80,28 @@ async def update_department(
     return dept
 
 
-@router.delete("/departments/{dept_id}", summary="Bo'limni o'chirish / nofaol qilish (Admin)")
+@router.delete("/departments/{dept_id}", summary="Bo'limni o'chirish / nofaol qilish (Boshliq / Admin)")
 async def delete_department(
     dept_id: int,
-    current_user: User = Depends(require_role(UserRole.ADMIN)),
+    hard_delete: bool = Query(False, description="Butunlay o'chirish (faqat xizmatlar yoki xodimlar biriktirilmagan bo'lsa)"),
+    current_user: User = Depends(require_role(UserRole.OFFICE_HEAD, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
 ):
     dept = await db.get(Department, dept_id)
     if not dept:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Bo'lim topilmadi.")
+
+    if hard_delete:
+        # Xizmatlar yoki xodimlar biriktirilganligini tekshirish
+        services_query = await db.execute(select(Service).where(Service.department_id == dept_id))
+        if services_query.scalars().first():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ushbu bo'limga xizmatlar biriktirilgan. Avval ularni boshqa bo'limga ko'chiring yoki o'chiring."
+            )
+        await db.delete(dept)
+        await db.commit()
+        return {"message": "Bo'lim butunlay o'chirildi."}
 
     dept.is_active = False
     await db.commit()

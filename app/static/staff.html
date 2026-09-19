@@ -567,6 +567,25 @@
                 Xizmatlar yuklanmoqda...
               </div>
             </div>
+
+            <!-- Services Pagination Controls -->
+            <div id="services-pagination-bar" class="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-slate-900/80 border border-slate-800 rounded-2xl text-xs text-slate-400">
+              <div class="flex items-center gap-2">
+                <span>Ko'rsatilmoqda: <strong id="services-page-info" class="text-white">0-0 / 0</strong></span>
+                <span class="text-slate-600">|</span>
+                <label class="flex items-center gap-1.5 text-[11px]">
+                  <span>Har sahifada:</span>
+                  <select id="services-per-page-select" onchange="changeServicesPerPage(this.value)" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer">
+                    <option value="6" selected>6 ta</option>
+                    <option value="12">12 ta</option>
+                    <option value="24">24 ta</option>
+                  </select>
+                </label>
+              </div>
+              <div class="flex items-center gap-1.5" id="services-pagination-buttons">
+                <!-- Dynamic Page Buttons -->
+              </div>
+            </div>
           </div>
 
           <!-- Departments Grid View -->
@@ -574,6 +593,25 @@
             <div id="all-departments-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div class="p-8 text-center text-xs text-slate-500 col-span-3 border border-slate-800/80 rounded-2xl bg-slate-900/40">
                 Bo'limlar yuklanmoqda...
+              </div>
+            </div>
+
+            <!-- Departments Pagination Controls -->
+            <div id="departments-pagination-bar" class="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 bg-slate-900/80 border border-slate-800 rounded-2xl text-xs text-slate-400">
+              <div class="flex items-center gap-2">
+                <span>Ko'rsatilmoqda: <strong id="depts-page-info" class="text-white">0-0 / 0</strong></span>
+                <span class="text-slate-600">|</span>
+                <label class="flex items-center gap-1.5 text-[11px]">
+                  <span>Har sahifada:</span>
+                  <select id="depts-per-page-select" onchange="changeDeptsPerPage(this.value)" class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="6" selected>6 ta</option>
+                    <option value="12">12 ta</option>
+                    <option value="24">24 ta</option>
+                  </select>
+                </label>
+              </div>
+              <div class="flex items-center gap-1.5" id="departments-pagination-buttons">
+                <!-- Dynamic Page Buttons -->
               </div>
             </div>
           </div>
@@ -1211,7 +1249,7 @@
   </div>
 
   <!-- MODAL: APP CONFIRMATION (RESPONSIVE CUSTOM CONFIRM DIALOG) -->
-  <div id="app-confirm-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div id="app-confirm-modal" style="display: none;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <div class="flex items-start gap-3">
         <div id="confirm-modal-icon-wrap" class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0">
@@ -1239,7 +1277,7 @@
   <div id="app-toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none max-w-sm w-full"></div>
 
   <!-- MODAL: SERVICE CREATE / EDIT (XIZMATLAR REGLAMENTI VA KPI) -->
-  <div id="service-crud-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div id="service-crud-modal" style="display: none;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -1319,7 +1357,7 @@
   </div>
 
   <!-- MODAL: DEPARTMENT CREATE / EDIT (BO'LIMLAR VA DARCHALAR) -->
-  <div id="dept-crud-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <div id="dept-crud-modal" style="display: none;" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -1618,13 +1656,19 @@
             ? "w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0"
             : "w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0";
         }
-        if (modal) modal.classList.remove('hidden');
+        if (modal) {
+          modal.classList.remove('hidden');
+          modal.style.display = 'flex';
+        }
       });
     }
 
     function closeAppConfirm(result) {
       const modal = document.getElementById('app-confirm-modal');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
       if (appConfirmResolve) {
         appConfirmResolve(Boolean(result));
         appConfirmResolve = null;
@@ -1898,6 +1942,7 @@
       const queueBtn = document.getElementById('nav-queue-btn');
       const usersBtn = document.getElementById('nav-users-btn');
       const addServiceBtn = document.getElementById('add-service-btn');
+      const addDeptBtn = document.getElementById('add-dept-btn');
 
       if (role === 'front_staff') {
         if (policyBtn) policyBtn.style.display = 'none';
@@ -1905,21 +1950,24 @@
         if (calendarBtn) calendarBtn.style.display = 'none';
         if (queueBtn) queueBtn.style.display = 'flex';
         if (usersBtn) usersBtn.style.display = 'none';
-        if (addServiceBtn) addServiceBtn.classList.add('hidden');
+        if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
+        if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'back_staff') {
         if (policyBtn) policyBtn.style.display = 'none';
         if (kpiBtn) kpiBtn.style.display = 'flex';
         if (calendarBtn) calendarBtn.style.display = 'none';
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'none';
-        if (addServiceBtn) addServiceBtn.classList.add('hidden');
+        if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
+        if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'vice_rector') {
         if (policyBtn) policyBtn.style.display = 'none';
         if (kpiBtn) kpiBtn.style.display = 'flex';
         if (calendarBtn) calendarBtn.style.display = 'flex';
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'none';
-        if (addServiceBtn) addServiceBtn.classList.add('hidden');
+        if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
+        if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'office_head') {
         // Registrator ofisi boshlig'i
         if (policyBtn) policyBtn.style.display = 'flex';
@@ -1927,7 +1975,8 @@
         if (calendarBtn) calendarBtn.style.display = 'flex';
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'flex';
-        if (addServiceBtn) addServiceBtn.classList.remove('hidden');
+        if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
+        if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
       } else {
         // Tizim administratori (admin)
         if (policyBtn) policyBtn.style.display = 'flex';
@@ -1935,7 +1984,8 @@
         if (calendarBtn) calendarBtn.style.display = 'flex';
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'flex';
-        if (addServiceBtn) addServiceBtn.classList.remove('hidden');
+        if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
+        if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
       }
     }
 
@@ -2053,40 +2103,115 @@
             allDepartmentsList.map(d => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('');
         }
 
-        // Render departments grid
-        const grid = document.getElementById('all-departments-grid');
-        if (!grid) return;
-
-        if (allDepartmentsList.length === 0) {
-          grid.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 col-span-3 border border-slate-800/80 rounded-2xl bg-slate-900/40">Bo\'limlar mavjud emas.</div>';
-          return;
-        }
-
-        grid.innerHTML = allDepartmentsList.map(d => `
-          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 relative group hover:border-slate-700 transition">
-            <div class="flex items-center justify-between">
-              <span class="font-mono text-xs font-bold text-blue-400">${d.code}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${d.dept_type === 'front_office' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}">
-                ${d.dept_type === 'front_office' ? 'Front-ofis (Darcha)' : 'Back-ofis (Ijro)'}
-              </span>
-            </div>
-            <div>
-              <h5 class="text-sm font-bold text-white">${d.name}</h5>
-              <p class="text-xs text-slate-400 mt-1">Darcha: <strong class="text-slate-200">${d.window_number || 'Belgilanmagan'}</strong></p>
-            </div>
-            <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
-              <button onclick="openEditDeptModal(${d.id})" class="px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-xs font-medium transition cursor-pointer">
-                Tahrirlash
-              </button>
-              <button onclick="deleteDepartment(${d.id}, '${encodeURIComponent(d.name)}')" class="px-2.5 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
-                O'chirish
-              </button>
-            </div>
-          </div>
-        `).join('');
+        // Render departments grid with pagination
+        renderDepartmentsGrid();
       } catch (e) {
         console.error("Bo'limlarni yuklashda xatolik:", e);
       }
+    }
+
+    let deptsCurrentPage = 1;
+    let deptsPerPage = 6;
+
+    function renderDepartmentsGrid() {
+      const grid = document.getElementById('all-departments-grid');
+      const pageInfo = document.getElementById('depts-page-info');
+      const paginationButtons = document.getElementById('departments-pagination-buttons');
+      if (!grid) return;
+
+      const total = allDepartmentsList.length;
+      const totalPages = Math.ceil(total / deptsPerPage) || 1;
+      if (deptsCurrentPage > totalPages) deptsCurrentPage = totalPages;
+      if (deptsCurrentPage < 1) deptsCurrentPage = 1;
+
+      const start = (deptsCurrentPage - 1) * deptsPerPage;
+      const end = Math.min(start + deptsPerPage, total);
+      const pageItems = allDepartmentsList.slice(start, end);
+
+      if (pageInfo) {
+        pageInfo.innerText = total === 0 ? "0-0 / 0" : `${start + 1}-${end} / ${total}`;
+      }
+
+      // Render pagination buttons
+      if (paginationButtons) {
+        let btnsHtml = '';
+        btnsHtml += `
+          <button 
+            type="button" 
+            onclick="changeDeptsPage(${deptsCurrentPage - 1})" 
+            ${deptsCurrentPage <= 1 ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-600 text-xs cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer"'}
+          >
+            ◀ Oldingi
+          </button>
+        `;
+
+        for (let p = 1; p <= totalPages; p++) {
+          if (totalPages > 7 && Math.abs(p - deptsCurrentPage) > 2 && p !== 1 && p !== totalPages) {
+            if (p === 2 || p === totalPages - 1) btnsHtml += `<span class="px-1 text-slate-600">...</span>`;
+            continue;
+          }
+          const isActive = p === deptsCurrentPage;
+          btnsHtml += `
+            <button 
+              type="button" 
+              onclick="changeDeptsPage(${p})" 
+              class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${isActive ? 'bg-blue-600 text-white shadow-sm' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-white'}"
+            >
+              ${p}
+            </button>
+          `;
+        }
+
+        btnsHtml += `
+          <button 
+            type="button" 
+            onclick="changeDeptsPage(${deptsCurrentPage + 1})" 
+            ${deptsCurrentPage >= totalPages ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-600 text-xs cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer"'}
+          >
+            Keyingi ▶
+          </button>
+        `;
+        paginationButtons.innerHTML = btnsHtml;
+      }
+
+      if (total === 0) {
+        grid.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 col-span-3 border border-slate-800/80 rounded-2xl bg-slate-900/40">Bo\'limlar mavjud emas.</div>';
+        return;
+      }
+
+      grid.innerHTML = pageItems.map(d => `
+        <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 relative group hover:border-slate-700 transition">
+          <div class="flex items-center justify-between">
+            <span class="font-mono text-xs font-bold text-blue-400">${d.code}</span>
+            <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${d.dept_type === 'front_office' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}">
+              ${d.dept_type === 'front_office' ? 'Front-ofis (Darcha)' : 'Back-ofis (Ijro)'}
+            </span>
+          </div>
+          <div>
+            <h5 class="text-sm font-bold text-white">${d.name}</h5>
+            <p class="text-xs text-slate-400 mt-1">Darcha: <strong class="text-slate-200">${d.window_number || 'Belgilanmagan'}</strong></p>
+          </div>
+          <div class="pt-3 border-t border-slate-800 flex items-center justify-end gap-2">
+            <button type="button" onclick="openEditDeptModal(${d.id})" class="px-2.5 py-1 rounded-lg bg-blue-600/20 hover:bg-blue-600 text-blue-300 hover:text-white text-xs font-medium transition cursor-pointer">
+              Tahrirlash
+            </button>
+            <button type="button" onclick="deleteDepartment(${d.id}, '${encodeURIComponent(d.name)}')" class="px-2.5 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+              O'chirish
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function changeDeptsPage(page) {
+      deptsCurrentPage = page;
+      renderDepartmentsGrid();
+    }
+
+    function changeDeptsPerPage(val) {
+      deptsPerPage = parseInt(val) || 6;
+      deptsCurrentPage = 1;
+      renderDepartmentsGrid();
     }
 
     async function loadServicesCatalog() {
@@ -2106,24 +2231,91 @@
       }
     }
 
+    let filteredServicesList = [];
+    let servicesCurrentPage = 1;
+    let servicesPerPage = 6;
+
     function filterServicesCatalog() {
       const q = document.getElementById('services-search-input')?.value.toLowerCase().trim() || "";
       const deptId = document.getElementById('services-dept-filter')?.value;
-      const grid = document.getElementById('all-services-grid');
-      if (!grid) return;
 
-      const filtered = allServicesList.filter(s => {
+      filteredServicesList = allServicesList.filter(s => {
         const matchesQ = !q || s.title.toLowerCase().includes(q) || s.code.toLowerCase().includes(q);
         const matchesDept = !deptId || s.department_id == deptId;
         return matchesQ && matchesDept;
       });
 
-      if (filtered.length === 0) {
+      servicesCurrentPage = 1;
+      renderServicesCatalog();
+    }
+
+    function renderServicesCatalog() {
+      const grid = document.getElementById('all-services-grid');
+      const pageInfo = document.getElementById('services-page-info');
+      const paginationButtons = document.getElementById('services-pagination-buttons');
+      if (!grid) return;
+
+      const total = filteredServicesList.length;
+      const totalPages = Math.ceil(total / servicesPerPage) || 1;
+      if (servicesCurrentPage > totalPages) servicesCurrentPage = totalPages;
+      if (servicesCurrentPage < 1) servicesCurrentPage = 1;
+
+      const start = (servicesCurrentPage - 1) * servicesPerPage;
+      const end = Math.min(start + servicesPerPage, total);
+      const pageItems = filteredServicesList.slice(start, end);
+
+      if (pageInfo) {
+        pageInfo.innerText = total === 0 ? "0-0 / 0" : `${start + 1}-${end} / ${total}`;
+      }
+
+      // Render pagination buttons
+      if (paginationButtons) {
+        let btnsHtml = '';
+        btnsHtml += `
+          <button 
+            type="button" 
+            onclick="changeServicesPage(${servicesCurrentPage - 1})" 
+            ${servicesCurrentPage <= 1 ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-600 text-xs cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer"'}
+          >
+            ◀ Oldingi
+          </button>
+        `;
+
+        for (let p = 1; p <= totalPages; p++) {
+          if (totalPages > 7 && Math.abs(p - servicesCurrentPage) > 2 && p !== 1 && p !== totalPages) {
+            if (p === 2 || p === totalPages - 1) btnsHtml += `<span class="px-1 text-slate-600">...</span>`;
+            continue;
+          }
+          const isActive = p === servicesCurrentPage;
+          btnsHtml += `
+            <button 
+              type="button" 
+              onclick="changeServicesPage(${p})" 
+              class="px-2.5 py-1 rounded-lg text-xs font-semibold transition cursor-pointer ${isActive ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/30' : 'bg-slate-950 border border-slate-800 text-slate-400 hover:text-white'}"
+            >
+              ${p}
+            </button>
+          `;
+        }
+
+        btnsHtml += `
+          <button 
+            type="button" 
+            onclick="changeServicesPage(${servicesCurrentPage + 1})" 
+            ${servicesCurrentPage >= totalPages ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-600 text-xs cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer"'}
+          >
+            Keyingi ▶
+          </button>
+        `;
+        paginationButtons.innerHTML = btnsHtml;
+      }
+
+      if (total === 0) {
         grid.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 col-span-2 border border-slate-800/80 rounded-2xl bg-slate-900/40">Mos keluvchi xizmatlar topilmadi.</div>';
         return;
       }
 
-      grid.innerHTML = filtered.map(s => {
+      grid.innerHTML = pageItems.map(s => {
         const dept = allDepartmentsList.find(d => d.id === s.department_id);
         const deptName = dept ? dept.name : (s.department ? s.department.name : "Bo'lim belgilanmagan");
         
@@ -2135,7 +2327,7 @@
 
         return `
           <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3.5 relative group hover:border-slate-700 transition">
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between flex-wrap gap-2">
               <div class="flex items-center gap-2">
                 <span class="font-mono text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">${s.code}</span>
                 <span class="text-xs text-slate-400">• ${deptName}</span>
@@ -2178,10 +2370,10 @@
             </div>
 
             <div class="pt-2 border-t border-slate-800 flex items-center justify-end gap-2">
-              <button onclick="openEditServiceModal(${s.id})" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
+              <button type="button" onclick="openEditServiceModal(${s.id})" class="px-3 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
                 Tahrirlash (SLA/KPI)
               </button>
-              <button onclick="deleteService(${s.id}, '${encodeURIComponent(s.title)}')" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+              <button type="button" onclick="deleteService(${s.id}, '${encodeURIComponent(s.title)}')" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
                 O'chirish
               </button>
             </div>
@@ -2190,56 +2382,106 @@
       }).join('');
     }
 
+    function changeServicesPage(page) {
+      servicesCurrentPage = page;
+      renderServicesCatalog();
+    }
+
+    function changeServicesPerPage(val) {
+      servicesPerPage = parseInt(val) || 6;
+      servicesCurrentPage = 1;
+      renderServicesCatalog();
+    }
+
     // Modal Service CRUD
     function openCreateServiceModal() {
-      document.getElementById('service-modal-heading').innerText = "Yangi xizmat qo'shish";
-      document.getElementById('service-crud-id').value = "";
-      document.getElementById('service-code').value = "";
-      document.getElementById('service-title').value = "";
-      document.getElementById('service-sla-hours').value = "24";
-      document.getElementById('service-kpi-points').value = "3";
-      document.getElementById('service-resolution-mode').value = "both";
-      document.getElementById('service-required-docs').value = "";
-      document.getElementById('service-desc').value = "";
-      document.getElementById('service-crud-modal').classList.remove('hidden');
+      const heading = document.getElementById('service-modal-heading');
+      if (heading) heading.innerText = "Yangi xizmat qo'shish";
+      const idEl = document.getElementById('service-crud-id');
+      if (idEl) idEl.value = "";
+      const codeEl = document.getElementById('service-code');
+      if (codeEl) codeEl.value = "";
+      const titleEl = document.getElementById('service-title');
+      if (titleEl) titleEl.value = "";
+      const slaEl = document.getElementById('service-sla-hours');
+      if (slaEl) slaEl.value = "24";
+      const kpiEl = document.getElementById('service-kpi-points');
+      if (kpiEl) kpiEl.value = "3";
+      const modeEl = document.getElementById('service-resolution-mode');
+      if (modeEl) modeEl.value = "both";
+      const reqEl = document.getElementById('service-required-docs');
+      if (reqEl) reqEl.value = "";
+      const descEl = document.getElementById('service-desc');
+      if (descEl) descEl.value = "";
+
+      const modal = document.getElementById('service-crud-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
     }
 
     function openEditServiceModal(id) {
-      const s = allServicesList.find(item => item.id === id);
-      if (!s) return;
+      const s = allServicesList.find(item => item.id == id);
+      if (!s) {
+        showToast("Xizmat ma'lumotlari topilmadi.", "error");
+        return;
+      }
 
-      document.getElementById('service-modal-heading').innerText = "Xizmatni tahrirlash (SLA va KPI)";
-      document.getElementById('service-crud-id').value = s.id;
-      document.getElementById('service-code').value = s.code;
-      document.getElementById('service-dept').value = s.department_id || "";
-      document.getElementById('service-title').value = s.title;
-      document.getElementById('service-sla-hours').value = s.sla_hours || 24;
-      document.getElementById('service-kpi-points').value = s.kpi_points || 3;
-      document.getElementById('service-resolution-mode').value = s.resolution_mode || 'both';
-      document.getElementById('service-required-docs').value = s.required_docs || "";
-      document.getElementById('service-desc').value = s.description || "";
+      const heading = document.getElementById('service-modal-heading');
+      if (heading) heading.innerText = "Xizmatni tahrirlash (SLA va KPI)";
+      const idEl = document.getElementById('service-crud-id');
+      if (idEl) idEl.value = s.id;
+      const codeEl = document.getElementById('service-code');
+      if (codeEl) codeEl.value = s.code || "";
+      const deptEl = document.getElementById('service-dept');
+      if (deptEl) deptEl.value = s.department_id || "";
+      const titleEl = document.getElementById('service-title');
+      if (titleEl) titleEl.value = s.title || "";
+      const slaEl = document.getElementById('service-sla-hours');
+      if (slaEl) slaEl.value = s.sla_hours || 24;
+      const kpiEl = document.getElementById('service-kpi-points');
+      if (kpiEl) kpiEl.value = s.kpi_points || 3;
+      const modeEl = document.getElementById('service-resolution-mode');
+      if (modeEl) modeEl.value = s.resolution_mode || 'both';
+      const reqEl = document.getElementById('service-required-docs');
+      if (reqEl) reqEl.value = s.required_docs || "";
+      const descEl = document.getElementById('service-desc');
+      if (descEl) descEl.value = s.description || "";
 
-      document.getElementById('service-crud-modal').classList.remove('hidden');
+      const modal = document.getElementById('service-crud-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
     }
 
     function closeServiceModal() {
-      document.getElementById('service-crud-modal').classList.add('hidden');
+      const modal = document.getElementById('service-crud-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
     }
 
     async function handleSaveService(e) {
       e.preventDefault();
-      const id = document.getElementById('service-crud-id').value;
-      const code = document.getElementById('service-code').value.trim().toUpperCase();
-      const deptId = parseInt(document.getElementById('service-dept').value);
-      const title = document.getElementById('service-title').value.trim();
-      const slaHours = parseInt(document.getElementById('service-sla-hours').value) || 24;
-      const kpiPoints = parseInt(document.getElementById('service-kpi-points').value) || 3;
-      const mode = document.getElementById('service-resolution-mode').value;
-      const reqDocs = document.getElementById('service-required-docs').value.trim() || null;
-      const desc = document.getElementById('service-desc').value.trim() || null;
+      const id = document.getElementById('service-crud-id')?.value;
+      const code = document.getElementById('service-code')?.value.trim().toUpperCase();
+      const deptId = parseInt(document.getElementById('service-dept')?.value);
+      const title = document.getElementById('service-title')?.value.trim();
+      const slaHours = parseInt(document.getElementById('service-sla-hours')?.value) || 24;
+      const kpiPoints = parseInt(document.getElementById('service-kpi-points')?.value) || 3;
+      const mode = document.getElementById('service-resolution-mode')?.value || 'both';
+      const reqDocs = document.getElementById('service-required-docs')?.value.trim() || null;
+      const desc = document.getElementById('service-desc')?.value.trim() || null;
 
       if (!deptId) {
-        showToast("Iltimos, xizmat biriktiriladigan bo'limni tanlang!", "error");
+        showToast("Iltimos, xizmat biriktiriladigan bo'limni tanlang!", "warning");
+        return;
+      }
+      if (!title || !code) {
+        showToast("Xizmat kodi va nomi majburiy!", "warning");
         return;
       }
 
@@ -2270,7 +2512,7 @@
         if (resp.ok) {
           showToast(id ? "Xizmat muvaffaqiyatli yangilandi!" : "Yangi xizmat muvaffaqiyatli yaratildi!", "success");
           closeServiceModal();
-          loadServicesCatalog();
+          await loadServicesCatalog();
         } else {
           showToast(extractErrorMessage(data, "Xizmatni saqlashda xatolik yuz berdi."), "error");
         }
@@ -2291,7 +2533,7 @@
         if (resp.ok) {
           const statusText = data.is_active ? "faollashtirildi" : "nofaol qilindi";
           showToast(`Xizmat muvaffaqiyatli ${statusText}!`, "success");
-          loadServicesCatalog();
+          await loadServicesCatalog();
         } else {
           showToast(extractErrorMessage(data, "Xizmat holatini o'zgartirishda xatolik."), "error");
         }
@@ -2319,7 +2561,7 @@
         const data = await resp.json();
         if (resp.ok) {
           showToast(data.message || "Xizmat muvaffaqiyatli o'chirildi.", "success");
-          loadServicesCatalog();
+          await loadServicesCatalog();
         } else {
           showToast(extractErrorMessage(data, "Xizmatni o'chirishda xatolik yuz berdi."), "error");
         }
@@ -2330,39 +2572,73 @@
 
     // Modal Department CRUD
     function openCreateDeptModal() {
-      document.getElementById('dept-modal-heading').innerText = "Yangi bo'lim yaratish";
-      document.getElementById('dept-crud-id').value = "";
-      document.getElementById('dept-name').value = "";
-      document.getElementById('dept-code').value = "";
-      document.getElementById('dept-type').value = "front_office";
-      document.getElementById('dept-window').value = "";
-      document.getElementById('dept-crud-modal').classList.remove('hidden');
+      const heading = document.getElementById('dept-modal-heading');
+      if (heading) heading.innerText = "Yangi bo'lim yaratish";
+      const idEl = document.getElementById('dept-crud-id');
+      if (idEl) idEl.value = "";
+      const nameEl = document.getElementById('dept-name');
+      if (nameEl) nameEl.value = "";
+      const codeEl = document.getElementById('dept-code');
+      if (codeEl) codeEl.value = "";
+      const typeEl = document.getElementById('dept-type');
+      if (typeEl) typeEl.value = "front_office";
+      const winEl = document.getElementById('dept-window');
+      if (winEl) winEl.value = "";
+
+      const modal = document.getElementById('dept-crud-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
     }
 
     function openEditDeptModal(id) {
-      const d = allDepartmentsList.find(item => item.id === id);
-      if (!d) return;
+      const d = allDepartmentsList.find(item => item.id == id);
+      if (!d) {
+        showToast("Bo'lim ma'lumotlari topilmadi.", "error");
+        return;
+      }
 
-      document.getElementById('dept-modal-heading').innerText = "Bo'limni tahrirlash";
-      document.getElementById('dept-crud-id').value = d.id;
-      document.getElementById('dept-name').value = d.name;
-      document.getElementById('dept-code').value = d.code;
-      document.getElementById('dept-type').value = d.dept_type || "front_office";
-      document.getElementById('dept-window').value = d.window_number || "";
-      document.getElementById('dept-crud-modal').classList.remove('hidden');
+      const heading = document.getElementById('dept-modal-heading');
+      if (heading) heading.innerText = "Bo'limni tahrirlash";
+      const idEl = document.getElementById('dept-crud-id');
+      if (idEl) idEl.value = d.id;
+      const nameEl = document.getElementById('dept-name');
+      if (nameEl) nameEl.value = d.name || "";
+      const codeEl = document.getElementById('dept-code');
+      if (codeEl) codeEl.value = d.code || "";
+      const typeEl = document.getElementById('dept-type');
+      if (typeEl) typeEl.value = d.dept_type || "front_office";
+      const winEl = document.getElementById('dept-window');
+      if (winEl) winEl.value = d.window_number || "";
+
+      const modal = document.getElementById('dept-crud-modal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+      }
     }
 
     function closeDeptModal() {
-      document.getElementById('dept-crud-modal').classList.add('hidden');
+      const modal = document.getElementById('dept-crud-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
     }
 
     async function handleSaveDepartment(e) {
       e.preventDefault();
-      const id = document.getElementById('dept-crud-id').value;
-      const name = document.getElementById('dept-name').value.trim();
-      const code = document.getElementById('dept-code').value.trim();
-      const deptType = document.getElementById('dept-type').value;
-      const windowNum = document.getElementById('dept-window').value.trim() || null;
+      const id = document.getElementById('dept-crud-id')?.value;
+      const name = document.getElementById('dept-name')?.value.trim();
+      const code = document.getElementById('dept-code')?.value.trim();
+      const deptType = document.getElementById('dept-type')?.value || 'front_office';
+      const windowNum = document.getElementById('dept-window')?.value.trim() || null;
+
+      if (!name || !code) {
+        showToast("Bo'lim nomi va kodi majburiy!", "warning");
+        return;
+      }
 
       const payload = {
         name: name,
@@ -2387,7 +2663,7 @@
         if (resp.ok) {
           showToast(id ? "Bo'lim muvaffaqiyatli yangilandi!" : "Yangi bo'lim muvaffaqiyatli yaratildi!", "success");
           closeDeptModal();
-          loadDepartmentsList();
+          await loadDepartmentsList();
         } else {
           showToast(extractErrorMessage(data, "Bo'limni saqlashda xatolik yuz berdi."), "error");
         }
@@ -2415,7 +2691,7 @@
         const data = await resp.json();
         if (resp.ok) {
           showToast("Bo'lim muvaffaqiyatli o'chirildi.", "success");
-          loadDepartmentsList();
+          await loadDepartmentsList();
         } else {
           showToast(extractErrorMessage(data, "Bo'limni o'chirishda xatolik."), "error");
         }

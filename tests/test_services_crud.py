@@ -2,6 +2,8 @@ import uuid
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app
+from app.models import UserRole
+from app.core.security import create_access_token
 
 
 @pytest.mark.asyncio
@@ -94,3 +96,50 @@ async def test_service_and_department_full_crud():
         # Confirm deleted
         get_deleted_res = await ac.get(f"/api/v1/services/{svc_id}")
         assert get_deleted_res.status_code == 404
+
+        # 7. Update department
+        dept_upd_res = await ac.put(f"/api/v1/services/departments/{dept_id}", headers=headers, json={
+            "name": f"Yangilangan Bolim {unique_suffix}",
+            "code": f"NEW_{dept_code}",
+            "dept_type": "back_office",
+            "window_number": "6-darcha"
+        })
+        assert dept_upd_res.status_code == 200
+        assert dept_upd_res.json()["name"] == f"Yangilangan Bolim {unique_suffix}"
+        assert dept_upd_res.json()["window_number"] == "6-darcha"
+
+        # 8. Delete department
+        dept_del_res = await ac.delete(f"/api/v1/services/departments/{dept_id}?hard_delete=true", headers=headers)
+        assert dept_del_res.status_code == 200
+        assert "o'chirildi" in dept_del_res.json()["message"]
+
+
+@pytest.mark.asyncio
+async def test_office_head_can_manage_departments(client: AsyncClient, seed_test_data):
+    head = seed_test_data["head"]
+    token = create_access_token(
+        data={"sub": str(head.id), "role": UserRole.OFFICE_HEAD.value, "username": head.username}
+    )
+    headers = {"Authorization": f"Bearer {token}"}
+
+    suffix = uuid.uuid4().hex[:6]
+    # Office head creates department
+    create_res = await client.post("/api/v1/services/departments", headers=headers, json={
+        "name": f"Office Head Dept {suffix}",
+        "code": f"OH_{suffix}",
+        "dept_type": "front_office",
+        "window_number": "10-darcha"
+    })
+    assert create_res.status_code == 201
+    dept_id = create_res.json()["id"]
+
+    # Office head updates department
+    upd_res = await client.put(f"/api/v1/services/departments/{dept_id}", headers=headers, json={
+        "name": f"Office Head Dept Updated {suffix}",
+        "window_number": "11-darcha"
+    })
+    assert upd_res.status_code == 200
+
+    # Office head deletes department
+    del_res = await client.delete(f"/api/v1/services/departments/{dept_id}?hard_delete=true", headers=headers)
+    assert del_res.status_code == 200
