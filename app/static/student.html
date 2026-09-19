@@ -240,18 +240,60 @@
         </div>
 
         <!-- TAB 1: MENING MUROJAATLARIM -->
-        <div id="tab-appeals" class="tab-pane block space-y-6">
+        <div id="tab-appeals" class="tab-pane block space-y-5">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h3 class="text-lg font-bold text-white tracking-tight">Yuborilgan murojaatlar tarixi</h3>
               <p class="text-xs text-slate-400">Murojaatlarning ko'rib chiqilish holati, SLA muddati va ijro natijalari</p>
             </div>
             <div class="flex items-center gap-2">
-              <button onclick="loadStudentAppeals()" class="px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer">
-                Yangilash
+              <button onclick="loadStudentAppeals()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Yangilash</span>
               </button>
-              <button onclick="switchStudentTab('create')" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition cursor-pointer">
-                Yangi murojaat
+              <button onclick="switchStudentTab('create')" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white transition cursor-pointer shadow-sm shadow-blue-600/30">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                <span>Yangi murojaat</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Live Search & Status Filters -->
+          <div class="p-3.5 rounded-2xl bg-slate-900/70 border border-slate-800/80 space-y-3">
+            <div class="flex flex-col sm:flex-row gap-2.5 items-stretch sm:items-center">
+              <div class="relative flex-1">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input 
+                  type="text" 
+                  id="student-appeal-search" 
+                  oninput="applyStudentAppealsFilter()" 
+                  placeholder="Talon raqami (#...), xizmat nomi yoki kalit so'z..." 
+                  class="w-full pl-9 pr-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+                />
+              </div>
+              <div class="text-[11px] text-slate-400 whitespace-nowrap self-center">
+                Topildi: <span id="student-appeals-filtered-count" class="font-bold text-blue-400">0</span> ta
+              </div>
+            </div>
+
+            <!-- Status Filter Tabs -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs font-medium no-scrollbar">
+              <button type="button" data-filter="all" onclick="setStudentAppealsStatusFilter('all')" class="student-status-tab px-3 py-1 rounded-lg bg-blue-600 text-white font-semibold transition cursor-pointer whitespace-nowrap">
+                Barchasi
+              </button>
+              <button type="button" data-filter="in_progress" onclick="setStudentAppealsStatusFilter('in_progress')" class="student-status-tab px-3 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer whitespace-nowrap">
+                Jarayonda
+              </button>
+              <button type="button" data-filter="resolved" onclick="setStudentAppealsStatusFilter('resolved')" class="student-status-tab px-3 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer whitespace-nowrap">
+                Tasdiqlash kutilmoqda
+              </button>
+              <button type="button" data-filter="completed" onclick="setStudentAppealsStatusFilter('completed')" class="student-status-tab px-3 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer whitespace-nowrap">
+                Yakunlangan
+              </button>
+              <button type="button" data-filter="disputed" onclick="setStudentAppealsStatusFilter('disputed')" class="student-status-tab px-3 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer whitespace-nowrap">
+                E'tirozda
               </button>
             </div>
           </div>
@@ -423,6 +465,16 @@
                 <div>Vaqt: <span class="font-semibold text-white" id="ticket-time-val">-</span></div>
               </div>
               <p class="text-[11px] text-slate-400">Belgilangan vaqtdan 5 daqiqa oldin 104-xonaga yetib keling.</p>
+              <div class="pt-2 flex justify-center">
+                <button 
+                  type="button" 
+                  id="print-active-ticket-btn"
+                  class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-lg shadow-emerald-600/20"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                  <span>Talonni chop etish / Saqlash</span>
+                </button>
+              </div>
             </div>
 
             <!-- My Tickets List -->
@@ -902,102 +954,175 @@
       }
     }
 
+    let allStudentAppeals = [];
+    let currentStudentStatusFilter = 'all';
+
+    function setStudentAppealsStatusFilter(status) {
+      currentStudentStatusFilter = status;
+      document.querySelectorAll('.student-status-tab').forEach(tab => {
+        const f = tab.getAttribute('data-filter');
+        if (f === status) {
+          tab.className = 'student-status-tab px-3 py-1 rounded-lg bg-blue-600 text-white font-semibold transition cursor-pointer whitespace-nowrap shadow-sm shadow-blue-600/30';
+        } else {
+          tab.className = 'student-status-tab px-3 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer whitespace-nowrap';
+        }
+      });
+      applyStudentAppealsFilter();
+    }
+
+    function applyStudentAppealsFilter() {
+      const searchInput = document.getElementById('student-appeal-search');
+      const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
+      const countEl = document.getElementById('student-appeals-filtered-count');
+
+      let filtered = allStudentAppeals;
+
+      // Status filter
+      if (currentStudentStatusFilter === 'in_progress') {
+        filtered = filtered.filter(a => a.status === 'submitted' || a.status === 'in_progress');
+      } else if (currentStudentStatusFilter === 'resolved') {
+        filtered = filtered.filter(a => a.status === 'resolved');
+      } else if (currentStudentStatusFilter === 'completed') {
+        filtered = filtered.filter(a => a.status === 'completed');
+      } else if (currentStudentStatusFilter === 'disputed') {
+        filtered = filtered.filter(a => a.status === 'disputed' || a.status === 'escalated_head' || a.status === 'escalated_prorektor');
+      }
+
+      // Live search filter
+      if (query) {
+        filtered = filtered.filter(a => {
+          const tCode = (a.ticket_number || '').toLowerCase();
+          const subj = (a.subject || '').toLowerCase();
+          const sTitle = (a.service?.title || '').toLowerCase();
+          const msg = (a.message || '').toLowerCase();
+          return tCode.includes(query) || subj.includes(query) || sTitle.includes(query) || msg.includes(query);
+        });
+      }
+
+      if (countEl) countEl.innerText = filtered.length;
+      renderStudentAppealsList(filtered);
+    }
+
+    function renderStudentAppealsList(data) {
+      const list = document.getElementById('student-appeals-list');
+      if (!list) return;
+
+      if (!data || data.length === 0) {
+        list.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 border border-slate-800/80 rounded-2xl bg-slate-900/40">Mos keluvchi murojaatlar topilmadi.</div>';
+        return;
+      }
+
+      list.innerHTML = '';
+      data.forEach(app => {
+        let statusBadge = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        let statusLabel = "Ko'rib chiqilmoqda";
+        
+        if (app.status === 'completed') {
+          statusBadge = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+          statusLabel = "Bajarildi (yakunlandi)";
+        } else if (app.status === 'resolved') {
+          statusBadge = 'bg-amber-500/10 text-amber-400 border-amber-500/20 animate-pulse';
+          statusLabel = "Javob berildi (tasdiqlash kutilmoqda)";
+        } else if (app.status === 'disputed') {
+          statusBadge = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+          statusLabel = "E'tiroz bildirildi (Boshliq nazoratida)";
+        } else if (app.status === 'escalated_head') {
+          statusBadge = 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+          statusLabel = "Ofis boshlig'i tomonidan ko'rib chiqilmoqda";
+        } else if (app.status === 'escalated_prorektor') {
+          statusBadge = 'bg-rose-500/15 text-rose-300 border-rose-500/30';
+          statusLabel = "Prorektor nazoratida (3-bosqich)";
+        }
+
+        let ratingStarsHtml = '';
+        if (app.rating) {
+          const stars = '★'.repeat(app.rating) + '☆'.repeat(5 - app.rating);
+          ratingStarsHtml = `
+            <div class="mt-2.5 p-3 rounded-xl bg-slate-950/60 border border-slate-800/70 flex items-center justify-between gap-2 flex-wrap">
+              <div class="flex items-center gap-1.5 text-xs text-slate-300">
+                <span class="text-amber-400 font-bold tracking-widest">${stars}</span>
+                <span class="font-semibold text-slate-200">(${app.rating}/5 ball)</span>
+              </div>
+              ${app.rating_comment ? `<span class="text-xs text-slate-400 italic">"${app.rating_comment}"</span>` : ''}
+            </div>
+          `;
+        }
+
+        list.innerHTML += `
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 hover:border-slate-700/80 transition">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <div class="flex items-center gap-2">
+                <span class="font-mono text-xs font-bold text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded-lg border border-blue-800/40">#${app.ticket_number}</span>
+                <span class="text-[11px] text-slate-400 font-mono">${app.created_at ? new Date(app.created_at).toLocaleDateString('uz-UZ') : ''}</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${statusBadge}">${statusLabel}</span>
+            </div>
+
+            <div>
+              <h4 class="text-sm font-semibold text-white tracking-tight">${app.subject}</h4>
+              <p class="text-xs text-slate-400 mt-0.5">${app.service ? app.service.title : 'Umumiy xizmat'}</p>
+            </div>
+
+            <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-3.5 rounded-xl border border-slate-800/60">${app.message}</p>
+            
+            ${app.attachment_urls ? `
+              <div class="pt-1">
+                <a href="${app.attachment_urls}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-medium transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <span>Ilova qilingan hujjatni ko'rish</span>
+                </a>
+              </div>
+            ` : ''}
+
+            ${app.resolution_text ? `
+              <div class="p-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-2">
+                <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Xizmat ijrosi natijasi:</span>
+                <p class="text-xs text-slate-200 leading-relaxed">${app.resolution_text}</p>
+                ${app.result_file_url ? `
+                  <div class="pt-1">
+                    <a href="${app.result_file_url}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-medium transition">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                      <span>Rasmiy ma'lumotnoma / javob fayli</span>
+                    </a>
+                  </div>
+                ` : ''}
+              </div>
+            ` : ''}
+
+            ${ratingStarsHtml}
+
+            ${app.status === 'resolved' ? `
+              <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+                <button type="button" onclick="openRatingModal(${app.id})" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-md shadow-emerald-600/20">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                  <span>Natijani tasdiqlash va baholash</span>
+                </button>
+                <button type="button" onclick="openDisputeModal(${app.id})" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-500/40 hover:bg-rose-500/10 text-rose-400 text-xs font-semibold transition cursor-pointer">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                  <span>E'tiroz bildirish</span>
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+      });
+    }
+
     async function loadStudentAppeals() {
       const list = document.getElementById('student-appeals-list');
       try {
         const resp = await fetch('/api/v1/appeals', {
           headers: { 'Authorization': 'Bearer ' + token }
         });
-        const data = await resp.json();
-        if (!data || data.length === 0) {
-          list.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 border border-slate-800/80 rounded-2xl bg-slate-900/40">Hozircha faol murojaatlar mavjud emas.</div>';
+        if (!resp.ok) {
+          list.innerHTML = '<div class="p-8 text-center text-xs text-rose-400 border border-slate-800/80 rounded-2xl bg-slate-900/40">Murojaatlarni yuklab bo\'lmadi.</div>';
           return;
         }
-        list.innerHTML = '';
-        data.forEach(app => {
-          let statusBadge = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
-          let statusLabel = "Ko'rib chiqilmoqda";
-          if (app.status === 'completed') {
-            statusBadge = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
-            statusLabel = "Bajarildi";
-          } else if (app.status === 'resolved') {
-            statusBadge = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-            statusLabel = "Javob berildi (tasdiqlash kutilmoqda)";
-          } else if (app.status === 'disputed') {
-            statusBadge = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-            statusLabel = "E'tiroz bildirildi";
-          }
-
-          list.innerHTML += `
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="font-mono text-xs font-bold text-blue-400">#${app.ticket_number}</span>
-                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${statusBadge}">${statusLabel}</span>
-              </div>
-              <div>
-                <h4 class="text-sm font-semibold text-white">${app.subject}</h4>
-                <p class="text-xs text-slate-400 mt-0.5">${app.service ? app.service.title : ''}</p>
-              </div>
-              <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800/60">${app.message}</p>
-              
-              ${app.attachment_urls ? `
-                <div class="pt-1">
-                  <a href="${app.attachment_urls}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-medium transition">
-                    <i class="ph ph-file-arrow-down text-sm"></i> Ilova qilingan hujjatni ko'rish
-                  </a>
-                </div>
-              ` : ''}
-
-              ${app.resolution_text ? `
-                <div class="p-3.5 bg-emerald-500/5 border border-emerald-500/20 rounded-xl space-y-2">
-                  <span class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">Xizmat ijrosi natijasi:</span>
-                  <p class="text-xs text-slate-200">${app.resolution_text}</p>
-                  ${app.result_file_url ? `
-                    <div class="pt-1">
-                      <a href="${app.result_file_url}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-medium transition">
-                        <i class="ph ph-file-text text-sm"></i> Rasmiy ma'lumotnoma fayli
-                      </a>
-                    </div>
-                  ` : ''}
-                </div>
-              ` : ''}
-
-              ${app.status === 'resolved' ? `
-                <div class="flex gap-2 pt-2">
-                  <button onclick="confirmAppeal(${app.id})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer">
-                    Natijani tasdiqlash
-                  </button>
-                  <button onclick="disputeAppeal(${app.id})" class="px-3 py-1.5 rounded-lg border border-rose-500/30 hover:bg-rose-500/10 text-rose-400 text-xs font-semibold transition cursor-pointer">
-                    E'tiroz bildirish
-                  </button>
-                </div>
-              ` : ''}
-            </div>
-          `;
-        });
+        allStudentAppeals = await resp.json();
+        applyStudentAppealsFilter();
       } catch (e) {
         list.innerHTML = '<div class="p-4 text-center text-xs text-rose-400">Ma\'lumotlarni yuklab bo\'lmadi.</div>';
       }
-    }
-
-    async function confirmAppeal(id) {
-      await fetch(`/api/v1/appeals/${id}/confirm`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ rating: 5, rating_comment: "Ijro talab darajasida bajarildi" })
-      });
-      loadStudentAppeals();
-    }
-
-    async function disputeAppeal(id) {
-      const reason = prompt("E'tiroz sababini yozing:");
-      if (!reason) return;
-      await fetch(`/api/v1/appeals/${id}/dispute`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-        body: JSON.stringify({ dispute_reason: reason })
-      });
-      loadStudentAppeals();
     }
 
     function selectSlot(btnEl, slotTime) {
@@ -1190,6 +1315,13 @@
           document.getElementById('ticket-window-val').innerText = res.window_number;
           document.getElementById('ticket-date-val').innerText = res.appointment_date;
           document.getElementById('ticket-time-val').innerText = res.time_slot;
+          
+          const sTitle = res.service ? res.service.title : "Registrator ofisi xizmati";
+          const printBtn = document.getElementById('print-active-ticket-btn');
+          if (printBtn) {
+            printBtn.onclick = () => printQueueTicket(res.ticket_code, res.window_number, res.appointment_date, res.time_slot, sTitle);
+          }
+
           box.classList.remove('hidden');
           loadAvailableSlots();
           loadStudentAppointments();
@@ -1238,6 +1370,7 @@
           const serviceTitle = item.service ? item.service.title : "Registrator ofisi xizmati";
           const windowNum = item.window_number || "1-darcha";
           const isBooked = item.status === 'booked';
+          const safeServiceTitle = serviceTitle.replace(/'/g, "\\'");
 
           return `
             <div class="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3 hover:border-slate-700 transition">
@@ -1258,8 +1391,16 @@
                 <div>Darcha: <strong class="text-emerald-400 font-medium">${windowNum}</strong></div>
               </div>
 
-              ${isBooked ? `
-                <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/60">
+              <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800/60 flex-wrap">
+                <button
+                  type="button"
+                  onclick="printQueueTicket('${item.ticket_code}', '${windowNum}', '${item.appointment_date}', '${item.time_slot}', '${safeServiceTitle}')"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-300 hover:text-white text-xs font-medium transition cursor-pointer"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                  <span>Chop etish</span>
+                </button>
+                ${isBooked ? `
                   <button
                     type="button"
                     onclick="handleStudentCheckIn(${item.id})"
@@ -1274,8 +1415,8 @@
                   >
                     Bekor qilish
                   </button>
-                </div>
-              ` : ''}
+                ` : ''}
+              </div>
             </div>
           `;
         }).join('');
@@ -1329,7 +1470,431 @@
         showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
+
+    // === GLOBAL DIALOG & NOTIFICATION SYSTEM ===
+    let appConfirmResolve = null;
+
+    function openAppConfirm({
+      title = "Tasdiqlash",
+      message = "Ushbu amalni bajarishga ishonchingiz komilmi?",
+      confirmText = "Tasdiqlash",
+      cancelText = "Bekor qilish",
+      isDanger = true
+    } = {}) {
+      return new Promise((resolve) => {
+        appConfirmResolve = resolve;
+        const modal = document.getElementById('app-confirm-modal');
+        const titleEl = document.getElementById('confirm-modal-title');
+        const msgEl = document.getElementById('confirm-modal-msg');
+        const okBtn = document.getElementById('confirm-modal-ok');
+        const cancelBtn = document.getElementById('confirm-modal-cancel');
+        const iconWrap = document.getElementById('confirm-modal-icon-wrap');
+
+        if (titleEl) titleEl.innerText = title;
+        if (msgEl) msgEl.innerText = message;
+        if (okBtn) {
+          okBtn.innerText = confirmText;
+          okBtn.className = isDanger
+            ? "px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition cursor-pointer shadow-lg shadow-rose-600/20"
+            : "px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-lg shadow-emerald-600/20";
+        }
+        if (cancelBtn) cancelBtn.innerText = cancelText;
+        if (iconWrap) {
+          iconWrap.className = isDanger
+            ? "w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0"
+            : "w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0";
+        }
+        if (modal) modal.classList.remove('hidden');
+      });
+    }
+
+    function closeAppConfirm(result) {
+      const modal = document.getElementById('app-confirm-modal');
+      if (modal) modal.classList.add('hidden');
+      if (appConfirmResolve) {
+        appConfirmResolve(Boolean(result));
+        appConfirmResolve = null;
+      }
+    }
+
+    // === RATING & EVALUATION SYSTEM ===
+    let activeRatingAppealId = null;
+    let currentRatingValue = 5;
+
+    const RATING_LABELS = {
+      1: "1 - Juda qoniqarsiz (muammo hal bo'lmadi)",
+      2: "2 - Qoniqarsiz (sifatsiz xizmat ko'rsatildi)",
+      3: "3 - O'rtacha (qoniqarli)",
+      4: "4 - Yaxshi (talab darajasida)",
+      5: "5 - A'lo darajada (mukammal ijro)"
+    };
+
+    function openRatingModal(appealId) {
+      activeRatingAppealId = appealId;
+      currentRatingValue = 5;
+      selectStarRating(5);
+      const commentInput = document.getElementById('rating-comment-input');
+      if (commentInput) commentInput.value = "";
+      const modal = document.getElementById('student-rating-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeRatingModal() {
+      activeRatingAppealId = null;
+      const modal = document.getElementById('student-rating-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function selectStarRating(val) {
+      currentRatingValue = val;
+      updateStarDisplay(val);
+      const label = document.getElementById('star-rating-label');
+      if (label) label.innerText = RATING_LABELS[val] || `${val} yulduz`;
+    }
+
+    function previewStarRating(val) {
+      updateStarDisplay(val);
+      const label = document.getElementById('star-rating-label');
+      if (label) label.innerText = RATING_LABELS[val] || `${val} yulduz`;
+    }
+
+    function resetStarPreview() {
+      updateStarDisplay(currentRatingValue);
+      const label = document.getElementById('star-rating-label');
+      if (label) label.innerText = RATING_LABELS[currentRatingValue] || `${currentRatingValue} yulduz`;
+    }
+
+    function updateStarDisplay(val) {
+      const buttons = document.querySelectorAll('#star-rating-buttons .star-btn');
+      buttons.forEach(btn => {
+        const starNum = parseInt(btn.getAttribute('data-star'));
+        if (starNum <= val) {
+          btn.className = 'star-btn text-2xl transition transform hover:scale-110 cursor-pointer text-amber-400';
+        } else {
+          btn.className = 'star-btn text-2xl transition transform hover:scale-110 cursor-pointer text-slate-700';
+        }
+      });
+    }
+
+    async function submitRating() {
+      if (!activeRatingAppealId) return;
+      const btn = document.getElementById('submit-rating-btn');
+      const comment = document.getElementById('rating-comment-input')?.value?.trim() || null;
+      
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="animate-spin">⏳</span> Saqlanmoqda...';
+      }
+
+      try {
+        const resp = await fetch(`/api/v1/appeals/${activeRatingAppealId}/confirm`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({
+            rating: currentRatingValue,
+            rating_comment: comment
+          })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          closeRatingModal();
+          showToast("Xizmat ijrosi muvaffaqiyatli tasdiqlandi va baholandi!", "success");
+          loadStudentAppeals();
+        } else {
+          showToast(data.detail || "Baholashda xatolik yuz berdi.", "error");
+        }
+      } catch (err) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>Tasdiqlash va baholash</span>';
+        }
+      }
+    }
+
+    // === DISPUTE SYSTEM ===
+    let activeDisputeAppealId = null;
+
+    function openDisputeModal(appealId) {
+      activeDisputeAppealId = appealId;
+      const input = document.getElementById('dispute-reason-input');
+      if (input) input.value = "";
+      const modal = document.getElementById('student-dispute-modal');
+      if (modal) modal.classList.remove('hidden');
+    }
+
+    function closeDisputeModal() {
+      activeDisputeAppealId = null;
+      const modal = document.getElementById('student-dispute-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function submitDispute() {
+      if (!activeDisputeAppealId) return;
+      const reason = document.getElementById('dispute-reason-input')?.value?.trim();
+      if (!reason || reason.length < 5) {
+        showToast("E'tiroz sababini batafsil yozing (kamida 5 ta belgi).", "warning");
+        return;
+      }
+
+      const btn = document.getElementById('submit-dispute-btn');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="animate-spin">⏳</span> Yuborilmoqda...';
+      }
+
+      try {
+        const resp = await fetch(`/api/v1/appeals/${activeDisputeAppealId}/dispute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ dispute_reason: reason })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          closeDisputeModal();
+          showToast("E'tirozingiz Registrator ofisi boshlig'i nazoratiga yuborildi.", "info");
+          loadStudentAppeals();
+        } else {
+          showToast(data.detail || "E'tiroz yuborishda xatolik yuz berdi.", "error");
+        }
+      } catch (err) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<span>E\'tirozni yuborish</span>';
+        }
+      }
+    }
+
+    // === PRINT TICKET SYSTEM ===
+    function printQueueTicket(ticketCode, windowNumber, appointmentDate, timeSlot, serviceTitle) {
+      const printWindow = window.open('', '_blank', 'width=450,height=600');
+      if (!printWindow) {
+        showToast("Chop etish oynasini ochib bo'lmadi. Brauzer pop-up oynalariga ruxsat bering.", "warning");
+        return;
+      }
+
+      const html = `
+        <!DOCTYPE html>
+        <html lang="uz">
+        <head>
+          <meta charset="UTF-8">
+          <title>Elektron navbat taloni - ${ticketCode}</title>
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+              padding: 24px;
+              text-align: center;
+              color: #111;
+              background: #fff;
+            }
+            .ticket-box {
+              border: 2px dashed #333;
+              border-radius: 16px;
+              padding: 24px;
+              max-width: 340px;
+              margin: 0 auto;
+            }
+            .header {
+              font-size: 13px;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              color: #444;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 12px;
+              margin-bottom: 16px;
+            }
+            .code {
+              font-size: 38px;
+              font-weight: 900;
+              font-family: monospace;
+              letter-spacing: 2px;
+              margin: 8px 0;
+              color: #0b2545;
+            }
+            .window {
+              font-size: 16px;
+              font-weight: 700;
+              color: #1d4ed8;
+              margin-bottom: 16px;
+            }
+            .details {
+              text-align: left;
+              font-size: 12px;
+              background: #f8fafc;
+              border-radius: 8px;
+              padding: 12px;
+              margin-bottom: 16px;
+              line-height: 1.6;
+            }
+            .details div {
+              display: flex;
+              justify-content: space-between;
+              border-bottom: 1px solid #e2e8f0;
+              padding: 4px 0;
+            }
+            .details div:last-child {
+              border-bottom: none;
+            }
+            .footer {
+              font-size: 11px;
+              color: #64748b;
+              line-height: 1.4;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="ticket-box">
+            <div class="header">
+              O'zMU Jizzax filiali<br>Registrator ofisi
+            </div>
+            <div style="font-size: 11px; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">Sizning navbatingiz:</div>
+            <div class="code">${ticketCode}</div>
+            <div class="window">Qabul darchasi: ${windowNumber || '1-darcha'}</div>
+            
+            <div class="details">
+              <div><span>Xizmat:</span><strong>${serviceTitle || 'Xizmat'}</strong></div>
+              <div><span>Qabul sanasi:</span><strong>${appointmentDate}</strong></div>
+              <div><span>Qabul vaqti:</span><strong>${timeSlot}</strong></div>
+            </div>
+
+            <div class="footer">
+              Iltimos, belgilangan vaqtdan 5-10 daqiqa oldin kelib, zal monitoridan navbatingiz chaqirilishini kuting.
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          <\/script>
+        </body>
+        </html>
+      `;
+
+      printWindow.document.write(html);
+      printWindow.document.close();
+    }
   </script>
+  <!-- MODAL: CONFIRM DIALOG -->
+  <div id="app-confirm-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-start gap-3">
+        <div id="confirm-modal-icon-wrap" class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+        <div>
+          <h3 id="confirm-modal-title" class="text-sm font-bold text-white tracking-tight">Tasdiqlash</h3>
+          <p id="confirm-modal-msg" class="text-xs text-slate-400 mt-1 leading-relaxed">Ushbu amalni bajarishga ishonchingiz komilmi?</p>
+        </div>
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="closeAppConfirm(false)" id="confirm-modal-cancel" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-300 text-xs font-semibold transition cursor-pointer">
+          Bekor qilish
+        </button>
+        <button type="button" onclick="closeAppConfirm(true)" id="confirm-modal-ok" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition cursor-pointer shadow-lg shadow-rose-600/20">
+          Tasdiqlash
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: RATING & CONFIRMATION -->
+  <div id="student-rating-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-5">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-tight">Xizmat ijrosini baholash</h3>
+            <p class="text-[11px] text-slate-400">Natijani tasdiqlang va xodim mehnatini baholang</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeRatingModal()" class="text-slate-400 hover:text-white text-base p-1 transition cursor-pointer">✕</button>
+      </div>
+
+      <!-- Star Rating Picker -->
+      <div class="text-center py-2 space-y-2 bg-slate-950/60 rounded-xl border border-slate-800/80 p-4">
+        <p class="text-xs font-medium text-slate-300">Ijro sifatini qanday baholaysiz?</p>
+        <div class="flex items-center justify-center gap-2" id="star-rating-buttons">
+          <button type="button" onclick="selectStarRating(1)" onmouseenter="previewStarRating(1)" onmouseleave="resetStarPreview()" class="star-btn text-2xl transition transform hover:scale-110 cursor-pointer text-amber-400" data-star="1">★</button>
+          <button type="button" onclick="selectStarRating(2)" onmouseenter="previewStarRating(2)" onmouseleave="resetStarPreview()" class="star-btn text-2xl transition transform hover:scale-110 cursor-pointer text-amber-400" data-star="2">★</button>
+          <button type="button" onclick="selectStarRating(3)" onmouseenter="previewStarRating(3)" onmouseleave="resetStarPreview()" class="star-btn text-2xl transition transform hover:scale-110 cursor-pointer text-amber-400" data-star="3">★</button>
+          <button type="button" onclick="selectStarRating(4)" onmouseenter="previewStarRating(4)" onmouseleave="resetStarPreview()" class="star-btn text-2xl transition transform hover:scale-110 cursor-pointer text-amber-400" data-star="4">★</button>
+          <button type="button" onclick="selectStarRating(5)" onmouseenter="previewStarRating(5)" onmouseleave="resetStarPreview()" class="star-btn text-2xl transition transform hover:scale-110 cursor-pointer text-amber-400" data-star="5">★</button>
+        </div>
+        <p id="star-rating-label" class="text-xs font-semibold text-emerald-400">5 - A'lo darajada (mukammal)</p>
+      </div>
+
+      <!-- Feedback comment textarea -->
+      <div class="space-y-1.5">
+        <label for="rating-comment-input" class="text-xs font-medium text-slate-300">Izoh yoki taklif (ixtiyoriy):</label>
+        <textarea 
+          id="rating-comment-input" 
+          rows="3" 
+          placeholder="Xizmat ko'rsatish tezligi va xushmuomalalik haqida fikringiz..."
+          class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition resize-none"
+        ></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="closeRatingModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-300 text-xs font-semibold transition cursor-pointer">
+          Bekor qilish
+        </button>
+        <button type="button" id="submit-rating-btn" onclick="submitRating()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-lg shadow-emerald-600/20">
+          <span>Tasdiqlash va baholash</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DISPUTE / NIZO BILDIRISH -->
+  <div id="student-dispute-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white tracking-tight">Ijro natijasiga e'tiroz bildirish</h3>
+            <p class="text-[11px] text-slate-400">Registrator ofisi boshlig'iga to'g'ridan-to'g'ri eskalatsiya</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeDisputeModal()" class="text-slate-400 hover:text-white text-base p-1 transition cursor-pointer">✕</button>
+      </div>
+
+      <div class="p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-[11px] text-rose-300 leading-relaxed">
+        <p class="font-semibold text-rose-400 mb-1">E'tibor bering:</p>
+        Sizning e'tirozingiz murojaatni bajargan xodimga qaytmaydi. U to'g'ridan-to'g'ri Registrator ofisi boshlig'ining nazoratiga tushadi va alohida tekshiriladi.
+      </div>
+
+      <div class="space-y-1.5">
+        <label for="dispute-reason-input" class="text-xs font-medium text-slate-300">E'tiroz sababi (kamida 5 ta belgi): <span class="text-rose-400">*</span></label>
+        <textarea 
+          id="dispute-reason-input" 
+          rows="4" 
+          placeholder="Qaysi sababga ko'ra ijro natijasidan qanoatlanmadingiz? Kamchiliklarni batafsil bayon eting..."
+          class="w-full px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition resize-none"
+        ></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+        <button type="button" onclick="closeDisputeModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-300 text-xs font-semibold transition cursor-pointer">
+          Bekor qilish
+        </button>
+        <button type="button" id="submit-dispute-btn" onclick="submitDispute()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition cursor-pointer shadow-lg shadow-rose-600/20">
+          <span>E'tirozni yuborish</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Mobile Bottom Navigation Bar -->
   <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 px-3 py-2 flex items-center justify-around text-[10px] font-medium shadow-2xl">
