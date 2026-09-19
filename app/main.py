@@ -137,8 +137,13 @@ async def root(request: Request):
 async def get_login():
     """Autentifikatsiya oynasi (talaba HEMIS va xodimlar kirishi)."""
     login_path = Path(__file__).resolve().parent / "static" / "login.html"
+    HTML_NO_CACHE_HEADERS = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    }
     if login_path.exists():
-        return FileResponse(str(login_path), media_type="text/html")
+        return FileResponse(str(login_path), media_type="text/html", headers=HTML_NO_CACHE_HEADERS)
     return JSONResponse(status_code=404, content={"message": "Login HTML fayli topilmadi"})
 
 
@@ -146,8 +151,13 @@ async def get_login():
 async def get_student_portal():
     """Faqat talabalar uchun shaxsiy kabinet (ariza berish, navbat taloni, mening arizalarim)."""
     student_path = Path(__file__).resolve().parent / "static" / "student.html"
+    HTML_NO_CACHE_HEADERS = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    }
     if student_path.exists():
-        return FileResponse(str(student_path), media_type="text/html")
+        return FileResponse(str(student_path), media_type="text/html", headers=HTML_NO_CACHE_HEADERS)
     return JSONResponse(status_code=404, content={"message": "Student HTML fayli topilmadi"})
 
 
@@ -155,8 +165,13 @@ async def get_student_portal():
 async def get_staff_portal():
     """Registrator ofisi xodimlari va rahbariyat ish stoli (monitoring, cheklovlar, KPI, navbat)."""
     staff_path = Path(__file__).resolve().parent / "static" / "staff.html"
+    HTML_NO_CACHE_HEADERS = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    }
     if staff_path.exists():
-        return FileResponse(str(staff_path), media_type="text/html")
+        return FileResponse(str(staff_path), media_type="text/html", headers=HTML_NO_CACHE_HEADERS)
     return JSONResponse(status_code=404, content={"message": "Staff HTML fayli topilmadi"})
 
 
@@ -164,8 +179,13 @@ async def get_staff_portal():
 async def get_portal():
     """Umumiy taqdimot portali (showcase prototip)."""
     portal_path = Path(__file__).resolve().parent / "static" / "portal.html"
+    HTML_NO_CACHE_HEADERS = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    }
     if portal_path.exists():
-        return FileResponse(str(portal_path), media_type="text/html")
+        return FileResponse(str(portal_path), media_type="text/html", headers=HTML_NO_CACHE_HEADERS)
     return JSONResponse(status_code=404, content={"message": "Portal HTML fayli topilmadi"})
 
 
