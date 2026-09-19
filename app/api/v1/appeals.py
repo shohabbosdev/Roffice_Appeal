@@ -97,6 +97,22 @@ async def create_appeal(
     return reloaded_appeal
 
 
+@router.get("/analytics/executive", summary="Rahbariyat uchun tahliliy hisobot va infografika ma'lumotlari")
+async def get_executive_analytics(
+    period: Optional[str] = Query("all", description="Filtr davri: all, this_month, last_30_days, this_year"),
+    current_user: User = Depends(require_role(UserRole.OFFICE_HEAD, UserRole.VICE_RECTOR, UserRole.ADMIN)),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Registrator ofisi boshlig'i, Prorektor va Admin uchun:
+    - Fakultetlar kesimida arizalar tahlili
+    - Top-5 eng ko'p talab qilinayotgan xizmatlar
+    - SLA ijro intizomi va o'rtacha ko'rib chiqilish tezligi
+    - Talabalar mamnuniyat darajasi va arizalar dinamikasi.
+    """
+    return await AppealService.get_executive_analytics(db=db, period_filter=period)
+
+
 @router.get("", response_model=List[AppealOut], summary="Murojaatlar ro'yxatini olish (rolga mos filtrlangan)")
 async def get_appeals(
     appeal_status: Optional[AppealStatus] = Query(None, description="Murojaat holati bo'yicha filter"),

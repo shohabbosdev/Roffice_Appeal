@@ -42,6 +42,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -166,6 +167,18 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
             </svg>
             <span>Xodimlar KPI reytingi</span>
+          </button>
+
+          <button
+            onclick="switchStaffTab('analytics')"
+            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            data-tab="analytics"
+            id="nav-analytics-btn"
+          >
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span>Analitika va hisobotlar</span>
           </button>
 
           <button
@@ -883,6 +896,200 @@
 
           <div id="holidays-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <p class="text-xs text-slate-500">Yuklanmoqda...</p>
+          </div>
+        </div>
+
+        <!-- TAB 8: RAHBARIYAT UCHUN TAHLILIY INFOGRAFIKA VA HISOBOTLAR (EXECUTIVE ANALYTICS) -->
+        <div id="tab-analytics" class="tab-pane hidden space-y-6">
+          <!-- Header Bar: Filters & Export -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="p-1.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </span>
+                <h3 class="text-lg font-bold text-white tracking-tight">Rahbariyat tahliliy infografikasi</h3>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">Fakultetlar, xizmat turlari, SLA ijro intizomi va talabalar mamnuniyatining yaxlit tahlili</p>
+            </div>
+
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <!-- Period Filter -->
+              <select
+                id="analytics-period-select"
+                onchange="loadExecutiveAnalytics()"
+                class="bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 cursor-pointer"
+              >
+                <option value="all">Barcha davr</option>
+                <option value="this_month">Joriy oy</option>
+                <option value="last_30_days">Oxirgi 30 kun</option>
+                <option value="this_year">Joriy yil</option>
+              </select>
+
+              <!-- Refresh Button -->
+              <button
+                id="refresh-analytics-btn"
+                onclick="loadExecutiveAnalytics()"
+                class="px-3.5 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5"
+              >
+                <svg id="refresh-analytics-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Yangilash</span>
+              </button>
+
+              <!-- Excel Export Button -->
+              <button
+                onclick="exportExecutiveAnalyticsToExcel()"
+                class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
+                title="Tahliliy hisobotni Excel (CSV) formatida yuklab olish"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Excel hisobot</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4 Executive KPI Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Card 1: Jami arizalar -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-2 relative overflow-hidden">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-400">Jami murojaatlar</span>
+                <span class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-sm font-bold">📋</span>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span id="exec-total-appeals" class="text-2xl sm:text-3xl font-mono font-extrabold text-white">0</span>
+                <span id="exec-completed-rate" class="text-xs font-semibold text-emerald-400">0% bajarildi</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Tizim orqali qabul qilingan barcha arizalar</p>
+            </div>
+
+            <!-- Card 2: SLA ijro intizomi -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-2 relative overflow-hidden">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-400">SLA ijro intizomi</span>
+                <span class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-sm font-bold">⏱️</span>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span id="exec-sla-percent" class="text-2xl sm:text-3xl font-mono font-extrabold text-emerald-400">100%</span>
+                <span class="text-xs text-slate-400 font-medium">o'z vaqtida</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Belgilangan reglamentda yopilgan arizalar ulushi</p>
+            </div>
+
+            <!-- Card 3: O'rtacha yopilish tezligi -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-2 relative overflow-hidden">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-400">O'rtacha ijro vaqti</span>
+                <span class="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center text-sm font-bold">⚡</span>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span id="exec-avg-hours" class="text-2xl sm:text-3xl font-mono font-extrabold text-indigo-300">0</span>
+                <span class="text-xs text-slate-400 font-medium">soat</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Ariza tushganidan to ijro qilinguniga qadar</p>
+            </div>
+
+            <!-- Card 4: Talabalar qoniqish reytingi -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-2 relative overflow-hidden">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-slate-400">Mamnuniyat reytingi</span>
+                <span class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-sm font-bold">⭐</span>
+              </div>
+              <div class="flex items-baseline gap-2">
+                <span id="exec-avg-rating" class="text-2xl sm:text-3xl font-mono font-extrabold text-amber-400">5.0</span>
+                <span class="text-xs text-slate-400 font-medium">/ 5.0</span>
+              </div>
+              <p class="text-[11px] text-slate-500">Talabalarning ijro bo'yicha to'g'ridan-to'g'ri bahosi</p>
+            </div>
+          </div>
+
+          <!-- 2x2 Interactive Charts Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Chart 1: Fakultetlar kesimida -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-white tracking-tight">Fakultetlar kesimida murojaatlar</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">Qaysi fakultet talabalari eng ko'p murojaat qilmoqda</p>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Fakultetlar</span>
+              </div>
+              <div class="h-64 relative flex items-center justify-center">
+                <canvas id="chart-faculty"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 2: Top-5 talabgir xizmatlar -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-white tracking-tight">Top-5 eng talabgir xizmatlar</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">Eng ko'p topshirilayotgan xizmatlar reytingi</p>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">Reyting</span>
+              </div>
+              <div class="h-64 relative flex items-center justify-center">
+                <canvas id="chart-services"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 3: Holatlar taqsimoti (Doughnut) -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-white tracking-tight">Murojaat holatlari taqsimoti</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">Ijro bosqichlari bo'yicha proporsional holat</p>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Statuslar</span>
+              </div>
+              <div class="h-64 relative flex items-center justify-center">
+                <canvas id="chart-status"></canvas>
+              </div>
+            </div>
+
+            <!-- Chart 4: Dinamika trendi (Line) -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-white tracking-tight">Oxirgi 14 kunlik murojaatlar dinamikasi</h4>
+                  <p class="text-xs text-slate-400 mt-0.5">Kunlik arizalar kelib tushishi va yakunlanishi</p>
+                </div>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">Trend</span>
+              </div>
+              <div class="h-64 relative flex items-center justify-center">
+                <canvas id="chart-trend"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed Faculty Table -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <h4 class="text-sm font-bold text-white tracking-tight">Fakultetlar bo'yicha batafsil analitik jadval</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Har bir fakultetning umumiy arizalari, yakunlanganlari, nizolari va reytingi</p>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase text-[10px]">
+                  <tr>
+                    <th class="p-3">Fakultet nomi</th>
+                    <th class="p-3 text-center">Jami arizalar</th>
+                    <th class="p-3 text-center">Yakunlangan</th>
+                    <th class="p-3 text-center">Nizoli (Disputed)</th>
+                    <th class="p-3 text-center">O'rtacha baho</th>
+                    <th class="p-3 text-right">Bajarilish foizi</th>
+                  </tr>
+                </thead>
+                <tbody id="exec-faculty-table-body" class="divide-y divide-slate-800/60">
+                  <tr>
+                    <td colspan="6" class="p-6 text-center text-xs text-slate-500">Ma'lumotlar yuklanmoqda...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -1775,7 +1982,8 @@
         'queue': "Darcha qabuli (elektron navbat)",
         'users': "Xodimlarni boshqarish va rollar biriktirish",
         'kpi': "Xodimlar KPI reytingi",
-        'calendar': "Bayramlar taqvimi"
+        'calendar': "Bayramlar taqvimi",
+        'analytics': "Rahbariyat tahliliy infografikasi"
       };
       const heading = document.getElementById('page-heading');
       if (heading && titles[tabId]) heading.innerText = titles[tabId];
@@ -1794,6 +2002,7 @@
       if (tabId === 'users') loadStaffUsers();
       if (tabId === 'kpi') loadKPIOverview();
       if (tabId === 'calendar') loadHolidays();
+      if (tabId === 'analytics') loadExecutiveAnalytics();
     }
 
     window.addEventListener('hashchange', () => {
@@ -1955,6 +2164,7 @@
       const calendarBtn = document.getElementById('nav-calendar-btn');
       const queueBtn = document.getElementById('nav-queue-btn');
       const usersBtn = document.getElementById('nav-users-btn');
+      const analyticsBtn = document.getElementById('nav-analytics-btn');
       const addServiceBtn = document.getElementById('add-service-btn');
       const addDeptBtn = document.getElementById('add-dept-btn');
 
@@ -1964,6 +2174,7 @@
         if (calendarBtn) calendarBtn.style.display = 'none';
         if (queueBtn) queueBtn.style.display = 'flex';
         if (usersBtn) usersBtn.style.display = 'none';
+        if (analyticsBtn) analyticsBtn.style.display = 'none';
         if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
         if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'back_staff') {
@@ -1972,6 +2183,7 @@
         if (calendarBtn) calendarBtn.style.display = 'none';
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'none';
+        if (analyticsBtn) analyticsBtn.style.display = 'none';
         if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
         if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'vice_rector') {
@@ -1980,6 +2192,7 @@
         if (calendarBtn) calendarBtn.style.display = 'flex';
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'none';
+        if (analyticsBtn) analyticsBtn.style.display = 'flex';
         if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
         if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'office_head') {
@@ -1989,6 +2202,7 @@
         if (calendarBtn) calendarBtn.style.display = 'flex';
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'flex';
+        if (analyticsBtn) analyticsBtn.style.display = 'flex';
         if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
         if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
       } else {
@@ -1998,6 +2212,7 @@
         if (calendarBtn) calendarBtn.style.display = 'flex';
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'flex';
+        if (analyticsBtn) analyticsBtn.style.display = 'flex';
         if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
         if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
       }
@@ -4593,7 +4808,335 @@
       }
     }
 
-    // 13. Page Initialization with Hash Recovery
+    // 13. TAB: RAHBARIYAT TAHLILIY INFOGRAFIKASI VA HISOBOTLAR (EXECUTIVE ANALYTICS)
+    let executiveAnalyticsData = null;
+    let chartFacultyInstance = null;
+    let chartServicesInstance = null;
+    let chartStatusInstance = null;
+    let chartTrendInstance = null;
+
+    async function loadExecutiveAnalytics() {
+      const periodSelect = document.getElementById('analytics-period-select');
+      const periodVal = periodSelect ? periodSelect.value : 'all';
+
+      const btn = document.getElementById('refresh-analytics-btn');
+      const icon = document.getElementById('refresh-analytics-icon');
+      if (btn) btn.disabled = true;
+      if (icon) icon.classList.add('animate-spin');
+
+      try {
+        const resp = await fetch(`/api/v1/appeals/analytics/executive?period_filter=${encodeURIComponent(periodVal)}`, {
+          headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+        });
+
+        if (!resp.ok) {
+          if (resp.status === 403) {
+            showToast("Ushbu ma'lumotlar faqat ofis rahbariyati va prorektor uchun ochiq.", "warning");
+          } else {
+            showToast("Tahliliy ma'lumotlarni yuklab bo'lmadi.", "error");
+          }
+          return;
+        }
+
+        const data = await resp.json();
+        executiveAnalyticsData = data;
+
+        // 1. KPI Kartochkalarini to'ldirish
+        const s = data.summary || {};
+        const total = s.total_appeals || 0;
+        const completed = s.completed_appeals || 0;
+        const compRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+        const elTotal = document.getElementById('exec-total-appeals');
+        const elCompRate = document.getElementById('exec-completed-rate');
+        const elSla = document.getElementById('exec-sla-percent');
+        const elHours = document.getElementById('exec-avg-hours');
+        const elRating = document.getElementById('exec-avg-rating');
+
+        if (elTotal) elTotal.innerText = total.toLocaleString();
+        if (elCompRate) elCompRate.innerText = `${compRate}% bajarildi (${completed} ta)`;
+        if (elSla) elSla.innerText = `${s.sla_compliance_percent || 100}%`;
+        if (elHours) elHours.innerText = `${s.avg_resolution_hours || 0}`;
+        if (elRating) elRating.innerText = `${Number(s.avg_student_rating || 5.0).toFixed(1)}`;
+
+        // 2. Chart.js diagrammalarini chizish
+        renderExecutiveCharts(data);
+
+        // 3. Fakultetlar jadvalini to'ldirish
+        renderExecutiveFacultyTable(data.by_faculty || []);
+
+      } catch (err) {
+        console.error("Executive analytics error:", err);
+        showToast("Server bilan aloqa o'rnatishda xatolik yuz berdi.", "error");
+      } finally {
+        if (btn) btn.disabled = false;
+        if (icon) icon.classList.remove('animate-spin');
+      }
+    }
+
+    function renderExecutiveCharts(data) {
+      if (typeof Chart === 'undefined') {
+        console.warn("Chart.js kutubxonasi yuklanmagan");
+        return;
+      }
+
+      // Chart.js umumiy sozlamalari (Dark tema)
+      Chart.defaults.color = '#94a3b8';
+      Chart.defaults.font.family = 'system-ui, -apple-system, sans-serif';
+
+      // 1. Fakultetlar diagrammasi (Bar)
+      const facultyCanvas = document.getElementById('chart-faculty');
+      if (facultyCanvas) {
+        if (chartFacultyInstance) chartFacultyInstance.destroy();
+        const facLabels = (data.by_faculty || []).map(f => f.faculty.length > 20 ? f.faculty.slice(0, 20) + '...' : f.faculty);
+        chartFacultyInstance = new Chart(facultyCanvas, {
+          type: 'bar',
+          data: {
+            labels: facLabels.length ? facLabels : ['Ma\'lumot yo\'q'],
+            datasets: [
+              {
+                label: 'Jami arizalar',
+                data: (data.by_faculty || []).map(f => f.total),
+                backgroundColor: '#6366f1',
+                borderRadius: 6
+              },
+              {
+                label: 'Bajarilgan',
+                data: (data.by_faculty || []).map(f => f.completed),
+                backgroundColor: '#10b981',
+                borderRadius: 6
+              },
+              {
+                label: 'Nizoli',
+                data: (data.by_faculty || []).map(f => f.disputed),
+                backgroundColor: '#f43f5e',
+                borderRadius: 6
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+            },
+            scales: {
+              x: { grid: { color: 'rgba(51, 65, 85, 0.4)' } },
+              y: { beginAtZero: true, grid: { color: 'rgba(51, 65, 85, 0.4)' }, ticks: { stepSize: 1 } }
+            }
+          }
+        });
+      }
+
+      // 2. Top-5 xizmatlar diagrammasi (Horizontal Bar)
+      const servicesCanvas = document.getElementById('chart-services');
+      if (servicesCanvas) {
+        if (chartServicesInstance) chartServicesInstance.destroy();
+        const sLabels = (data.top_services || []).map(s => s.title.length > 22 ? s.title.slice(0, 22) + '...' : s.title);
+        chartServicesInstance = new Chart(servicesCanvas, {
+          type: 'bar',
+          data: {
+            labels: sLabels.length ? sLabels : ['Ma\'lumot yo\'q'],
+            datasets: [{
+              label: 'Arizalar soni',
+              data: (data.top_services || []).map(s => s.count),
+              backgroundColor: '#06b6d4',
+              borderRadius: 6
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: { beginAtZero: true, grid: { color: 'rgba(51, 65, 85, 0.4)' }, ticks: { stepSize: 1 } },
+              y: { grid: { display: false } }
+            }
+          }
+        });
+      }
+
+      // 3. Holatlar taqsimoti (Doughnut)
+      const statusCanvas = document.getElementById('chart-status');
+      if (statusCanvas) {
+        if (chartStatusInstance) chartStatusInstance.destroy();
+        const s = data.summary || {};
+        const comp = s.completed_appeals || 0;
+        const prog = s.in_progress_appeals || 0;
+        const rej = s.rejected_appeals || 0;
+        const disp = s.disputed_appeals || 0;
+
+        chartStatusInstance = new Chart(statusCanvas, {
+          type: 'doughnut',
+          data: {
+            labels: ['Bajarilgan', 'Jarayonda', 'Rad etilgan', 'Nizoli / Eskalatsiya'],
+            datasets: [{
+              data: [comp, prog, rej, disp],
+              backgroundColor: ['#10b981', '#3b82f6', '#64748b', '#f43f5e'],
+              borderWidth: 2,
+              borderColor: '#0f172a'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '70%',
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12 } }
+            }
+          }
+        });
+      }
+
+      // 4. Oxirgi 14 kunlik trend (Line)
+      const trendCanvas = document.getElementById('chart-trend');
+      if (trendCanvas) {
+        if (chartTrendInstance) chartTrendInstance.destroy();
+        const trends = data.trends || [];
+        chartTrendInstance = new Chart(trendCanvas, {
+          type: 'line',
+          data: {
+            labels: trends.map(t => t.date.slice(5)),
+            datasets: [
+              {
+                label: 'Kelib tushgan',
+                data: trends.map(t => t.total),
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.35,
+                pointRadius: 3
+              },
+              {
+                label: 'Bajarilgan',
+                data: trends.map(t => t.completed),
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                borderWidth: 2.5,
+                fill: true,
+                tension: 0.35,
+                pointRadius: 3
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+            },
+            scales: {
+              x: { grid: { color: 'rgba(51, 65, 85, 0.3)' } },
+              y: { beginAtZero: true, grid: { color: 'rgba(51, 65, 85, 0.3)' }, ticks: { stepSize: 1 } }
+            }
+          }
+        });
+      }
+    }
+
+    function renderExecutiveFacultyTable(faculties) {
+      const tbody = document.getElementById('exec-faculty-table-body');
+      if (!tbody) return;
+
+      if (!faculties || faculties.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="p-8 text-center text-xs text-slate-500">Murojaatlar mavjud emas.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = faculties.map(f => {
+        const pct = f.total > 0 ? Math.round((f.completed / f.total) * 100) : 0;
+        return `
+          <tr class="hover:bg-slate-850/50 transition">
+            <td class="p-3 font-medium text-white flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+              <span>${f.faculty}</span>
+            </td>
+            <td class="p-3 text-center font-mono font-bold text-white">${f.total}</td>
+            <td class="p-3 text-center font-mono font-semibold text-emerald-400">${f.completed}</td>
+            <td class="p-3 text-center font-mono font-semibold ${f.disputed > 0 ? 'text-rose-400' : 'text-slate-500'}">${f.disputed}</td>
+            <td class="p-3 text-center font-mono font-semibold text-amber-400">${Number(f.avg_rating || 5).toFixed(1)} ★</td>
+            <td class="p-3 text-right">
+              <div class="flex items-center justify-end gap-2">
+                <div class="w-16 bg-slate-950 rounded-full h-1.5 overflow-hidden">
+                  <div class="bg-emerald-500 h-1.5 rounded-full" style="width: ${pct}%"></div>
+                </div>
+                <span class="font-mono text-xs font-bold ${pct >= 80 ? 'text-emerald-400' : pct >= 50 ? 'text-amber-400' : 'text-slate-400'}">${pct}%</span>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    async function exportExecutiveAnalyticsToExcel() {
+      if (!executiveAnalyticsData) {
+        showToast("Avval hisobot ma'lumotlari yuklanmoqda...", "info");
+        await loadExecutiveAnalytics();
+      }
+
+      const data = executiveAnalyticsData;
+      if (!data) {
+        showToast("Eksport qilish uchun ma'lumot topilmadi.", "warning");
+        return;
+      }
+
+      const periodSelect = document.getElementById('analytics-period-select');
+      const periodLabel = periodSelect ? periodSelect.options[periodSelect.selectedIndex].text : 'Barcha davr';
+      const nowStr = new Date().toLocaleString('uz-UZ');
+
+      let csv = "\uFEFF"; // UTF-8 BOM Excel kirill va lotin harflarini to'g'ri ko'rsatishi uchun
+      csv += `"REGISTRATOR OFISI - RAHBARIYAT TAHLILIY HISOBOTI"\n`;
+      csv += `"Hisobot davri:","${periodLabel}"\n`;
+      csv += `"Shakllantirilgan sana:","${nowStr}"\n\n`;
+
+      // 1. Asosiy ko'rsatkichlar
+      csv += `"1. ASOSIY INTEGRAL KO'RSATKICHLAR"\n`;
+      csv += `"Ko'rsatkich","Qiymat"\n`;
+      csv += `"Jami murojaatlar soni","${data.summary.total_appeals || 0}"\n`;
+      csv += `"Bajarilgan murojaatlar","${data.summary.completed_appeals || 0}"\n`;
+      csv += `"Jarayondagi murojaatlar","${data.summary.in_progress_appeals || 0}"\n`;
+      csv += `"Rad etilgan murojaatlar","${data.summary.rejected_appeals || 0}"\n`;
+      csv += `"Nizoli / Rahbariyatga oshirilgan","${data.summary.disputed_appeals || 0}"\n`;
+      csv += `"SLA ijro intizomi (%)","${data.summary.sla_compliance_percent || 100}%"\n`;
+      csv += `"O'rtacha ijro vaqti (soat)","${data.summary.avg_resolution_hours || 0}"\n`;
+      csv += `"Talabalar mamnuniyat reytingi","${Number(data.summary.avg_student_rating || 5).toFixed(1)} / 5.0"\n`;
+      csv += `"Jami shaxsiy qabul navbatlari","${data.summary.total_appointments || 0}"\n\n`;
+
+      // 2. Fakultetlar kesimida
+      csv += `"2. FAKULTETLAR KESIMIDA TAHLIL"\n`;
+      csv += `"Fakultet","Jami murojaat","Bajarilgan","Nizoli","O'rtacha baho","Bajarilish foizi"\n`;
+      (data.by_faculty || []).forEach(f => {
+        const pct = f.total > 0 ? Math.round((f.completed / f.total) * 100) : 0;
+        csv += `"${f.faculty.replace(/"/g, '""')}","${f.total}","${f.completed}","${f.disputed}","${f.avg_rating}","${pct}%"\n`;
+      });
+      csv += `\n`;
+
+      // 3. Top xizmatlar
+      csv += `"3. TOP-5 TALABGIR XIZMATLAR"\n`;
+      csv += `"Xizmat kodi","Xizmat nomi","Murojaatlar soni","Ulushi (%)"\n`;
+      (data.top_services || []).forEach(s => {
+        csv += `"${s.code || ''}","${s.title.replace(/"/g, '""')}","${s.count}","${s.percentage}%"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      const safeDate = new Date().toISOString().slice(0, 10);
+      link.setAttribute("download", `Registrator_Ofisi_Tahliliy_Hisobot_${safeDate}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast("Tahliliy hisobot Excel (CSV) fayli muvaffaqiyatli yuklab olindi!", "success");
+    }
+
+    // 14. Page Initialization with Hash Recovery
     window.addEventListener('DOMContentLoaded', async () => {
       initNotifications();
       await loadCurrentUserProfile();

@@ -1,10 +1,12 @@
 import uuid
 from datetime import datetime, timedelta, timezone
-from typing import Optional, List
-from sqlalchemy import select
+from typing import Optional, List, Dict, Any
+from collections import defaultdict
+from sqlalchemy import select, func
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
-from app.models import Appeal, AppealStatus, Service, User, UserRole, AuditLog
+from app.models import Appeal, AppealStatus, Service, User, UserRole, AuditLog, Appointment
 from app.services.sla_service import SLAService
 from app.services.kpi_service import KPIService
 from app.core.config import settings
@@ -373,3 +375,156 @@ class AppealService:
         if count > 0:
             await db.commit()
         return count
+
+    @classmethod
+    async def get_executive_analytics(
+        cls, db: AsyncSession, period_filter: Optional[str] = "all"
+    ) -> Dict[str, Any]:
+        """Rahbariyat (Ofis boshlig'i, Prorektor, Admin) uchun umumiy tahliliy ko'rsatkichlar."""
+        now = datetime.now(timezone.utc)
+
+        # 1. Sana bo'yicha filter
+        stmt = (
+            select(Appeal)
+            .options(
+                selectinload(Appeal.service),
+                selectinload(Appeal.student),
+                selectinload(Appeal.assigned_staff)
+            )
+            .order_by(Appeal.created_at.asc())
+        )
+
+        if period_filter == "this_month":
+            start_month = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            stmt = stmt.where(Appeal.created_at >= start_month)
+        elif period_filter == "last_30_days":
+            start_date = now - timedelta(days=30)
+            stmt = stmt.where(Appeal.created_at >= start_date)
+        elif period_filter == "this_year":
+            start_year = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
+            stmt = stmt.where(Appeal.created_at >= start_year)
+
+        result = await db.execute(stmt)
+        appeals = result.scalars().all()
+
+        total_appeals = len(appeals)
+
+        # 2. Status hisoblagichlari
+        status_counts = defaultdict(int)
+        for a in appeals:
+            status_counts[a.status.value] += 1
+
+        completed_appeals = status_counts["resolved"] + status_counts["completed"] + status_counts["auto_closed"]
+        in_progress_appeals = (
+            status_counts["new"] + status_counts["assigned"] + status_counts["in_progress"] +
+            status_counts["clarification_needed"] + status_counts["pending_external"]
+        )
+        rejected_appeals = status_counts["rejected"]
+        disputed_appeals = (
+            status_counts["disputed"] + status_counts["escalated_head"] + status_counts["escalated_prorektor"]
+        )
+
+        # 3. SLA compliance (O'z vaqtida bajarilish ko'rsatkichi) va O'rtacha yopilish vaqti
+        resolved_appeals = [a for a in appeals if a.resolved_at and a.status in [AppealStatus.RESOLVED, AppealStatus.COMPLETED, AppealStatus.AUTO_CLOSED]]
+        on_time_count = 0
+        total_resolution_seconds = 0.0
+
+        for a in resolved_appeals:
+            if a.sla_deadline_at and a.resolved_at <= a.sla_deadline_at:
+                on_time_count += 1
+            if a.resolved_at and a.created_at:
+                total_resolution_seconds += max(0, (a.resolved_at - a.created_at).total_seconds())
+
+        sla_compliance_percent = round((on_time_count / len(resolved_appeals) * 100), 1) if resolved_appeals else 100.0
+        avg_resolution_hours = round((total_resolution_seconds / len(resolved_appeals) / 3600), 1) if resolved_appeals else 0.0
+
+        # 4. Talabalar qoniqish reytingi
+        rated_appeals = [a.rating for a in appeals if a.rating is not None]
+        avg_student_rating = round(sum(rated_appeals) / len(rated_appeals), 2) if rated_appeals else 5.0
+
+        # 5. Fakultetlar kesimida tahlil
+        faculty_data = defaultdict(lambda: {"total": 0, "completed": 0, "disputed": 0, "ratings": []})
+        for a in appeals:
+            fac = (a.student.faculty if a.student and a.student.faculty else "Umumiy / Belgilanmagan").strip()
+            faculty_data[fac]["total"] += 1
+            if a.status in [AppealStatus.RESOLVED, AppealStatus.COMPLETED, AppealStatus.AUTO_CLOSED]:
+                faculty_data[fac]["completed"] += 1
+            if a.status in [AppealStatus.DISPUTED, AppealStatus.ESCALATED_HEAD, AppealStatus.ESCALATED_PROREKTOR]:
+                faculty_data[fac]["disputed"] += 1
+            if a.rating is not None:
+                faculty_data[fac]["ratings"].append(a.rating)
+
+        by_faculty = []
+        for fac_name, stat in faculty_data.items():
+            avg_r = round(sum(stat["ratings"]) / len(stat["ratings"]), 1) if stat["ratings"] else 5.0
+            by_faculty.append({
+                "faculty": fac_name,
+                "total": stat["total"],
+                "completed": stat["completed"],
+                "disputed": stat["disputed"],
+                "avg_rating": avg_r
+            })
+        by_faculty.sort(key=lambda x: x["total"], reverse=True)
+
+        # 6. Top-5 talabgir xizmatlar
+        service_counts = defaultdict(lambda: {"count": 0, "service_id": None, "code": ""})
+        for a in appeals:
+            stitle = a.service.title if a.service else "Boshqa xizmatlar"
+            service_counts[stitle]["count"] += 1
+            if a.service:
+                service_counts[stitle]["service_id"] = a.service.id
+                service_counts[stitle]["code"] = a.service.code
+
+        top_services = []
+        for stitle, item in service_counts.items():
+            pct = round(item["count"] / total_appeals * 100, 1) if total_appeals > 0 else 0.0
+            top_services.append({
+                "service_id": item["service_id"],
+                "code": item["code"],
+                "title": stitle,
+                "count": item["count"],
+                "percentage": pct
+            })
+        top_services.sort(key=lambda x: x["count"], reverse=True)
+        top_services = top_services[:5]
+
+        # 7. Dinamika trendi (Oxirgi 14 kunlik kunlik tushum va ijro)
+        days_map = {}
+        for i in range(13, -1, -1):
+            d_str = (now - timedelta(days=i)).strftime("%Y-%m-%d")
+            days_map[d_str] = {"date": d_str, "total": 0, "completed": 0}
+
+        for a in appeals:
+            c_date = a.created_at.strftime("%Y-%m-%d")
+            if c_date in days_map:
+                days_map[c_date]["total"] += 1
+            if a.resolved_at:
+                r_date = a.resolved_at.strftime("%Y-%m-%d")
+                if r_date in days_map:
+                    days_map[r_date]["completed"] += 1
+
+        trends = list(days_map.values())
+
+        # 8. Jami qabul navbatlari soni
+        appt_count_stmt = select(func.count(Appointment.id))
+        total_appointments = (await db.execute(appt_count_stmt)).scalar() or 0
+
+        return {
+            "period": period_filter,
+            "generated_at": now.isoformat(),
+            "summary": {
+                "total_appeals": total_appeals,
+                "completed_appeals": completed_appeals,
+                "in_progress_appeals": in_progress_appeals,
+                "rejected_appeals": rejected_appeals,
+                "disputed_appeals": disputed_appeals,
+                "sla_compliance_percent": sla_compliance_percent,
+                "avg_resolution_hours": avg_resolution_hours,
+                "avg_student_rating": avg_student_rating,
+                "total_appointments": total_appointments
+            },
+            "by_faculty": by_faculty,
+            "top_services": top_services,
+            "by_status": dict(status_counts),
+            "trends": trends
+        }
