@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="uz" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jonli navbat tablosining ekrani | Registrator ofisi</title>
+  
+  <!-- Modern Typography & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'flash-call': 'flashCall 1.2s ease-in-out 3',
+          },
+          keyframes: {
+            flashCall: {
+              '0%, 100%': { transform: 'scale(1)', filter: 'drop-shadow(0 0 0 rgba(6, 182, 212, 0))' },
+              '50%': { transform: 'scale(1.02)', filter: 'drop-shadow(0 0 35px rgba(6, 182, 212, 0.6))' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #050711;
+      color: #f8fafc;
+      overflow: hidden;
+      user-select: none;
+    }
+    
+    /* Glowing Aura Gradients */
+    .hero-glow {
+      background: radial-gradient(circle at 50% 30%, rgba(14, 165, 233, 0.15), transparent 70%);
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glass-card-active {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(15, 23, 42, 0.8));
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      box-shadow: 0 0 30px rgba(6, 182, 212, 0.15);
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.5);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(51, 65, 85, 0.8);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen flex flex-col justify-between p-4 sm:p-6 lg:p-8 font-sans antialiased relative">
+
+  <!-- Background Ambient Glows -->
+  <div class="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+  <!-- AUDIO ACTIVATION BANNER (Autoplay Policy Handler) -->
+  <div id="audio-unlock-banner" class="absolute inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center p-6 text-center cursor-pointer transition-opacity duration-300">
+    <div class="glass-card max-w-md w-full p-8 rounded-3xl border border-cyan-500/30 shadow-2xl space-y-5 animate-pulse-slow">
+      <div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center mx-auto text-3xl">
+        🔔
+      </div>
+      <div>
+        <h2 class="text-xl font-bold text-white tracking-tight">Ovozli chaqiruv tizimi</h2>
+        <p class="text-xs text-slate-300 mt-2 leading-relaxed">
+          Kutish zalida talabalarga talonlarni ovozli e'lon qilish uchun ekranga bosing.
+        </p>
+      </div>
+      <button class="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs uppercase tracking-wider transition cursor-pointer shadow-lg shadow-cyan-600/30">
+        Ekranni faollashtirish va boshlash
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== 1. TOP HEADER ==================== -->
+  <header class="glass-card rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 z-10">
+    <!-- University Branding -->
+    <div class="flex items-center gap-3.5">
+      <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 p-0.5 shadow-lg shadow-blue-500/20 flex-shrink-0">
+        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center text-white">
+          <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-sm sm:text-base font-extrabold text-white tracking-tight uppercase">
+            Registrator ofisi • Jonli navbat
+          </h1>
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            LIVE
+          </span>
+        </div>
+        <p class="text-xs text-slate-400">O'zbekiston Milliy universiteti Jizzax filiali</p>
+      </div>
+    </div>
+
+    <!-- Live Date, Digital Clock & Quick Controls -->
+    <div class="flex items-center gap-4 sm:gap-6">
+      <div class="text-right hidden md:block">
+        <div id="live-date" class="text-xs font-semibold text-slate-300 capitalize">—</div>
+        <div class="text-[10px] text-slate-500 font-medium">Kutish zali axborot tablosi</div>
+      </div>
+
+      <!-- Big Clock -->
+      <div class="px-4 py-2 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center gap-1 font-mono text-xl sm:text-2xl font-extrabold text-white tracking-wider shadow-inner">
+        <span id="clock-hours">--</span>
+        <span class="text-cyan-400 animate-pulse">:</span>
+        <span id="clock-minutes">--</span>
+        <span class="text-cyan-400 animate-pulse">:</span>
+        <span id="clock-seconds" class="text-sm text-cyan-400">--</span>
+      </div>
+
+      <!-- Buttons: Audio toggle & Fullscreen -->
+      <div class="flex items-center gap-2">
+        <button 
+          id="toggle-sound-btn" 
+          onclick="toggleSound()" 
+          class="p-2.5 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-900/80 text-slate-300 hover:text-white text-xs font-medium transition cursor-pointer flex items-center gap-1.5"
+          title="Ovozni yoqish / o'chirish"
+        >
+          <span id="sound-icon">🔊</span>
+          <span id="sound-text" class="hidden sm:inline text-[11px] font-bold">Ovoz yoqilgan</span>
+        </button>
+
+        <button 
+          onclick="toggleFullScreen()" 
+          class="p-2.5 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-900/80 text-slate-300 hover:text-white text-xs transition cursor-pointer"
+          title="To'liq ekran (F11)"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== 2. MAIN STAGE ==================== -->
+  <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 my-4 sm:my-5 overflow-hidden">
+    
+    <!-- LEFT: HERO SECTION (HOZIR CHAQIRILMOQDA) -->
+    <section class="lg:col-span-7 flex flex-col justify-between glass-card-active rounded-3xl p-6 sm:p-8 lg:p-10 relative overflow-hidden transition-all duration-300" id="hero-card">
+      <div class="hero-glow absolute inset-0 pointer-events-none"></div>
+
+      <!-- Header Label -->
+      <div class="flex items-center justify-between relative z-10">
+        <div class="flex items-center gap-2">
+          <span class="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></span>
+          <h2 class="text-xs sm:text-sm font-extrabold uppercase tracking-widest text-cyan-400">
+            Hozir chaqirilmoqda • Currently Serving
+          </h2>
+        </div>
+        <div id="call-status-badge" class="px-3 py-1 rounded-full text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+          Qabulga taklif etiladi
+        </div>
+      </div>
+
+      <!-- Center Hero Content: Huge Ticket & Window -->
+      <div class="my-auto py-6 text-center space-y-6 relative z-10">
+        <!-- Ticket Box -->
+        <div>
+          <span class="text-xs uppercase tracking-wider font-semibold text-slate-400 block mb-2">Talon raqami</span>
+          <div id="hero-ticket-code" class="font-mono text-5xl sm:text-7xl lg:text-8xl font-black text-white tracking-wider drop-shadow-2xl">
+            — — —
+          </div>
+        </div>
+
+        <!-- Arrow Divider -->
+        <div class="flex items-center justify-center gap-3 text-cyan-400">
+          <div class="h-0.5 w-16 bg-gradient-to-r from-transparent to-cyan-500"></div>
+          <svg class="w-8 h-8 sm:w-10 sm:h-10 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+          </svg>
+          <div class="h-0.5 w-16 bg-gradient-to-l from-transparent to-cyan-500"></div>
+        </div>
+
+        <!-- Target Window Box -->
+        <div>
+          <span class="text-xs uppercase tracking-wider font-semibold text-slate-400 block mb-1">Qabul darchasi</span>
+          <div id="hero-window-number" class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-cyan-300 tracking-tight">
+            Kutilmoqda
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Info of Current Student & Service -->
+      <div class="pt-4 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs relative z-10">
+        <div>
+          <span class="text-slate-400">Xizmat turi:</span>
+          <p id="hero-service-title" class="font-semibold text-white truncate text-sm mt-0.5">—</p>
+        </div>
+        <div class="sm:text-right">
+          <span class="text-slate-400">Rejalashtirilgan vaqt:</span>
+          <p id="hero-time-slot" class="font-mono font-bold text-cyan-400 text-sm mt-0.5">—</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: ACTIVE WINDOWS & RECENT CALLS -->
+    <section class="lg:col-span-5 flex flex-col glass-card rounded-3xl p-5 sm:p-6 overflow-hidden">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+          <span>🏛️</span>
+          <span>Darchalar bo'yicha holat</span>
+        </h3>
+        <span class="text-[11px] text-slate-500 font-mono">Front-ofis</span>
+      </div>
+
+      <!-- Windows Grid Container -->
+      <div id="windows-container" class="flex-1 overflow-y-auto space-y-3 py-3 pr-1">
+        <div class="p-8 text-center text-xs text-slate-500">
+          Darcha ma'lumotlari yuklanmoqda...
+        </div>
+      </div>
+
+      <!-- Mini Live Statistics at bottom of right column -->
+      <div class="pt-3 border-t border-slate-800/80 grid grid-cols-3 gap-2 text-center text-xs">
+        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="text-[10px] text-slate-400 font-medium">Jami bugun</div>
+          <div id="stat-total" class="text-base font-mono font-extrabold text-white mt-0.5">0</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="text-[10px] text-slate-400 font-medium">Xizmatda</div>
+          <div id="stat-serving" class="text-base font-mono font-extrabold text-cyan-400 mt-0.5">0</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800">
+          <div class="text-[10px] text-slate-400 font-medium">Yakunlangan</div>
+          <div id="stat-completed" class="text-base font-mono font-extrabold text-emerald-400 mt-0.5">0</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== 3. BOTTOM TICKER: WAITING QUEUE ==================== -->
+  <footer class="glass-card rounded-2xl p-3 sm:p-4 z-10 flex flex-col sm:flex-row items-center gap-3 sm:gap-4 overflow-hidden">
+    <!-- Ticker Label -->
+    <div class="flex items-center gap-2 flex-shrink-0">
+      <div class="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-sm font-bold">
+        ⏳
+      </div>
+      <div>
+        <h4 class="text-xs font-bold text-white tracking-tight uppercase">Kutayotganlar navbati</h4>
+        <p class="text-[10px] text-slate-400">Keyingi navbatdagi talabalar</p>
+      </div>
+    </div>
+
+    <!-- Horizontal Scrolling Queue Items -->
+    <div id="waiting-queue-ticker" class="flex-1 w-full flex items-center gap-2.5 overflow-x-auto py-1">
+      <div class="text-xs text-slate-500 py-1">Kutish zalida hozircha navbat yo'q.</div>
+    </div>
+
+    <!-- Waiting Count Badge -->
+    <div class="flex-shrink-0 hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 font-mono">
+      <span>Zalda:</span>
+      <strong id="stat-waiting" class="text-amber-400 font-bold">0</strong>
+    </div>
+  </footer>
+
+  <!-- ==================== 4. SCRIPT LOGIC (POLLING, AUDIO, CHIME) ==================== -->
+  <script>
+    let soundEnabled = true;
+    let audioContext = null;
+    let lastCalledTicketId = null;
+    let pollInterval = null;
+
+    // 1. DIGITAL CLOCK & DATE
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+      
+      const elH = document.getElementById('clock-hours');
+      const elM = document.getElementById('clock-minutes');
+      const elS = document.getElementById('clock-seconds');
+      if (elH) elH.innerText = h;
+      if (elM) elM.innerText = m;
+      if (elS) elS.innerText = s;
+
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      const dateEl = document.getElementById('live-date');
+      if (dateEl) dateEl.innerText = now.toLocaleDateString('uz-UZ', options);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. AUDIO SYNTHESIZER: DUAL-TONE CHIME (Airport / High-speed train chime)
+    function initAudioContext() {
+      if (!audioContext) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          audioContext = new AudioCtx();
+        }
+      }
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume();
+      }
+    }
+
+    function playMelodicChime() {
+      if (!soundEnabled) return;
+      initAudioContext();
+      if (!audioContext) return;
+
+      const now = audioContext.currentTime;
+
+      // Note 1: D5 (587.33 Hz)
+      const osc1 = audioContext.createOscillator();
+      const gain1 = audioContext.createGain();
+      osc1.type = 'sine';
+      osc1.frequency.setValueAtTime(587.33, now);
+      gain1.gain.setValueAtTime(0.001, now);
+      gain1.gain.exponentialRampToValueAtTime(0.35, now + 0.05);
+      gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+      osc1.connect(gain1);
+      gain1.connect(audioContext.destination);
+      osc1.start(now);
+      osc1.stop(now + 0.9);
+
+      // Note 2: A5 (880 Hz) after 0.25s
+      const osc2 = audioContext.createOscillator();
+      const gain2 = audioContext.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(880.00, now + 0.25);
+      gain2.gain.setValueAtTime(0.001, now + 0.25);
+      gain2.gain.exponentialRampToValueAtTime(0.4, now + 0.3);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, now + 1.6);
+      osc2.connect(gain2);
+      gain2.connect(audioContext.destination);
+      osc2.start(now + 0.25);
+      osc2.stop(now + 1.6);
+    }
+
+    // 3. TEXT-TO-SPEECH ANNOUNCEMENT (Uzbek Speech)
+    function speakAnnouncement(ticketCode, windowNumber) {
+      if (!soundEnabled) return;
+      if (!('speechSynthesis' in window)) return;
+
+      const cleanCode = ticketCode.replace(/-/g, ' ');
+      const cleanWindow = windowNumber || "1-darcha";
+      const message = `${cleanCode}, ${cleanWindow}ga marhamat.`;
+
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.lang = 'uz-UZ';
+      utterance.rate = 0.92;
+      utterance.pitch = 1.05;
+
+      setTimeout(() => {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+      }, 700);
+    }
+
+    // 4. TRIGGER CHIME & FLASH ANIMATION
+    function triggerCallAlert(ticketCode, windowNumber) {
+      playMelodicChime();
+      speakAnnouncement(ticketCode, windowNumber);
+
+      const hero = document.getElementById('hero-card');
+      if (hero) {
+        hero.classList.remove('animate-flash-call');
+        void hero.offsetWidth;
+        hero.classList.add('animate-flash-call');
+      }
+    }
+
+    // 5. DATA FETCH & RENDER
+    async function fetchLiveBoardData() {
+      try {
+        const resp = await fetch('/api/v1/appointments/live-board');
+        if (!resp.ok) return;
+        const data = await resp.json();
+        renderLiveBoard(data);
+      } catch (err) {
+        console.warn("Live board fetch error:", err);
+      }
+    }
+
+    function renderLiveBoard(data) {
+      // 1. Statistics
+      if (data.stats) {
+        document.getElementById('stat-total').innerText = data.stats.total_today || 0;
+        document.getElementById('stat-serving').innerText = data.stats.in_service_count || 0;
+        document.getElementById('stat-completed').innerText = data.stats.completed_today || 0;
+        document.getElementById('stat-waiting').innerText = data.stats.waiting_count || 0;
+      }
+
+      // 2. Hero Section: Latest Called Ticket
+      const hero = data.latest_called;
+      if (hero) {
+        document.getElementById('hero-ticket-code').innerText = hero.ticket_code;
+        document.getElementById('hero-window-number').innerText = hero.window_number || "1-darcha";
+        document.getElementById('hero-service-title').innerText = hero.service_title || "Registrator xizmati";
+        document.getElementById('hero-time-slot').innerText = hero.time_slot || "Belgilangan vaqt";
+
+        // Check if this is a newly triggered call
+        const currentCallId = `${hero.id}_${hero.called_at}`;
+        if (lastCalledTicketId !== null && lastCalledTicketId !== currentCallId) {
+          triggerCallAlert(hero.ticket_code, hero.window_number);
+        }
+        lastCalledTicketId = currentCallId;
+      } else {
+        document.getElementById('hero-ticket-code').innerText = "— — —";
+        document.getElementById('hero-window-number').innerText = "Navbat kutmoqda";
+        document.getElementById('hero-service-title').innerText = "Hozirda faol qabul qilinayotgan talon yo'q";
+        document.getElementById('hero-time-slot').innerText = "—";
+      }
+
+      // 3. Active Windows Grid
+      const windowsWrap = document.getElementById('windows-container');
+      const activeWindows = data.active_windows || [];
+      if (activeWindows.length === 0) {
+        windowsWrap.innerHTML = `
+          <div class="h-full flex flex-col items-center justify-center p-6 text-center text-xs text-slate-500 space-y-2">
+            <span class="text-3xl">🪟</span>
+            <p>Hozirda darchalarda faol xizmatlar mavjud emas.</p>
+          </div>
+        `;
+      } else {
+        windowsWrap.innerHTML = activeWindows.map(w => `
+          <div class="p-3.5 rounded-2xl bg-slate-950/70 border border-slate-800/80 flex items-center justify-between gap-3 hover:border-cyan-500/40 transition">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold text-sm">
+                ${w.window_number.replace(/[^0-9]/g, '') || 'D'}
+              </div>
+              <div>
+                <h5 class="text-xs font-bold text-white">${w.window_number}</h5>
+                <p class="text-[11px] text-slate-400 truncate max-w-[160px]">${w.service_title}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-mono text-sm font-black text-cyan-300 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">
+                ${w.ticket_code}
+              </div>
+              <span class="text-[9px] font-semibold text-emerald-400 block mt-0.5">Xizmat ko'rsatilmoqda</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // 4. Bottom Waiting Queue Ticker
+      const tickerWrap = document.getElementById('waiting-queue-ticker');
+      const waitingList = data.waiting_queue || [];
+      if (waitingList.length === 0) {
+        tickerWrap.innerHTML = `<div class="text-xs text-slate-500 py-1">Kutish zalida hozircha navbat yo'q.</div>`;
+      } else {
+        tickerWrap.innerHTML = waitingList.map(item => `
+          <div class="flex-shrink-0 flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-950/80 border border-slate-800/90 text-xs">
+            <span class="font-mono font-bold text-white">${item.ticket_code}</span>
+            <span class="text-slate-500 font-mono text-[11px]">${item.time_slot}</span>
+            ${item.is_arrived 
+              ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Zalda</span>`
+              : `<span class="px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-800 text-slate-400">Kutilmoqda</span>`
+            }
+          </div>
+        `).join('');
+      }
+    }
+
+    // 6. AUDIO CONTROLS & AUTOPLAY UNLOCK
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      const icon = document.getElementById('sound-icon');
+      const text = document.getElementById('sound-text');
+      if (soundEnabled) {
+        if (icon) icon.innerText = "🔊";
+        if (text) text.innerText = "Ovoz yoqilgan";
+        initAudioContext();
+      } else {
+        if (icon) icon.innerText = "🔇";
+        if (text) text.innerText = "Ovoz o'chirilgan";
+      }
+    }
+
+    function unlockAudio() {
+      initAudioContext();
+      const banner = document.getElementById('audio-unlock-banner');
+      if (banner) {
+        banner.style.opacity = '0';
+        setTimeout(() => banner.remove(), 300);
+      }
+      playMelodicChime();
+    }
+    const bannerEl = document.getElementById('audio-unlock-banner');
+    if (bannerEl) {
+      bannerEl.addEventListener('click', unlockAudio);
+    }
+
+    // 7. FULLSCREEN TOGGLE
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+    }
+
+    // 8. START POLLING
+    fetchLiveBoardData();
+    pollInterval = setInterval(fetchLiveBoardData, 3000);
+  </script>
+</body>
+</html>

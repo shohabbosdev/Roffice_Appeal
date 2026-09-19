@@ -40,6 +40,10 @@ async def lifespan(app: FastAPI):
         except Exception:
             pass
         try:
+            await conn.execute(text("ALTER TABLE appointments ADD COLUMN called_at TIMESTAMP DEFAULT NULL"))
+        except Exception:
+            pass
+        try:
             await conn.execute(text("""
                 CREATE TABLE IF NOT EXISTS user_services (
                     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -187,6 +191,21 @@ async def get_portal():
     if portal_path.exists():
         return FileResponse(str(portal_path), media_type="text/html", headers=HTML_NO_CACHE_HEADERS)
     return JSONResponse(status_code=404, content={"message": "Portal HTML fayli topilmadi"})
+
+
+@app.get("/queue-board", tags=["Asosiy"])
+@app.get("/display", tags=["Asosiy"])
+async def get_queue_board():
+    """Kutish zali va darchalar uchun katta ekran Jonli Navbat Tablosi (TV Display)."""
+    board_path = Path(__file__).resolve().parent / "static" / "queue_board.html"
+    HTML_NO_CACHE_HEADERS = {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
+    }
+    if board_path.exists():
+        return FileResponse(str(board_path), media_type="text/html", headers=HTML_NO_CACHE_HEADERS)
+    return JSONResponse(status_code=404, content={"message": "Queue Board HTML fayli topilmadi"})
 
 
 @app.get("/api/info", tags=["Asosiy"])

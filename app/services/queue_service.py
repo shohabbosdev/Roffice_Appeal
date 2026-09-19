@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime, timezone, timedelta, date, time
 from typing import List, Optional, Tuple, Dict, Any
 from sqlalchemy import select, and_, or_
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 from app.models import Appointment, AppointmentStatus, Service, User, UserRole, Holiday
@@ -403,3 +404,145 @@ class QueueService:
         if count > 0:
             await db.commit()
         return count
+
+    @classmethod
+    async def call_appointment(
+        cls, db: AsyncSession, appointment_id: int, staff: User
+    ) -> Appointment:
+        """Talabani darchaga chaqirish (holatni IN_SERVICE ga o'tkazish, called_at ni belgilash)."""
+        stmt = (
+            select(Appointment)
+            .options(
+                selectinload(Appointment.service),
+                selectinload(Appointment.student)
+            )
+            .where(Appointment.id == appointment_id)
+        )
+        result = await db.execute(stmt)
+        appointment = result.scalar_one_or_none()
+        if not appointment:
+            raise HTTPException(status_code=404, detail="Navbat taloni topilmadi.")
+
+        if appointment.status in [AppointmentStatus.COMPLETED, AppointmentStatus.CANCELLED, AppointmentStatus.NO_SHOW]:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Ushbu navbat yakunlangan yoki bekor qilingan (holat: {appointment.status.value})."
+            )
+
+        appointment.status = AppointmentStatus.IN_SERVICE
+        appointment.called_at = datetime.now(timezone.utc)
+        appointment.staff_id = staff.id
+
+        # Agar xodimning bo'limida darcha raqami bo'lsa, darchani moslashtirish
+        if staff.department and staff.department.window_number:
+            appointment.window_number = staff.department.window_number
+
+        await db.commit()
+        await db.refresh(appointment)
+        return appointment
+
+    @classmethod
+    async def get_live_board_data(cls, db: AsyncSession) -> Dict[str, Any]:
+        """Kutish zali katta ekrani (TV Display) uchun jonli navbat ma'lumotlarini to'plash."""
+        now_tz = cls.get_now()
+        today_str = now_tz.date().strftime("%Y-%m-%d")
+
+        # 1. Bugungi barcha faol navbatlar
+        stmt = (
+            select(Appointment)
+            .options(
+                selectinload(Appointment.service),
+                selectinload(Appointment.student)
+            )
+            .where(Appointment.appointment_date == today_str)
+            .order_by(Appointment.time_slot.asc(), Appointment.id.asc())
+        )
+        all_today = (await db.execute(stmt)).scalars().all()
+
+        # 2. Hozir chaqirilayotgan yoki xizmat ko'rsatilayotganlar (IN_SERVICE)
+        in_service_list = [
+            a for a in all_today if a.status == AppointmentStatus.IN_SERVICE
+        ]
+        in_service_list.sort(
+            key=lambda x: x.called_at or x.created_at,
+            reverse=True
+        )
+
+        # Asosiy qahramon (eng oxirgi chaqirilgan talon)
+        latest_called = None
+        if in_service_list:
+            top = in_service_list[0]
+            latest_called = {
+                "id": top.id,
+                "ticket_code": top.ticket_code,
+                "window_number": top.window_number,
+                "service_title": top.service.title if top.service else "Registrator xizmati",
+                "student_name": top.student.full_name if top.student else "Talaba",
+                "time_slot": top.time_slot,
+                "called_at": top.called_at.isoformat() if top.called_at else top.created_at.isoformat()
+            }
+
+        # Darchalar bo'yicha faol xizmatlar (Active windows map)
+        active_windows = []
+        seen_windows = set()
+        for a in in_service_list:
+            w = a.window_number or "1-darcha"
+            if w not in seen_windows:
+                seen_windows.add(w)
+                active_windows.append({
+                    "id": a.id,
+                    "window_number": w,
+                    "ticket_code": a.ticket_code,
+                    "service_title": a.service.title if a.service else "Registrator xizmati",
+                    "student_name": a.student.full_name if a.student else "Talaba",
+                    "called_at": a.called_at.isoformat() if a.called_at else a.created_at.isoformat()
+                })
+
+        # Kutish zalidagi navbatdagilar (CHECKED_IN birinchi, keyin BOOKED)
+        waiting_checked_in = [a for a in all_today if a.status == AppointmentStatus.CHECKED_IN]
+        waiting_booked = [a for a in all_today if a.status == AppointmentStatus.BOOKED]
+        waiting_combined = waiting_checked_in + waiting_booked
+
+        waiting_queue = [
+            {
+                "id": a.id,
+                "ticket_code": a.ticket_code,
+                "window_number": a.window_number,
+                "service_title": a.service.title if a.service else "Registrator xizmati",
+                "time_slot": a.time_slot,
+                "status": a.status.value,
+                "is_arrived": a.status == AppointmentStatus.CHECKED_IN
+            }
+            for a in waiting_combined[:12]
+        ]
+
+        # Bugungi statistika
+        total_count = len(all_today)
+        completed_count = len([a for a in all_today if a.status == AppointmentStatus.COMPLETED])
+        in_service_count = len(in_service_list)
+        waiting_count = len(waiting_combined)
+
+        return {
+            "today_date": today_str,
+            "server_time": now_tz.isoformat(),
+            "latest_called": latest_called,
+            "in_service_list": [
+                {
+                    "id": a.id,
+                    "ticket_code": a.ticket_code,
+                    "window_number": a.window_number,
+                    "service_title": a.service.title if a.service else "Registrator xizmati",
+                    "student_name": a.student.full_name if a.student else "Talaba",
+                    "called_at": a.called_at.isoformat() if a.called_at else a.created_at.isoformat()
+                }
+                for a in in_service_list[:6]
+            ],
+            "active_windows": active_windows,
+            "waiting_queue": waiting_queue,
+            "stats": {
+                "total_today": total_count,
+                "completed_today": completed_count,
+                "in_service_count": in_service_count,
+                "waiting_count": waiting_count
+            }
+        }

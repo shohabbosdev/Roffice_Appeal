@@ -57,6 +57,7 @@ class AppealStatus(str, Enum):
 class AppointmentStatus(str, Enum):
     BOOKED = "booked"
     CHECKED_IN = "checked_in"
+    IN_SERVICE = "in_service"
     COMPLETED = "completed"
     CANCELLED = "cancelled"
     NO_SHOW = "no_show"
@@ -219,6 +220,7 @@ class Appointment(Base):
     status: Mapped[AppointmentStatus] = mapped_column(SQLEnum(AppointmentStatus), default=AppointmentStatus.BOOKED, nullable=False)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    called_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     earned_kpi_points: Mapped[int] = mapped_column(Integer, default=0, nullable=False)

@@ -667,6 +667,15 @@
                 <svg id="refresh-queue-icon" class="w-3.5 h-3.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                 <span>Yangilash</span>
               </button>
+              <a
+                href="/queue-board"
+                target="_blank"
+                class="px-3.5 py-1.5 rounded-xl bg-cyan-600/20 hover:bg-cyan-600 border border-cyan-500/40 text-cyan-300 hover:text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-sm"
+                title="Kutish zali katta monitorida ko'rsatish"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <span>Jonli tablo (TV Display) ↗</span>
+              </a>
             </div>
           </div>
 
@@ -2820,7 +2829,16 @@
                     Kelganini tasdiqlash (Check-in)
                   </button>
                 ` : ''}
-                ${apt.status === 'checked_in' || apt.status === 'in_service' ? `
+                ${apt.status === 'checked_in' ? `
+                  <button onclick="handleAppointmentCall(${apt.id})" class="px-3.5 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold transition cursor-pointer shadow-md shadow-cyan-600/20 flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+                    Darchaga chaqirish
+                  </button>
+                ` : ''}
+                ${apt.status === 'in_service' ? `
+                  <button onclick="handleAppointmentCall(${apt.id})" class="px-2.5 py-1.5 rounded-xl border border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 text-xs font-medium transition cursor-pointer" title="Tabloda qaytadan chaqirish">
+                    Qayta chaqirish
+                  </button>
                   <button onclick="handleAppointmentComplete(${apt.id})" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-md shadow-emerald-600/20">
                     Qabulni yakunlash (KPI)
                   </button>
@@ -2839,6 +2857,25 @@
       } finally {
         if (btn) btn.disabled = false;
         if (icon) icon.classList.remove('animate-spin');
+      }
+    }
+
+    async function handleAppointmentCall(id) {
+      try {
+        const resp = await fetch(`/api/v1/appointments/${id}/call`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (resp.ok) {
+          const apt = await resp.json();
+          showToast(`Talon ${apt.ticket_code} ${apt.window_number}ga chaqirildi! Jonli tabloda e'lon qilindi.`, "success");
+          loadQueueAppointments();
+        } else {
+          const e = await resp.json();
+          showToast(e.detail || "Chaqirishda xatolik yuz berdi", "error");
+        }
+      } catch (e) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
 

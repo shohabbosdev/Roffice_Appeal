@@ -287,6 +287,7 @@ class AppointmentOut(BaseModel):
     time_slot: str
     status: AppointmentStatus
     created_at: datetime
+    called_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
     notes: Optional[str] = None
     earned_kpi_points: int

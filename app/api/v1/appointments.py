@@ -102,6 +102,18 @@ async def get_appointments(
     return result.scalars().all()
 
 
+@router.get("/live-board", summary="Kutish zali monitori (TV Display) uchun jonli navbat ma'lumotlari")
+async def get_live_queue_board(
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Kutish zali katta ekrani uchun real-vaqtdagi navbat ma'lumotlari:
+    oxirgi chaqirilgan talon, darchalar bo'yicha faol xizmatlar, kutayotganlar ro'yxati va statistika.
+    (Ommaviy, avtorizatsiyasiz).
+    """
+    return await QueueService.get_live_board_data(db=db)
+
+
 @router.get("/{appointment_id}", response_model=AppointmentOut, summary="Navbat taloni tafsilotlari")
 async def get_appointment(
     appointment_id: int,
@@ -152,6 +164,20 @@ async def check_in_appointment(
         .where(Appointment.id == appointment.id)
     )
     return result.scalar_one()
+
+
+@router.post("/{appointment_id}/call", response_model=AppointmentOut, summary="Talabani darchaga chaqirish")
+async def call_appointment(
+    appointment_id: int,
+    current_user: User = Depends(require_role(UserRole.FRONT_STAFF, UserRole.BACK_STAFF, UserRole.OFFICE_HEAD, UserRole.ADMIN)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Xodim navbatdagi talabani o'z darchasiga chaqiradi. Holat 'in_service' ga o'tadi va jonli tabloga yuboriladi."""
+    return await QueueService.call_appointment(
+        db=db,
+        appointment_id=appointment_id,
+        staff=current_user
+    )
 
 
 @router.post("/{appointment_id}/complete", response_model=AppointmentOut, summary="Qabulni yakunlash va xodimga KPI ballini yozish")
