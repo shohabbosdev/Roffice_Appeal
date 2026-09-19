@@ -20,6 +20,7 @@ Mirzo Ulug'bek nomidagi O'zbekiston Milliy universiteti Jizzax filialining Regis
    - [4.6. Telegram Bot va Foniy Eslatmalar Tizimi](#46-telegram-bot-va-foniy-eslatmalar-tizimi)
    - [4.7. Nizolarni 3 Bosqichli Eskalatsiya Qilish va Prorektor Qarori](#47-nizolarni-3-bosqichli-eskalatsiya-qilish-va-prorektor-qarori)
    - [4.8. Tizim Xavfsizligi va Markaziy Audit Jurnali](#48-tizim-xavfsizligi-va-markaziy-audit-jurnali)
+   - [4.9. Ma'lumotlar Bazasini Avtomatik Zaxiralash (Disaster Recovery) va Tizim Salomatligi](#49-malumotlar-bazasini-avtomatik-zaxiralash-disaster-recovery-va-tizim-salomatligi)
 5. [Biznes Mantiq, Formula va Algoritmlar](#5-biznes-mantiq-formula-va-algoritmlar)
    - [SLA Ish Vaqti Hisoblash](#sla-ish-vaqti-hisoblash)
    - [Xodimlar KPI Samaradorlik Formulasi](#xodimlar-kpi-samaradorlik-formulasi)
@@ -202,6 +203,35 @@ Namunaviy Nizom talablariga muvofiq Registrator ofisida foydalanuvchi rollari va
   - 4 ta real-vaqt statistika ko'rsatkichi;
   - To'liq jurnallarni Excel (CSV) formatida eksport qilish.
 
+### 4.9. Ma'lumotlar Bazasini Avtomatik Zaxiralash (Disaster Recovery) va Tizim Salomatligi
+
+Tizimning barqaror va xavfsiz faoliyat yuritishini ta'minlash, kutilmagan favqulodda vaziyatlarda (server nosozligi, disk buzilishi) ma'lumotlarni to'liq tiklash hamda resurslarni doimiy nazorat qilish maqsadida avtomatlashtirilgan zaxiralash va monitoring moduli joriy etildi:
+
+1. **To'liq Relyatsion Zaxira (JSON & DB Dump):**
+   - Barcha jadvallar (`Users`, `Departments`, `Services`, `Appeals`, `Appointments`, `AuditLogs`, `Holidays`, `SystemSettings`, `KPITargets` va `UserServices`) o'zaro bog'liqliklari bilan to'liq JSON formatida eksport qilinadi;
+   - SQLite ma'lumotlar bazasi fayli hamda `uploads/` katalogidagi barcha tasdiqlovchi rasmiy hujjatlar biriktiriladi;
+   - Barcha ma'lumotlar vaqt belgisi bilan `.tar.gz` arxiviga siqiladi (`backups/backup_roffice_YYYYMMDD_HHMMSS.tar.gz`).
+
+2. **Avtomatik Tungi Rejalashtiruvchi (Scheduler):**
+   - Har kecha Toshkent vaqti bilan soat **03:00 da (UTC+5)** orqa fonda avtomatik to'liq zaxira yaratiladi;
+   - Zaxira muvaffaqiyatli yaratilishi bilan Telegram boti orqali tizim administratorlariga batafsil hisobot (fayl nomi, hajm, vaqt) jo'natiladi.
+
+3. **14 Kunlik Avtomatik Rotatsiya (Retention Policy):**
+   - Server diski to'lib qolishining oldini olish uchun oxirgi **14 ta** zaxira nusxasi qat'iy saqlanadi, undan eskilari tizim tomonidan avtomatik o'chiriladi.
+
+4. **Zero-Dependency Tizim Salomatligi Monitoringi:**
+   - Hech qanday og'ir tashqi kutubxonalarsiz (psutil talab etilmaydi), Linux yadrosi (`/proc/meminfo`, `/proc/loadavg`) va Python standart kutubxonalari orqali:
+     - **CPU:** Yadrolar soni, 1m/5m/15m Load Average va yuklama foizi;
+     - **RAM:** Jami, band va bo'sh xotira (MB) hamda foiz ko'rsatkichi;
+     - **Disk:** Umumiy hajm, band joy va bo'sh joy (GB) ko'rsatkichi;
+     - **Uptime:** Server ishga tushganidan buyon o'tgan aniq vaqt (kun, soat, daqiqa, soniya);
+     - **Baza statistikasi:** Jami arizalar, navbatlar, foydalanuvchilar va audit loglari soni.
+
+5. **Administrator Paneli va Xavfsiz Yuklab Olish:**
+   - `staff.html` da administratorlar uchun alohida interaktiv "Tizim va zaxiralar" bo'limi;
+   - Real-vaqt progress-barlari, "Hozir zaxira yaratish" tezkor tugmasi;
+   - Zaxiralarni yuklab olishda **Path Traversal** hujumlaridan to'liq himoyalangan API (`GET /api/v1/system/backups/{filename}/download`).
+
 ---
 
 ## 5. Biznes Mantiq, Formula va Algoritmlar
@@ -375,6 +405,12 @@ Fayllar va Hujjatlar:
 Telegram Integratsiyasi:
   GET    /api/v1/telegram/info                      - Bot havolasi va QR kod
   POST   /api/v1/telegram/webhook                   - Telegram Webhook yangilanishlari
+
+Tizim Monitoringi va Zaxiralash (System & Backups):
+  GET    /api/v1/system/metrics                     - CPU, RAM, Disk, Uptime va DB statistikasi (Admin/Boshliq)
+  GET    /api/v1/system/backups                     - Mavjud zaxira arxivlari ro'yxati (Admin)
+  POST   /api/v1/system/backups                     - Yangi zaxira yaratish va Telegram hisoboti (Admin)
+  GET    /api/v1/system/backups/{filename}/download - Zaxira arxivini yuklab olish (Admin)
 ```
 
 ---
@@ -391,29 +427,30 @@ Loyihada **test-driven reliability** tamoyili joriy etilgan. Barcha biznes manti
 ### Test natijalari:
 ```
 tests/test_appeals_flow.py ......................... [  5%]
-tests/test_appointments.py ......................... [  7%]
-tests/test_audit_trail_system.py ................... [ 13%]
-tests/test_calendar_api.py ......................... [ 15%]
-tests/test_detailed_slots.py ....................... [ 18%]
-tests/test_dispute_escalation.py ................... [ 22%]
-tests/test_education_form_policy.py ................ [ 24%]
-tests/test_executive_analytics.py .................. [ 26%]
-tests/test_hemis_auth.py ........................... [ 30%]
-tests/test_kpi_system.py ........................... [ 37%]
-tests/test_live_badges.py .......................... [ 39%]
-tests/test_live_queue_board.py ..................... [ 41%]
-tests/test_prorektor_decision_desk.py .............. [ 47%]
-tests/test_services_crud.py ........................ [ 50%]
-tests/test_sla_calculator.py ....................... [ 64%]
-tests/test_staff_crud_and_credentials.py ........... [ 69%]
-tests/test_staff_services_assignment.py ............ [ 71%]
-tests/test_student_portal_actions.py ............... [ 77%]
-tests/test_telegram_automated_notifications.py ..... [ 83%]
-tests/test_telegram_integration.py ................. [ 92%]
+tests/test_appointments.py ......................... [  8%]
+tests/test_audit_trail_system.py ................... [ 17%]
+tests/test_backup_and_metrics.py ................... [ 20%]
+tests/test_calendar_api.py ......................... [ 22%]
+tests/test_detailed_slots.py ....................... [ 25%]
+tests/test_dispute_escalation.py ................... [ 29%]
+tests/test_education_form_policy.py ................ [ 31%]
+tests/test_executive_analytics.py .................. [ 32%]
+tests/test_hemis_auth.py ........................... [ 36%]
+tests/test_kpi_system.py ........................... [ 43%]
+tests/test_live_badges.py .......................... [ 44%]
+tests/test_live_queue_board.py ..................... [ 46%]
+tests/test_prorektor_decision_desk.py .............. [ 51%]
+tests/test_services_crud.py ........................ [ 55%]
+tests/test_sla_calculator.py ....................... [ 67%]
+tests/test_staff_crud_and_credentials.py ........... [ 72%]
+tests/test_staff_services_assignment.py ............ [ 74%]
+tests/test_student_portal_actions.py ............... [ 79%]
+tests/test_telegram_automated_notifications.py ..... [ 84%]
+tests/test_telegram_integration.py ................. [ 93%]
 tests/test_uploads.py .............................. [ 94%]
 tests/test_users_and_unified_login.py .............. [100%]
 
-============================== 53 passed in 8.47s ==============================
+============================== 58 passed in 8.62s ==============================
 ```
 
 ---

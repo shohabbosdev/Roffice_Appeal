@@ -210,6 +210,18 @@
             </svg>
             <span>Tizim audit jurnali</span>
           </button>
+
+          <button
+            onclick="switchStaffTab('system')"
+            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            data-tab="system"
+            id="nav-system-btn"
+          >
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"/>
+            </svg>
+            <span>Tizim va zaxiralar</span>
+          </button>
         </nav>
       </div>
 
@@ -1281,6 +1293,166 @@
                 <tbody id="audit-logs-table-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
                   <tr>
                     <td colspan="6" class="p-8 text-center text-xs font-sans text-slate-500">Audit jurnali yuklanmoqda...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= TAB: SYSTEM MONITORING & BACKUPS ================= -->
+        <div id="tab-system" class="space-y-6 hidden">
+          <!-- Top Info & Actions -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span id="sys-overall-status-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Barcha tizimlar barqaror
+                </span>
+                <span class="text-xs text-slate-500" id="sys-last-checked-time">Oxirgi tekshiruv: hozir</span>
+              </div>
+              <h3 class="text-lg font-bold text-white tracking-tight">Tizim salomatligi va ma'lumotlar zaxirasi</h3>
+              <p class="text-xs text-slate-400 mt-0.5">Server resurslari yuklamasi (CPU, RAM, Disk) va avtomatlashtirilgan zaxira nusxalari (Backups)</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button
+                onclick="loadSystemMetrics()"
+                class="px-3.5 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-2 cursor-pointer"
+                title="Ko'rsatkichlarni yangilash"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>Yangilash</span>
+              </button>
+              <button
+                id="btn-trigger-backup"
+                onclick="triggerManualBackup()"
+                class="px-4 py-2 rounded-xl text-xs font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/20 transition flex items-center gap-2 cursor-pointer"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                </svg>
+                <span>Hozir zaxira yaratish</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Metrics Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- CPU Metric -->
+            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 relative overflow-hidden">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-medium text-slate-400">CPU Yuklamasi</span>
+                <span id="sys-cpu-cores" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Cores: -</span>
+              </div>
+              <div class="flex items-baseline justify-between mb-2">
+                <span id="sys-cpu-val" class="text-2xl font-bold font-mono text-white tracking-tight">0%</span>
+                <span id="sys-cpu-load" class="text-xs font-mono text-slate-400">Load: 0.00</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div id="sys-cpu-bar" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- RAM Metric -->
+            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 relative overflow-hidden">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-medium text-slate-400">RAM (Operativ xotira)</span>
+                <span id="sys-ram-status" class="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">Normal</span>
+              </div>
+              <div class="flex items-baseline justify-between mb-2">
+                <span id="sys-ram-val" class="text-2xl font-bold font-mono text-white tracking-tight">0%</span>
+                <span id="sys-ram-usage" class="text-xs font-mono text-slate-400">0 / 0 MB</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div id="sys-ram-bar" class="h-full bg-emerald-500 transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Disk Metric -->
+            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 relative overflow-hidden">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-medium text-slate-400">Disk Maydoni</span>
+                <span id="sys-disk-free" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Free: -</span>
+              </div>
+              <div class="flex items-baseline justify-between mb-2">
+                <span id="sys-disk-val" class="text-2xl font-bold font-mono text-white tracking-tight">0%</span>
+                <span id="sys-disk-usage" class="text-xs font-mono text-slate-400">0 / 0 GB</span>
+              </div>
+              <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                <div id="sys-disk-bar" class="h-full bg-indigo-500 transition-all duration-500" style="width: 0%"></div>
+              </div>
+            </div>
+
+            <!-- Uptime Metric -->
+            <div class="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 relative overflow-hidden">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-xs font-medium text-slate-400">Uptime (Ish vaqti)</span>
+                <span id="sys-env-python" class="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-300">Py 3.x</span>
+              </div>
+              <div class="mb-2">
+                <div id="sys-uptime-val" class="text-lg font-bold font-mono text-emerald-400 tracking-tight leading-snug">0 daqiqa</div>
+                <div id="sys-env-os" class="text-[11px] text-slate-400 truncate">Platforma: Linux</div>
+              </div>
+              <div class="text-[10px] text-slate-500" id="sys-started-at">Boshlandi: -</div>
+            </div>
+          </div>
+
+          <!-- Database Stats & Backup Retention Info -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-800 text-center">
+              <div class="text-[11px] text-slate-400">Jami arizalar</div>
+              <div id="sys-db-appeals" class="text-xl font-bold font-mono text-white mt-1">0</div>
+            </div>
+            <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-800 text-center">
+              <div class="text-[11px] text-slate-400">Faol jarayonda</div>
+              <div id="sys-db-active-appeals" class="text-xl font-bold font-mono text-amber-400 mt-1">0</div>
+            </div>
+            <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-800 text-center">
+              <div class="text-[11px] text-slate-400">Hal etilganlar</div>
+              <div id="sys-db-resolved-appeals" class="text-xl font-bold font-mono text-emerald-400 mt-1">0</div>
+            </div>
+            <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-800 text-center">
+              <div class="text-[11px] text-slate-400">Navbat qabullari</div>
+              <div id="sys-db-appointments" class="text-xl font-bold font-mono text-white mt-1">0</div>
+            </div>
+            <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-800 text-center">
+              <div class="text-[11px] text-slate-400">Foydalanuvchilar</div>
+              <div id="sys-db-users" class="text-xl font-bold font-mono text-blue-400 mt-1">0</div>
+            </div>
+            <div class="bg-slate-900/40 p-3.5 rounded-xl border border-slate-800 text-center">
+              <div class="text-[11px] text-slate-400">Audit yozuvlari</div>
+              <div id="sys-db-audits" class="text-xl font-bold font-mono text-purple-400 mt-1">0</div>
+            </div>
+          </div>
+
+          <!-- Backups Table -->
+          <div class="bg-slate-900/60 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+            <div class="p-4 sm:p-5 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h4 class="text-base font-bold text-white tracking-tight">Mavjud zaxira nusxalari (Backups)</h4>
+                <p class="text-xs text-slate-400 mt-0.5">Avtomatik tungi rejalashtiruvchi (03:00) yoki ma'mur tomonidan yaratilgan arxivlar (Oxirgi 14 ta saqlanadi)</p>
+              </div>
+              <span id="sys-backups-count-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                Jami zaxiralar: 0
+              </span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase text-[10px]">
+                  <tr>
+                    <th class="p-3">Zaxira fayli nomi</th>
+                    <th class="p-3">Hajmi</th>
+                    <th class="p-3">Yaratilgan vaqti (Toshkent)</th>
+                    <th class="p-3 text-right">Amal</th>
+                  </tr>
+                </thead>
+                <tbody id="backups-table-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
+                  <tr>
+                    <td colspan="4" class="p-8 text-center text-xs font-sans text-slate-500">Zaxira nusxalari ro'yxati yuklanmoqda...</td>
                   </tr>
                 </tbody>
               </table>
@@ -2577,7 +2749,7 @@
     }
 
     function switchStaffTab(tabId, updateHash = true) {
-      const tabs = ['appeals', 'services', 'policy', 'queue', 'users', 'kpi', 'calendar', 'analytics', 'audit'];
+      const tabs = ['appeals', 'services', 'policy', 'queue', 'users', 'kpi', 'calendar', 'analytics', 'audit', 'system'];
       tabs.forEach(t => {
         const pane = document.getElementById('tab-' + t);
         const btn = document.getElementById('nav-' + t + '-btn');
@@ -2603,7 +2775,8 @@
         'kpi': "Xodimlar KPI reytingi",
         'calendar': "Bayramlar taqvimi",
         'analytics': "Rahbariyat tahliliy infografikasi",
-        'audit': "Tizim harakatlar va audit jurnali"
+        'audit': "Tizim harakatlar va audit jurnali",
+        'system': "Tizim salomatligi va zaxiralar monitoringi"
       };
       const heading = document.getElementById('page-heading');
       if (heading && titles[tabId]) heading.innerText = titles[tabId];
@@ -2624,6 +2797,10 @@
       if (tabId === 'calendar') loadHolidays();
       if (tabId === 'analytics') loadExecutiveAnalytics();
       if (tabId === 'audit') loadAuditLogs();
+      if (tabId === 'system') {
+        loadSystemMetrics();
+        loadBackupsList();
+      }
     }
 
     window.addEventListener('hashchange', () => {
@@ -2639,6 +2816,8 @@
       const usersBtn = document.getElementById('nav-users-btn');
       const analyticsBtn = document.getElementById('nav-analytics-btn');
       const auditBtn = document.getElementById('nav-audit-btn');
+      const systemBtn = document.getElementById('nav-system-btn');
+      const backupBtn = document.getElementById('btn-trigger-backup');
       const addServiceBtn = document.getElementById('add-service-btn');
       const addDeptBtn = document.getElementById('add-dept-btn');
 
@@ -2650,6 +2829,7 @@
         if (usersBtn) usersBtn.style.display = 'none';
         if (analyticsBtn) analyticsBtn.style.display = 'none';
         if (auditBtn) auditBtn.style.display = 'none';
+        if (systemBtn) systemBtn.style.display = 'none';
         if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
         if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'back_staff') {
@@ -2660,6 +2840,7 @@
         if (usersBtn) usersBtn.style.display = 'none';
         if (analyticsBtn) analyticsBtn.style.display = 'none';
         if (auditBtn) auditBtn.style.display = 'none';
+        if (systemBtn) systemBtn.style.display = 'none';
         if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
         if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'vice_rector') {
@@ -2670,6 +2851,7 @@
         if (usersBtn) usersBtn.style.display = 'none';
         if (analyticsBtn) analyticsBtn.style.display = 'flex';
         if (auditBtn) auditBtn.style.display = 'flex';
+        if (systemBtn) systemBtn.style.display = 'none';
         if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
         if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'office_head') {
@@ -2681,6 +2863,8 @@
         if (usersBtn) usersBtn.style.display = 'flex';
         if (analyticsBtn) analyticsBtn.style.display = 'flex';
         if (auditBtn) auditBtn.style.display = 'flex';
+        if (systemBtn) systemBtn.style.display = 'flex';
+        if (backupBtn) backupBtn.style.display = 'none'; // Boshliq faqat ko'radi, zaxira olmaydi
         if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
         if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
       } else {
@@ -2692,6 +2876,8 @@
         if (usersBtn) usersBtn.style.display = 'flex';
         if (analyticsBtn) analyticsBtn.style.display = 'flex';
         if (auditBtn) auditBtn.style.display = 'flex';
+        if (systemBtn) systemBtn.style.display = 'flex';
+        if (backupBtn) backupBtn.style.display = 'inline-flex';
         if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
         if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
       }
@@ -6092,7 +6278,271 @@
       showToast("Audit jurnali CSV formatida muvaffaqiyatli yuklab olindi!", "success");
     }
 
-    // 16. Page Initialization with Hash Recovery
+    // ================= 16. SYSTEM MONITORING & BACKUPS =================
+    async function loadSystemMetrics() {
+      const token = localStorage.getItem('roffice_token');
+      if (!token) return;
+
+      try {
+        const res = await fetch(apiUrl('/system/metrics'), {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          if (res.status === 403) return;
+          throw new Error("Tizim ko'rsatkichlarini yuklab bo'lmadi");
+        }
+        const data = await res.json();
+
+        // 1. Vaqt va holat
+        const nowStr = new Date().toLocaleTimeString();
+        const lastCheckedEl = document.getElementById('sys-last-checked-time');
+        if (lastCheckedEl) lastCheckedEl.innerText = `Oxirgi tekshiruv: ${nowStr}`;
+
+        const badgeEl = document.getElementById('sys-overall-status-badge');
+        if (badgeEl) {
+          if (data.status === 'healthy') {
+            badgeEl.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5";
+            badgeEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Barcha tizimlar barqaror';
+          } else {
+            badgeEl.className = "px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1.5";
+            badgeEl.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> Diqqat: Yuqori yuklama';
+          }
+        }
+
+        // 2. CPU
+        if (data.cpu) {
+          const cpuVal = document.getElementById('sys-cpu-val');
+          const cpuCores = document.getElementById('sys-cpu-cores');
+          const cpuLoad = document.getElementById('sys-cpu-load');
+          const cpuBar = document.getElementById('sys-cpu-bar');
+
+          const pct = data.cpu.percent_load || 0;
+          if (cpuVal) cpuVal.innerText = `${pct}%`;
+          if (cpuCores) cpuCores.innerText = `Cores: ${data.cpu.cores || 1}`;
+          if (cpuLoad) cpuLoad.innerText = `Load: ${data.cpu.load_1m || 0.0}`;
+          if (cpuBar) {
+            cpuBar.style.width = `${Math.min(100, Math.max(2, pct))}%`;
+            cpuBar.className = pct > 85 ? "h-full bg-rose-500 transition-all duration-500" : (pct > 60 ? "h-full bg-amber-500 transition-all duration-500" : "h-full bg-blue-500 transition-all duration-500");
+          }
+        }
+
+        // 3. RAM
+        if (data.ram) {
+          const ramVal = document.getElementById('sys-ram-val');
+          const ramUsage = document.getElementById('sys-ram-usage');
+          const ramStatus = document.getElementById('sys-ram-status');
+          const ramBar = document.getElementById('sys-ram-bar');
+
+          const pct = data.ram.percent_used || 0;
+          if (ramVal) ramVal.innerText = `${pct}%`;
+          if (ramUsage) ramUsage.innerText = `${data.ram.used_human} / ${data.ram.total_human}`;
+          if (ramStatus) {
+            ramStatus.innerText = data.ram.status === 'healthy' ? 'Normal' : 'Yuqori';
+            ramStatus.className = data.ram.status === 'healthy' ? 'text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400' : 'text-[10px] font-semibold px-2 py-0.5 rounded bg-rose-500/10 text-rose-400';
+          }
+          if (ramBar) {
+            ramBar.style.width = `${Math.min(100, Math.max(2, pct))}%`;
+            ramBar.className = pct > 85 ? "h-full bg-rose-500 transition-all duration-500" : "h-full bg-emerald-500 transition-all duration-500";
+          }
+        }
+
+        // 4. Disk
+        if (data.disk) {
+          const diskVal = document.getElementById('sys-disk-val');
+          const diskUsage = document.getElementById('sys-disk-usage');
+          const diskFree = document.getElementById('sys-disk-free');
+          const diskBar = document.getElementById('sys-disk-bar');
+
+          const pct = data.disk.percent_used || 0;
+          if (diskVal) diskVal.innerText = `${pct}%`;
+          if (diskUsage) diskUsage.innerText = `${data.disk.used_human} / ${data.disk.total_human}`;
+          if (diskFree) diskFree.innerText = `Free: ${data.disk.free_human}`;
+          if (diskBar) {
+            diskBar.style.width = `${Math.min(100, Math.max(2, pct))}%`;
+            diskBar.className = pct > 85 ? "h-full bg-rose-500 transition-all duration-500" : "h-full bg-indigo-500 transition-all duration-500";
+          }
+        }
+
+        // 5. Uptime & Env
+        if (data.uptime) {
+          const uptimeVal = document.getElementById('sys-uptime-val');
+          if (uptimeVal) uptimeVal.innerText = data.uptime.uptime_str || 'Ishga tushgan';
+        }
+        if (data.environment) {
+          const envOs = document.getElementById('sys-env-os');
+          const envPy = document.getElementById('sys-env-python');
+          if (envOs) envOs.innerText = `${data.environment.os} ${data.environment.os_release || ''}`;
+          if (envPy) envPy.innerText = `Python ${data.environment.python_version || ''}`;
+        }
+        if (data.uptime && data.uptime.started_at) {
+          const startedAt = document.getElementById('sys-started-at');
+          try {
+            const st = new Date(data.uptime.started_at);
+            if (startedAt) startedAt.innerText = `Ishga tushdi: ${st.toLocaleDateString()} ${st.toLocaleTimeString()}`;
+          } catch(e) {}
+        }
+
+        // 6. DB Stats
+        if (data.database) {
+          const db = data.database;
+          const setTxt = (id, val) => { const el = document.getElementById(id); if (el) el.innerText = val !== undefined ? val : 0; };
+          setTxt('sys-db-appeals', db.total_appeals);
+          setTxt('sys-db-active-appeals', db.active_appeals);
+          setTxt('sys-db-resolved-appeals', db.resolved_appeals);
+          setTxt('sys-db-appointments', db.total_appointments);
+          setTxt('sys-db-users', db.total_users);
+          setTxt('sys-db-audits', db.total_audit_logs);
+        }
+
+      } catch (err) {
+        console.error("loadSystemMetrics xatosi:", err);
+      }
+    }
+
+    async function loadBackupsList() {
+      const token = localStorage.getItem('roffice_token');
+      const role = localStorage.getItem('roffice_role');
+      if (!token || role !== 'admin') {
+        const tbody = document.getElementById('backups-table-body');
+        if (tbody) {
+          tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-xs font-sans text-slate-500">Zaxira nusxalarini faqat Administrator boshqara oladi.</td></tr>';
+        }
+        return;
+      }
+
+      try {
+        const res = await fetch(apiUrl('/system/backups'), {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error("Zaxiralar ro'yxatini yuklab bo'lmadi");
+        const backups = await res.json();
+
+        const badge = document.getElementById('sys-backups-count-badge');
+        if (badge) badge.innerText = `Jami zaxiralar: ${backups.length}`;
+
+        const tbody = document.getElementById('backups-table-body');
+        if (!tbody) return;
+
+        if (!backups || backups.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="4" class="p-8 text-center text-xs font-sans text-slate-500">Hozircha zaxira nusxalari mavjud emas. "Hozir zaxira yaratish" tugmasini bosing.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = backups.map(b => {
+          let dateStr = b.created_at || '';
+          try {
+            const d = new Date(b.created_at);
+            dateStr = `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+          } catch(e) {}
+
+          return `
+            <tr class="hover:bg-slate-800/40 transition">
+              <td class="p-3 font-semibold text-white flex items-center gap-2">
+                <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                </svg>
+                <span class="truncate max-w-xs sm:max-w-md">${escapeHtml(b.filename)}</span>
+              </td>
+              <td class="p-3 text-emerald-400 font-bold">${escapeHtml(b.size_human)}</td>
+              <td class="p-3 text-slate-400 font-sans text-xs">${dateStr}</td>
+              <td class="p-3 text-right">
+                <button
+                  onclick="downloadBackupFile('${escapeHtml(b.filename)}')"
+                  class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-blue-400 hover:text-white border border-slate-700 transition inline-flex items-center gap-1.5 cursor-pointer"
+                  title="Yuklab olish"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                  </svg>
+                  <span>Yuklab olish</span>
+                </button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+
+      } catch (err) {
+        console.error("loadBackupsList xatosi:", err);
+        const tbody = document.getElementById('backups-table-body');
+        if (tbody) {
+          tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-xs font-sans text-rose-400">${escapeHtml(err.message)}</td></tr>`;
+        }
+      }
+    }
+
+    async function triggerManualBackup() {
+      if (!confirm("Haqiqatan ham hozir tizim ma'lumotlar bazasi va yuklangan hujjatlarning to'liq zaxira nusxasini (Backup) yaratmoqchimisiz?")) {
+        return;
+      }
+
+      const token = localStorage.getItem('roffice_token');
+      const btn = document.getElementById('btn-trigger-backup');
+      const originalText = btn ? btn.innerHTML : '';
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `
+          <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+          </svg>
+          <span>Zaxiralanmoqda...</span>
+        `;
+      }
+
+      try {
+        const res = await fetch(apiUrl('/system/backups'), {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || "Zaxira yaratish jarayonida xatolik yuz berdi");
+        }
+
+        showToast(`Zaxira nusxasi muvaffaqiyatli yaratildi: ${data.filename} (${data.size_human})`, "success");
+        await loadBackupsList();
+        await loadSystemMetrics();
+
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = originalText;
+        }
+      }
+    }
+
+    async function downloadBackupFile(filename) {
+      const token = localStorage.getItem('roffice_token');
+      if (!token) return;
+
+      try {
+        showToast("Zaxira fayli yuklab olinmoqda...", "info");
+        const res = await fetch(apiUrl(`/system/backups/${encodeURIComponent(filename)}/download`), {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Faylni yuklab bo'lmadi");
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast("Zaxira fayli muvaffaqiyatli yuklab olindi!", "success");
+      } catch (e) {
+        showToast(e.message, "error");
+      }
+    }
+
+    // 17. Page Initialization with Hash Recovery
     window.addEventListener('DOMContentLoaded', async () => {
       initNotifications();
       await loadCurrentUserProfile();

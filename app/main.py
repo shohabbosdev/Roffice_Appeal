@@ -1,5 +1,6 @@
 from pathlib import Path
 import asyncio
+from datetime import datetime, timezone
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,10 +12,15 @@ from app.core.database import engine, Base
 from app.api.v1.router import api_v1_router
 from app.services.telegram_bot import run_telegram_bot_poller
 from app.services.sla_reminder import run_sla_reminder_loop
+from app.services.backup_service import BackupService, run_backup_scheduler_loop
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Server ishga tushgan vaqtini qayd etish (Uptime uchun)
+    app.state.start_time = datetime.now(timezone.utc)
+    BackupService.ensure_backup_dir()
+
     # Initialize database tables on startup
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
@@ -57,9 +63,11 @@ async def lifespan(app: FastAPI):
     # Start background tasks
     bot_task = asyncio.create_task(run_telegram_bot_poller())
     sla_task = asyncio.create_task(run_sla_reminder_loop())
+    backup_task = asyncio.create_task(run_backup_scheduler_loop())
     yield
     bot_task.cancel()
     sla_task.cancel()
+    backup_task.cancel()
     await engine.dispose()
 
 
