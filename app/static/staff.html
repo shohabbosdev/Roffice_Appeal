@@ -198,6 +198,18 @@
             </svg>
             <span>Bayramlar taqvimi</span>
           </button>
+
+          <button
+            onclick="switchStaffTab('audit')"
+            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            data-tab="audit"
+            id="nav-audit-btn"
+          >
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span>Tizim audit jurnali</span>
+          </button>
         </nav>
       </div>
 
@@ -1141,6 +1153,134 @@
                 <tbody id="exec-faculty-table-body" class="divide-y divide-slate-800/60">
                   <tr>
                     <td colspan="6" class="p-6 text-center text-xs text-slate-500">Ma'lumotlar yuklanmoqda...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- AUDIT LOGS TAB -->
+        <div id="tab-audit" class="tab-pane hidden space-y-6">
+          <!-- Header Bar: Filters & Export -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </span>
+                <h3 class="text-lg font-bold text-white tracking-tight">Tizim harakatlar va audit jurnali</h3>
+              </div>
+              <p class="text-xs text-slate-400 mt-1">Avtorizatsiya, murojaatlar ijrosi, darcha navbatlari va xodimlar rollari o'zgarishlarining markazlashgan jurnali</p>
+            </div>
+
+            <div class="flex items-center gap-2.5 flex-wrap">
+              <!-- Search Input -->
+              <div class="relative">
+                <input
+                  type="text"
+                  id="audit-search-input"
+                  placeholder="Qidiruv (amal, foydalanuvchi, IP)..."
+                  onkeyup="if(event.key==='Enter') loadAuditLogs()"
+                  class="w-48 sm:w-60 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <!-- Entity Filter -->
+              <select
+                id="audit-entity-filter"
+                onchange="loadAuditLogs()"
+                class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+              >
+                <option value="">Barcha obyektlar</option>
+                <option value="auth">Avtorizatsiya (auth)</option>
+                <option value="appeal">Murojaat (appeal)</option>
+                <option value="appointment">Darcha navbati (appointment)</option>
+                <option value="user">Foydalanuvchi / Xodim (user)</option>
+                <option value="role">Xodim roli (role)</option>
+                <option value="service">Xizmat (service)</option>
+                <option value="department">Bo'lim (department)</option>
+              </select>
+
+              <!-- Action Filter -->
+              <select
+                id="audit-action-filter"
+                onchange="loadAuditLogs()"
+                class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
+              >
+                <option value="">Barcha amallar</option>
+                <option value="login">Kirish (login)</option>
+                <option value="create">Yaratish (create)</option>
+                <option value="update">O'zgartirish (update)</option>
+                <option value="call">Chaqirish (call)</option>
+                <option value="complete">Yakunlash (complete)</option>
+                <option value="dispute">E'tiroz (dispute)</option>
+                <option value="role_change">Rol yangilash (role_change)</option>
+              </select>
+
+              <!-- Refresh Button -->
+              <button
+                id="refresh-audit-btn"
+                onclick="loadAuditLogs()"
+                class="px-3 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5"
+              >
+                <svg id="refresh-audit-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span>Yangilash</span>
+              </button>
+
+              <!-- CSV Export Button -->
+              <button
+                onclick="exportAuditLogsToCsv()"
+                class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
+                title="Audit jurnalini CSV formatida yuklab olish"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                <span>Eksport CSV</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 4 Audit Stat Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 space-y-1">
+              <span class="text-xs text-slate-400 font-medium">Yuklangan yozuvlar</span>
+              <div id="audit-stat-total" class="text-2xl font-mono font-extrabold text-white">0</div>
+              <p class="text-[11px] text-slate-500">Filtr bo'yicha jami qaydlar</p>
+            </div>
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 space-y-1">
+              <span class="text-xs text-slate-400 font-medium">Xavfsizlik & Kirish</span>
+              <div id="audit-stat-auth" class="text-2xl font-mono font-extrabold text-indigo-400">0</div>
+              <p class="text-[11px] text-slate-500">Tizimga kirish va parollar</p>
+            </div>
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 space-y-1">
+              <span class="text-xs text-slate-400 font-medium">Murojaat harakatlari</span>
+              <div id="audit-stat-appeals" class="text-2xl font-mono font-extrabold text-cyan-400">0</div>
+              <p class="text-[11px] text-slate-500">Arizalar o'zgarishlari va qarorlar</p>
+            </div>
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 space-y-1">
+              <span class="text-xs text-slate-400 font-medium">Darcha & Boshqa</span>
+              <div id="audit-stat-queue" class="text-2xl font-mono font-extrabold text-emerald-400">0</div>
+              <p class="text-[11px] text-slate-500">Navbat chaqirish va xizmatlar</p>
+            </div>
+          </div>
+
+          <!-- Audit Table -->
+          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-300">
+                <thead class="bg-slate-950 text-slate-400 border-b border-slate-800 font-semibold uppercase text-[10px]">
+                  <tr>
+                    <th class="p-3">Vaqt</th>
+                    <th class="p-3">Foydalanuvchi</th>
+                    <th class="p-3 text-center">Amal (Action)</th>
+                    <th class="p-3">Obyekt (Entity)</th>
+                    <th class="p-3">IP Manzil</th>
+                    <th class="p-3">Tafsilotlar & O'zgarishlar</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-logs-table-body" class="divide-y divide-slate-800/60 font-mono text-[11px]">
+                  <tr>
+                    <td colspan="6" class="p-8 text-center text-xs font-sans text-slate-500">Audit jurnali yuklanmoqda...</td>
                   </tr>
                 </tbody>
               </table>
@@ -2436,6 +2576,61 @@
       if (b) b.classList.add('hidden');
     }
 
+    function switchStaffTab(tabId, updateHash = true) {
+      const tabs = ['appeals', 'services', 'policy', 'queue', 'users', 'kpi', 'calendar', 'analytics', 'audit'];
+      tabs.forEach(t => {
+        const pane = document.getElementById('tab-' + t);
+        const btn = document.getElementById('nav-' + t + '-btn');
+        if (pane) {
+          if (t === tabId) pane.classList.remove('hidden');
+          else pane.classList.add('hidden');
+        }
+        if (btn) {
+          if (t === tabId) {
+            btn.className = "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-blue-600/15 text-blue-400 border border-blue-500/30 transition cursor-pointer";
+          } else {
+            btn.className = "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition cursor-pointer";
+          }
+        }
+      });
+
+      const titles = {
+        'appeals': "Murojaatlar monitoringi",
+        'services': "Xizmatlar va bo'limlar boshqaruvi",
+        'policy': "Ta'lim shakli cheklovlari",
+        'queue': "Darcha qabuli (elektron navbat)",
+        'users': "Xodimlarni boshqarish va rollar biriktirish",
+        'kpi': "Xodimlar KPI reytingi",
+        'calendar': "Bayramlar taqvimi",
+        'analytics': "Rahbariyat tahliliy infografikasi",
+        'audit': "Tizim harakatlar va audit jurnali"
+      };
+      const heading = document.getElementById('page-heading');
+      if (heading && titles[tabId]) heading.innerText = titles[tabId];
+
+      if (updateHash) {
+        window.location.hash = '#' + tabId;
+        localStorage.setItem('roffice_staff_tab', tabId);
+      }
+
+      closeSidebar();
+
+      if (tabId === 'appeals') loadStaffAppeals();
+      if (tabId === 'services') loadAllServicesAndDepts();
+      if (tabId === 'queue') loadQueueAppointments();
+      if (tabId === 'policy') loadEducationPolicy();
+      if (tabId === 'users') loadStaffUsers();
+      if (tabId === 'kpi') loadKPIOverview();
+      if (tabId === 'calendar') loadHolidays();
+      if (tabId === 'analytics') loadExecutiveAnalytics();
+      if (tabId === 'audit') loadAuditLogs();
+    }
+
+    window.addEventListener('hashchange', () => {
+      const h = window.location.hash.replace('#', '');
+      if (h) switchStaffTab(h, false);
+    });
+
     function applyRolePermissions(role) {
       const policyBtn = document.getElementById('nav-policy-btn');
       const kpiBtn = document.getElementById('nav-kpi-btn');
@@ -2443,6 +2638,7 @@
       const queueBtn = document.getElementById('nav-queue-btn');
       const usersBtn = document.getElementById('nav-users-btn');
       const analyticsBtn = document.getElementById('nav-analytics-btn');
+      const auditBtn = document.getElementById('nav-audit-btn');
       const addServiceBtn = document.getElementById('add-service-btn');
       const addDeptBtn = document.getElementById('add-dept-btn');
 
@@ -2453,6 +2649,7 @@
         if (queueBtn) queueBtn.style.display = 'flex';
         if (usersBtn) usersBtn.style.display = 'none';
         if (analyticsBtn) analyticsBtn.style.display = 'none';
+        if (auditBtn) auditBtn.style.display = 'none';
         if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
         if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'back_staff') {
@@ -2462,6 +2659,7 @@
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'none';
         if (analyticsBtn) analyticsBtn.style.display = 'none';
+        if (auditBtn) auditBtn.style.display = 'none';
         if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
         if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'vice_rector') {
@@ -2471,6 +2669,7 @@
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'none';
         if (analyticsBtn) analyticsBtn.style.display = 'flex';
+        if (auditBtn) auditBtn.style.display = 'flex';
         if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
         if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
       } else if (role === 'office_head') {
@@ -2481,6 +2680,7 @@
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'flex';
         if (analyticsBtn) analyticsBtn.style.display = 'flex';
+        if (auditBtn) auditBtn.style.display = 'flex';
         if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
         if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
       } else {
@@ -2491,6 +2691,7 @@
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'flex';
         if (analyticsBtn) analyticsBtn.style.display = 'flex';
+        if (auditBtn) auditBtn.style.display = 'flex';
         if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
         if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
       }
@@ -5674,7 +5875,222 @@
       showToast("Tahliliy hisobot Excel (CSV) fayli muvaffaqiyatli yuklab olindi!", "success");
     }
 
-    // 14. Page Initialization with Hash Recovery
+    // 15. Centralized Audit Logs Management System
+    let auditLogsData = [];
+
+    async function loadAuditLogs() {
+      const entityFilter = document.getElementById('audit-entity-filter');
+      const actionFilter = document.getElementById('audit-action-filter');
+      const searchInput = document.getElementById('audit-search-input');
+
+      const entityVal = entityFilter ? entityFilter.value.trim() : '';
+      const actionVal = actionFilter ? actionFilter.value.trim() : '';
+      const searchVal = searchInput ? searchInput.value.trim() : '';
+
+      const btn = document.getElementById('refresh-audit-btn');
+      const icon = document.getElementById('refresh-audit-icon');
+      if (btn) btn.disabled = true;
+      if (icon) icon.classList.add('animate-spin');
+
+      try {
+        const queryParams = new URLSearchParams();
+        queryParams.set('limit', '100');
+        if (entityVal) queryParams.set('entity_type', entityVal);
+        if (actionVal) queryParams.set('action', actionVal);
+        if (searchVal) queryParams.set('search', searchVal);
+
+        const resp = await fetch(`/api/v1/audit-logs?${queryParams.toString()}`, {
+          headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+        });
+
+        if (!resp.ok) {
+          if (resp.status === 403) {
+            showToast("Audit jurnali faqat Admin, Boshliq va Prorektor uchun ochiq.", "warning");
+          } else {
+            showToast("Audit jurnalini yuklab bo'lmadi.", "error");
+          }
+          return;
+        }
+
+        const data = await resp.json();
+        auditLogsData = data || [];
+
+        // 1. Stat kartalarini hisoblash
+        updateAuditStats(auditLogsData);
+
+        // 2. Jadvalni chizish
+        renderAuditLogsTable(auditLogsData);
+
+      } catch (err) {
+        console.error("Audit logs error:", err);
+        showToast("Audit loglarini yuklashda xatolik yuz berdi.", "error");
+      } finally {
+        if (btn) btn.disabled = false;
+        if (icon) icon.classList.remove('animate-spin');
+      }
+    }
+
+    function updateAuditStats(logs) {
+      const totalEl = document.getElementById('audit-stat-total');
+      const authEl = document.getElementById('audit-stat-auth');
+      const appealsEl = document.getElementById('audit-stat-appeals');
+      const queueEl = document.getElementById('audit-stat-queue');
+
+      const total = logs.length;
+      let authCount = 0;
+      let appealsCount = 0;
+      let queueCount = 0;
+
+      logs.forEach(l => {
+        const ent = (l.entity_type || '').toLowerCase();
+        if (ent === 'auth' || ent === 'user' || ent === 'role') authCount++;
+        else if (ent === 'appeal') appealsCount++;
+        else if (ent === 'appointment' || ent === 'service' || ent === 'department') queueCount++;
+      });
+
+      if (totalEl) totalEl.innerText = total.toLocaleString();
+      if (authEl) authEl.innerText = authCount.toLocaleString();
+      if (appealsEl) appealsEl.innerText = appealsCount.toLocaleString();
+      if (queueEl) queueEl.innerText = queueCount.toLocaleString();
+    }
+
+    function renderAuditLogsTable(logs) {
+      const tbody = document.getElementById('audit-logs-table-body');
+      if (!tbody) return;
+
+      if (!logs || logs.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" class="p-8 text-center text-xs font-sans text-slate-500">
+              Ushbu filtr bo'yicha hech qanday audit yozuvi topilmadi.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      const rows = logs.map(l => {
+        // Date formatting
+        let dateStr = '—';
+        if (l.created_at) {
+          try {
+            const d = new Date(l.created_at);
+            dateStr = d.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
+                      d.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          } catch(e) {
+            dateStr = l.created_at;
+          }
+        }
+
+        // Action badge styling
+        const act = (l.action || '').toUpperCase();
+        let actClass = 'bg-slate-800 text-slate-300 border-slate-700';
+        if (act.includes('LOGIN')) actClass = 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20';
+        else if (act.includes('CREATE')) actClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+        else if (act.includes('UPDATE') || act.includes('RESOLVE')) actClass = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
+        else if (act.includes('DISPUTE') || act.includes('REJECT')) actClass = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+        else if (act.includes('CALL')) actClass = 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+        else if (act.includes('COMPLETE')) actClass = 'bg-teal-500/10 text-teal-400 border-teal-500/20';
+
+        // Entity formatting
+        const ent = escapeHtml(l.entity_type || '—');
+        const entId = l.entity_id ? ` <span class="text-slate-500 font-mono text-[10px]">#${escapeHtml(String(l.entity_id))}</span>` : '';
+
+        // User formatting
+        const userName = escapeHtml(l.user_full_name || 'Tizim / Noma\'lum');
+        const userRole = l.user_role ? `<span class="px-1.5 py-0.5 rounded text-[9px] font-sans uppercase font-bold bg-slate-800 text-slate-400 border border-slate-700 ml-1.5">${escapeHtml(l.user_role)}</span>` : '';
+
+        // IP address
+        const ip = escapeHtml(l.ip_address || '—');
+
+        // Details / Changes formatting
+        let detailsText = '';
+        if (l.changes) {
+          try {
+            const parsed = typeof l.changes === 'string' ? JSON.parse(l.changes) : l.changes;
+            const keys = Object.keys(parsed);
+            if (keys.length > 0) {
+              detailsText = keys.map(k => `<span class="text-slate-400">${escapeHtml(k)}:</span> <span class="text-slate-200">${escapeHtml(String(parsed[k]))}</span>`).join(', ');
+            }
+          } catch(e) {
+            detailsText = escapeHtml(String(l.changes));
+          }
+        }
+        if (!detailsText) detailsText = '<span class="text-slate-600 italic">Qo\'shimcha tafsilot yo\'q</span>';
+
+        return `
+          <tr class="hover:bg-slate-800/30 transition">
+            <td class="p-3 text-slate-400 whitespace-nowrap">${dateStr}</td>
+            <td class="p-3 font-sans font-medium text-white whitespace-nowrap">${userName}${userRole}</td>
+            <td class="p-3 text-center whitespace-nowrap">
+              <span class="inline-block px-2.5 py-1 rounded-lg text-[10px] font-extrabold border uppercase ${actClass}">
+                ${escapeHtml(act)}
+              </span>
+            </td>
+            <td class="p-3 whitespace-nowrap">
+              <span class="px-2 py-0.5 rounded bg-slate-800/80 border border-slate-700/60 text-slate-300">${ent}</span>${entId}
+            </td>
+            <td class="p-3 text-slate-400 font-mono text-[10px] whitespace-nowrap">${ip}</td>
+            <td class="p-3 text-slate-300 font-sans text-xs max-w-xs sm:max-w-md truncate" title="${escapeHtml(typeof l.changes === 'object' ? JSON.stringify(l.changes) : String(l.changes || ''))}">
+              ${detailsText}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      tbody.innerHTML = rows;
+    }
+
+    function exportAuditLogsToCsv() {
+      if (!auditLogsData || auditLogsData.length === 0) {
+        showToast("Eksport qilish uchun audit ma'lumotlari mavjud emas.", "warning");
+        return;
+      }
+
+      let csv = "\uFEFF"; // UTF-8 BOM
+      csv += `"ID","Sana va vaqt","Foydalanuvchi","Rol","Amal (Action)","Obyekt turi","Obyekt ID","IP manzil","Tafsilotlar"\n`;
+
+      auditLogsData.forEach(l => {
+        let dateStr = l.created_at || '';
+        try {
+          const d = new Date(l.created_at);
+          dateStr = d.toISOString().replace('T', ' ').slice(0, 19);
+        } catch(e) {}
+
+        let changesStr = '';
+        if (l.changes) {
+          changesStr = typeof l.changes === 'string' ? l.changes : JSON.stringify(l.changes);
+        }
+
+        const row = [
+          l.id || '',
+          dateStr,
+          (l.user_full_name || '').replace(/"/g, '""'),
+          (l.user_role || '').replace(/"/g, '""'),
+          (l.action || '').replace(/"/g, '""'),
+          (l.entity_type || '').replace(/"/g, '""'),
+          l.entity_id || '',
+          (l.ip_address || '').replace(/"/g, '""'),
+          changesStr.replace(/"/g, '""')
+        ];
+        csv += `"${row.join('","')}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      const safeDate = new Date().toISOString().slice(0, 10);
+      link.setAttribute("download", `Registrator_Ofisi_Audit_Jurnali_${safeDate}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      showToast("Audit jurnali CSV formatida muvaffaqiyatli yuklab olindi!", "success");
+    }
+
+    // 16. Page Initialization with Hash Recovery
     window.addEventListener('DOMContentLoaded', async () => {
       initNotifications();
       await loadCurrentUserProfile();

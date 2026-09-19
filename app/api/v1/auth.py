@@ -12,6 +12,7 @@ from app.schemas import (
     HemisRefreshRequest, UserOut, TelegramConnectInfo
 )
 from app.services.hemis_client import HemisClient
+from app.services.audit_service import AuditService
 from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Autentifikatsiya"])
@@ -47,6 +48,15 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
             data={"sub": str(user.id), "role": user.role.value},
             expires_delta=timedelta(minutes=expire_minutes)
         )
+        await AuditService.log(
+            db=db,
+            entity_type="auth",
+            entity_id=user.id,
+            action="login",
+            user_id=user.id,
+            details=f"Tizimga muvaffaqiyatli kirdi: {user.full_name} ({user.role.value})"
+        )
+        await db.commit()
         return TokenResponse(
             access_token=token,
             token_type="bearer",

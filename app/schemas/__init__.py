@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, computed_field
 from app.models import (
     UserRole, DepartmentType, ResolutionMode, AppealStatus, AppointmentStatus
 )
@@ -376,5 +376,29 @@ class EducationFormPolicyOut(BaseModel):
 
 class EducationFormPolicyUpdate(BaseModel):
     allowed_forms: List[str]
+
+
+# Audit Log Schemas (Tizim audit jurnali)
+class AuditLogOut(BaseModel):
+    id: int
+    user_id: Optional[int] = None
+    entity_type: str
+    entity_id: int
+    action: str
+    details: Optional[str] = None
+    created_at: datetime
+    user: Optional[UserOut] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @computed_field
+    @property
+    def user_full_name(self) -> Optional[str]:
+        return self.user.full_name if self.user else None
+
+    @computed_field
+    @property
+    def user_role(self) -> Optional[str]:
+        return self.user.role.value if (self.user and self.user.role) else None
 
 

@@ -10,6 +10,7 @@ from app.schemas import AppointmentBook, AppointmentComplete, AppointmentOut
 import asyncio
 from app.services.queue_service import QueueService
 from app.services.telegram_service import TelegramService
+from app.services.audit_service import AuditService
 from app.api.deps import get_current_user, require_role
 
 router = APIRouter(prefix="/appointments", tags=["Elektron navbat (Kelib / Uchrashib hal etish)"])
@@ -187,6 +188,15 @@ async def call_appointment(
             window_number=appointment.window_number
         ))
 
+    await AuditService.log(
+        db=db,
+        entity_type="appointment",
+        entity_id=appointment.id,
+        action="appointment_called",
+        user_id=current_user.id,
+        details=f"Talon chaqirildi: {appointment.ticket_code} (Darcha: {appointment.window_number})"
+    )
+
     return appointment
 
 
@@ -209,7 +219,18 @@ async def complete_appointment(
         .options(selectinload(Appointment.service), selectinload(Appointment.student))
         .where(Appointment.id == appointment.id)
     )
-    return result.scalar_one()
+    reloaded_appointment = result.scalar_one()
+
+    await AuditService.log(
+        db=db,
+        entity_type="appointment",
+        entity_id=reloaded_appointment.id,
+        action="appointment_completed",
+        user_id=current_user.id,
+        details=f"Qabul yakunlandi: {reloaded_appointment.ticket_code}"
+    )
+
+    return reloaded_appointment
 
 
 @router.post("/{appointment_id}/cancel", response_model=AppointmentOut, summary="Navbatni bekor qilish")

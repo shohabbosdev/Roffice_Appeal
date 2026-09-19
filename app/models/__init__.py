@@ -239,12 +239,14 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    user_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    entity_type: Mapped[str] = mapped_column(String(50), nullable=False) # "appeal", "appointment", "service"
+    user_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    entity_type: Mapped[str] = mapped_column(String(50), nullable=False) # "appeal", "appointment", "service", "auth", "staff"
     entity_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    action: Mapped[str] = mapped_column(String(100), nullable=False) # "created", "status_changed", "assigned"
+    action: Mapped[str] = mapped_column(String(100), nullable=False) # "created", "status_changed", "assigned", "login", etc.
     details: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    user: Mapped[Optional["User"]] = relationship("User", foreign_keys=[user_id])
 
 
 # 8. Holiday & Calendar Model (Bayramlar va dam olish kunlari kalendari)

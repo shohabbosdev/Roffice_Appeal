@@ -14,6 +14,7 @@ from app.schemas import (
     StaffUpdate, UpdateCredentialsRequest, ServiceOut, StaffServiceAssignRequest
 )
 from app.api.deps import require_role, get_current_user
+from app.services.audit_service import AuditService
 
 router = APIRouter(prefix="/users", tags=["Foydalanuvchilar va rollar boshqaruvi"])
 
@@ -301,6 +302,15 @@ async def create_staff(
     db.add(new_staff)
     await db.commit()
 
+    await AuditService.log(
+        db=db,
+        entity_type="staff",
+        entity_id=new_staff.id,
+        action="staff_created",
+        user_id=current_user.id,
+        details=f"Yangi xodim qo'shildi: {new_staff.full_name} ({new_staff.role.value})"
+    )
+
     query = (
         select(User)
         .options(selectinload(User.department), selectinload(User.assigned_services))
@@ -398,6 +408,16 @@ async def update_user_role(
     user.role = data.role
     await db.commit()
     await db.refresh(user)
+
+    await AuditService.log(
+        db=db,
+        entity_type="staff",
+        entity_id=user.id,
+        action="role_updated",
+        user_id=current_user.id,
+        details=f"Xodim roli yangilandi: {user.full_name} -> {data.role.value}"
+    )
+
     return user
 
 
@@ -474,6 +494,15 @@ async def update_my_credentials(
 
     await db.commit()
     await db.refresh(current_user)
+
+    await AuditService.log(
+        db=db,
+        entity_type="auth",
+        entity_id=current_user.id,
+        action="credentials_updated",
+        user_id=current_user.id,
+        details=f"Hisob ma'lumotlari yangilandi: {current_user.username}"
+    )
 
     # Yangi token generatsiya qilish
     expire_minutes = settings.STAFF_TOKEN_EXPIRE_MINUTES
