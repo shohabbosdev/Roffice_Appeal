@@ -5,6 +5,34 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hujjat Haqiqiyligini Tekshirish — Registrator Ofisi | O'zMU Jizzax filiali</title>
   
+  <!-- Base Path Helper -->
+  <script>
+    (function() {
+      const isSub = window.location.pathname.startsWith('/roffice-appeal');
+      window.APP_BASE = isSub ? '/roffice-appeal' : '';
+      let b = document.querySelector('base');
+      if (!b) {
+        b = document.createElement('base');
+        document.head.prepend(b);
+      }
+      b.href = isSub ? '/roffice-appeal/' : '/';
+
+      if (window.APP_BASE) {
+        const origFetch = window.fetch;
+        window.fetch = function(inp, init) {
+          if (typeof inp === 'string' && (inp.startsWith('/api/') || inp.startsWith('/static/'))) {
+            inp = window.APP_BASE + inp;
+          }
+          return origFetch(inp, init);
+        };
+      }
+    })();
+    function apiUrl(p) {
+      if (!p || p.startsWith('http')) return p || '';
+      return (window.APP_BASE || '') + (p.startsWith('/') ? p : '/' + p);
+    }
+  </script>
+
   <!-- Fonts & Tailwind -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -203,7 +231,8 @@
     let currentQrHash = '';
 
     function getHashFromPath() {
-      const parts = window.location.pathname.split('/');
+      const cleanPath = window.location.pathname.replace(/\/+$/, '');
+      const parts = cleanPath.split('/');
       return parts[parts.length - 1] || '';
     }
 
@@ -211,13 +240,13 @@
       const hash = getHashFromPath();
       currentQrHash = hash;
 
-      if (!hash) {
+      if (!hash || hash === 'verify') {
         showInvalid();
         return;
       }
 
       try {
-        const res = await fetch(`/api/v1/verify/${encodeURIComponent(hash)}`);
+        const res = await fetch(apiUrl(`/api/v1/verify/${encodeURIComponent(hash)}`));
         if (!res.ok) {
           showInvalid();
           return;
@@ -266,7 +295,7 @@
 
     function downloadOriginalPdf() {
       if (!currentQrHash) return;
-      window.location.href = `/api/v1/verify/${encodeURIComponent(currentQrHash)}/download`;
+      window.location.href = apiUrl(`/api/v1/verify/${encodeURIComponent(currentQrHash)}/download`);
     }
 
     window.addEventListener('DOMContentLoaded', verifyDocument);
