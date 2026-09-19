@@ -50,6 +50,7 @@ class ServiceOut(BaseModel):
     sla_hours: int
     resolution_mode: ResolutionMode
     required_docs: Optional[str] = None
+    is_active: bool = True
     department: Optional[DepartmentOut] = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -175,6 +176,7 @@ class ServiceCreate(BaseModel):
 
 
 class ServiceUpdate(BaseModel):
+    code: Optional[str] = None
     title: Optional[str] = None
     description: Optional[str] = None
     department_id: Optional[int] = None

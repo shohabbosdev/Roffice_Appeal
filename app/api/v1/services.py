@@ -138,11 +138,14 @@ async def get_services(
     department_id: Optional[int] = Query(None, description="Soha/bo'lim bo'yicha filter"),
     dept_type: Optional[DepartmentType] = Query(None, description="Front yoki Back office bo'yicha filter"),
     resolution_mode: Optional[ResolutionMode] = Query(None, description="Hal etish usuli (ONLINE, APPOINTMENT, HYBRID)"),
+    include_inactive: bool = Query(False, description="Nofaol xizmatlarni ham ko'rsatish"),
     search: Optional[str] = Query(None, description="Xizmat nomi yoki kodi bo'yicha qidiruv"),
     db: AsyncSession = Depends(get_db)
 ):
     """Barcha xizmatlar katalogi (KPI ballari va SLA soatlari bilan)."""
-    query = select(Service).options(selectinload(Service.department)).where(Service.is_active == True)
+    query = select(Service).options(selectinload(Service.department))
+    if not include_inactive:
+        query = query.where(Service.is_active == True)
 
     if department_id:
         query = query.where(Service.department_id == department_id)
@@ -198,7 +201,7 @@ async def get_service(service_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(
         select(Service)
         .options(selectinload(Service.department))
-        .where(Service.id == service_id, Service.is_active == True)
+        .where(Service.id == service_id)
     )
     service = result.scalar_one_or_none()
     if not service:
@@ -216,6 +219,14 @@ async def update_service(
     svc = await db.get(Service, service_id)
     if not svc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Xizmat topilmadi.")
+
+    if data.code is not None and data.code.strip():
+        new_code = data.code.strip().upper()
+        if new_code != svc.code:
+            existing = await db.execute(select(Service).where(Service.code == new_code))
+            if existing.scalar_one_or_none():
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ushbu xizmat kodi band.")
+            svc.code = new_code
 
     if data.title is not None:
         svc.title = data.title
@@ -241,8 +252,8 @@ async def update_service(
     return result.scalar_one()
 
 
-@router.delete("/{service_id}", summary="Xizmatni arxivlash / nofaol qilish (Boshliq / Admin)")
-async def delete_service(
+@router.patch("/{service_id}/toggle-active", response_model=ServiceOut, summary="Xizmatni faol/nofaol holatga o'tkazish (Boshliq / Admin)")
+async def toggle_service_active(
     service_id: int,
     current_user: User = Depends(require_role(UserRole.OFFICE_HEAD, UserRole.ADMIN)),
     db: AsyncSession = Depends(get_db)
@@ -251,6 +262,34 @@ async def delete_service(
     if not svc:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Xizmat topilmadi.")
 
-    svc.is_active = False
+    svc.is_active = not svc.is_active
     await db.commit()
-    return {"message": "Xizmat muvaffaqiyatli nofaol qilindi."}
+    result = await db.execute(
+        select(Service).options(selectinload(Service.department)).where(Service.id == svc.id)
+    )
+    return result.scalar_one()
+
+
+@router.delete("/{service_id}", summary="Xizmatni o'chirish yoki nofaol qilish (Boshliq / Admin)")
+async def delete_service(
+    service_id: int,
+    hard_delete: bool = Query(False, description="Agar murojaatlar bo'lmasa bazadan to'liq o'chirish"),
+    current_user: User = Depends(require_role(UserRole.OFFICE_HEAD, UserRole.ADMIN)),
+    db: AsyncSession = Depends(get_db)
+):
+    svc = await db.get(Service, service_id)
+    if not svc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Xizmat topilmadi.")
+
+    from app.models import Appeal, Appointment
+    appeals_exist = (await db.execute(select(Appeal.id).where(Appeal.service_id == service_id).limit(1))).scalars().first()
+    appointments_exist = (await db.execute(select(Appointment.id).where(Appointment.service_id == service_id).limit(1))).scalars().first()
+
+    if hard_delete and not appeals_exist and not appointments_exist:
+        await db.delete(svc)
+        await db.commit()
+        return {"message": "Xizmat tizimdan butunlay o'chirildi."}
+    else:
+        svc.is_active = False
+        await db.commit()
+        return {"message": "Xizmat nofaol (arxiv) holatiga o'tkazildi."}

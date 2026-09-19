@@ -511,8 +511,9 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 <span>Yangi bo'lim yaratish</span>
               </button>
-              <button onclick="loadAllServicesAndDepts()" class="px-3 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer">
-                Yangilash
+              <button id="refresh-services-btn" onclick="loadAllServicesAndDepts()" class="px-3 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer flex items-center gap-1.5 shadow-sm hover:bg-slate-800/80">
+                <svg id="refresh-services-icon" class="w-3.5 h-3.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span id="refresh-services-text">Yangilash</span>
               </button>
             </div>
           </div>
@@ -1549,6 +1550,16 @@
       }, 4000);
     }
 
+    function extractErrorMessage(data, fallback = "Xatolik yuz berdi.") {
+      if (!data) return fallback;
+      if (typeof data.detail === 'string') return data.detail;
+      if (Array.isArray(data.detail)) {
+        return data.detail.map(e => (e.loc ? e.loc.join(' -> ') + ': ' : '') + e.msg).join('; ');
+      }
+      if (data.message) return data.message;
+      return fallback;
+    }
+
     function toggleNewStaffPasswordInput() {
       const mode = document.querySelector('input[name="new_staff_pwd_mode"]:checked')?.value;
       const wrap = document.getElementById('new-staff-custom-pwd-wrap');
@@ -1842,7 +1853,24 @@
     let allDepartmentsList = [];
 
     async function loadAllServicesAndDepts() {
-      await Promise.all([loadDepartmentsList(), loadServicesCatalog()]);
+      const btn = document.getElementById('refresh-services-btn');
+      const icon = document.getElementById('refresh-services-icon');
+      const text = document.getElementById('refresh-services-text');
+      if (btn) btn.disabled = true;
+      if (icon) icon.classList.add('animate-spin');
+      if (text) text.innerText = "Yangilanmoqda...";
+
+      try {
+        await Promise.all([loadDepartmentsList(), loadServicesCatalog()]);
+        showToast("Xizmatlar va bo'limlar katalogi muvaffaqiyatli yangilandi!", "success");
+      } catch (e) {
+        console.error("Katalog ma'lumotlarini yuklashda xatolik:", e);
+        showToast("Katalogni yangilashda xatolik yuz berdi.", "error");
+      } finally {
+        if (btn) btn.disabled = false;
+        if (icon) icon.classList.remove('animate-spin');
+        if (text) text.innerText = "Yangilash";
+      }
     }
 
     function switchServicesSubtab(tab) {
@@ -1869,7 +1897,9 @@
 
     async function loadDepartmentsList() {
       try {
-        const resp = await fetch('/api/v1/services/departments');
+        const resp = await fetch('/api/v1/services/departments', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         if (!resp.ok) return;
         allDepartmentsList = await resp.json();
 
@@ -1889,7 +1919,7 @@
         const serviceDeptSelect = document.getElementById('service-dept');
         if (serviceDeptSelect) {
           serviceDeptSelect.innerHTML = '<option value="">Bo\'limni tanlang</option>' +
-            allDepartmentsList.map(d => `<option value="${d.id}">${d.name} (${d.department_type === 'front_office' ? 'Front: ' + (d.window_number || 'Darcha') : 'Back: Ijro'})</option>`).join('');
+            allDepartmentsList.map(d => `<option value="${d.id}">${d.name} (${d.dept_type === 'front_office' ? 'Front: ' + (d.window_number || 'Darcha') : 'Back: Ijro'})</option>`).join('');
         }
 
         const newStaffDeptSelect = document.getElementById('new-staff-department');
@@ -1917,8 +1947,8 @@
           <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3 relative group hover:border-slate-700 transition">
             <div class="flex items-center justify-between">
               <span class="font-mono text-xs font-bold text-blue-400">${d.code}</span>
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${d.department_type === 'front_office' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}">
-                ${d.department_type === 'front_office' ? 'Front-ofis (Darcha)' : 'Back-ofis (Ijro)'}
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${d.dept_type === 'front_office' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}">
+                ${d.dept_type === 'front_office' ? 'Front-ofis (Darcha)' : 'Back-ofis (Ijro)'}
               </span>
             </div>
             <div>
@@ -1942,7 +1972,9 @@
 
     async function loadServicesCatalog() {
       try {
-        const resp = await fetch('/api/v1/services');
+        const resp = await fetch('/api/v1/services?include_inactive=true', {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
         if (!resp.ok) return;
         allServicesList = await resp.json();
 
@@ -1974,8 +2006,13 @@
 
       grid.innerHTML = filtered.map(s => {
         const dept = allDepartmentsList.find(d => d.id === s.department_id);
-        const deptName = dept ? dept.name : (s.department_code || "Bo'lim belgilanmagan");
-        const modeLabel = s.requires_in_person && s.can_be_resolved_online ? "Onlayn va Darcha" : (s.requires_in_person ? "Faqat Darchada" : "Faqat Onlayn");
+        const deptName = dept ? dept.name : (s.department ? s.department.name : "Bo'lim belgilanmagan");
+        
+        let modeLabel = "Onlayn va Darcha";
+        if (s.resolution_mode === 'in_person_only') modeLabel = "Faqat Darchada";
+        else if (s.resolution_mode === 'online_only') modeLabel = "Faqat Onlayn";
+
+        const isActive = s.is_active !== false;
 
         return `
           <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3.5 relative group hover:border-slate-700 transition">
@@ -1988,9 +2025,15 @@
                 <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
                   KPI: +${s.kpi_points || 3} ball
                 </span>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${s.is_active ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}">
-                  ${s.is_active ? 'Faol' : 'Nofaol'}
-                </span>
+                <button
+                  type="button"
+                  onclick="toggleServiceActive(${s.id})"
+                  title="Xizmat holatini o'zgartirish uchun bosing"
+                  class="px-2 py-0.5 rounded text-[10px] font-semibold cursor-pointer transition flex items-center gap-1 ${isActive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20'}"
+                >
+                  <span class="w-1.5 h-1.5 rounded-full ${isActive ? 'bg-emerald-400' : 'bg-rose-400'}"></span>
+                  <span>${isActive ? 'Faol' : 'Nofaol'}</span>
+                </button>
               </div>
             </div>
 
@@ -2008,10 +2051,10 @@
                 <span class="text-slate-500">Ijro formati:</span>
                 <span class="font-semibold text-white ml-1">${modeLabel}</span>
               </div>
-              ${s.required_documents ? `
+              ${s.required_docs ? `
               <div class="col-span-2 pt-1 border-t border-slate-800/60 text-[11px]">
                 <span class="text-slate-500">Hujjatlar:</span>
-                <span class="text-slate-300 ml-1">${s.required_documents}</span>
+                <span class="text-slate-300 ml-1">${s.required_docs}</span>
               </div>` : ''}
             </div>
 
@@ -2053,13 +2096,8 @@
       document.getElementById('service-title').value = s.title;
       document.getElementById('service-sla-hours').value = s.sla_hours || 24;
       document.getElementById('service-kpi-points').value = s.kpi_points || 3;
-
-      let mode = 'both';
-      if (s.requires_in_person && !s.can_be_resolved_online) mode = 'in_person_only';
-      if (!s.requires_in_person && s.can_be_resolved_online) mode = 'online_only';
-      document.getElementById('service-resolution-mode').value = mode;
-
-      document.getElementById('service-required-docs').value = s.required_documents || "";
+      document.getElementById('service-resolution-mode').value = s.resolution_mode || 'both';
+      document.getElementById('service-required-docs').value = s.required_docs || "";
       document.getElementById('service-desc').value = s.description || "";
 
       document.getElementById('service-crud-modal').classList.remove('hidden');
@@ -2081,8 +2119,10 @@
       const reqDocs = document.getElementById('service-required-docs').value.trim() || null;
       const desc = document.getElementById('service-desc').value.trim() || null;
 
-      const requiresInPerson = mode === 'in_person_only' || mode === 'both';
-      const canOnline = mode === 'online_only' || mode === 'both';
+      if (!deptId) {
+        showToast("Iltimos, xizmat biriktiriladigan bo'limni tanlang!", "error");
+        return;
+      }
 
       const payload = {
         code: code,
@@ -2090,9 +2130,8 @@
         department_id: deptId,
         sla_hours: slaHours,
         kpi_points: kpiPoints,
-        requires_in_person: requiresInPerson,
-        can_be_resolved_online: canOnline,
-        required_documents: reqDocs,
+        resolution_mode: mode,
+        required_docs: reqDocs,
         description: desc
       };
 
@@ -2114,9 +2153,30 @@
           closeServiceModal();
           loadServicesCatalog();
         } else {
-          showToast(data.detail || "Xizmatni saqlashda xatolik yuz berdi.", "error");
+          showToast(extractErrorMessage(data, "Xizmatni saqlashda xatolik yuz berdi."), "error");
         }
       } catch (err) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      }
+    }
+
+    async function toggleServiceActive(id) {
+      try {
+        const resp = await fetch(`/api/v1/services/${id}/toggle-active`, {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+          const statusText = data.is_active ? "faollashtirildi" : "nofaol qilindi";
+          showToast(`Xizmat muvaffaqiyatli ${statusText}!`, "success");
+          loadServicesCatalog();
+        } else {
+          showToast(extractErrorMessage(data, "Xizmat holatini o'zgartirishda xatolik."), "error");
+        }
+      } catch (e) {
         showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
@@ -2125,7 +2185,7 @@
       const title = decodeURIComponent(encTitle);
       const ok = await openAppConfirm({
         title: "Xizmatni o'chirish",
-        message: `Haqiqatan ham "${title}" xizmatini o'chirmoqchimisiz? Ushbu xizmat bo'yicha yangi murojaat qabul qilinmaydi.`,
+        message: `Haqiqatan ham "${title}" xizmatini o'chirmoqchimisiz? Agar ushbu xizmat bo'yicha murojaatlar bo'lmasa butunlay o'chiriladi, aks holda nofaol holatga o'tkaziladi.`,
         confirmText: "O'chirish",
         cancelText: "Bekor qilish",
         isDanger: true
@@ -2133,16 +2193,16 @@
       if (!ok) return;
 
       try {
-        const resp = await fetch(`/api/v1/services/${id}`, {
+        const resp = await fetch(`/api/v1/services/${id}?hard_delete=true`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        const data = await resp.json();
         if (resp.ok) {
-          showToast("Xizmat muvaffaqiyatli o'chirildi.", "success");
+          showToast(data.message || "Xizmat muvaffaqiyatli o'chirildi.", "success");
           loadServicesCatalog();
         } else {
-          const err = await resp.json();
-          showToast(err.detail || "Xizmatni o'chirishda xatolik yuz berdi.", "error");
+          showToast(extractErrorMessage(data, "Xizmatni o'chirishda xatolik yuz berdi."), "error");
         }
       } catch (e) {
         showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
@@ -2168,7 +2228,7 @@
       document.getElementById('dept-crud-id').value = d.id;
       document.getElementById('dept-name').value = d.name;
       document.getElementById('dept-code').value = d.code;
-      document.getElementById('dept-type').value = d.department_type || "front_office";
+      document.getElementById('dept-type').value = d.dept_type || "front_office";
       document.getElementById('dept-window').value = d.window_number || "";
       document.getElementById('dept-crud-modal').classList.remove('hidden');
     }
@@ -2188,7 +2248,7 @@
       const payload = {
         name: name,
         code: code,
-        department_type: deptType,
+        dept_type: deptType,
         window_number: windowNum
       };
 
@@ -2210,7 +2270,7 @@
           closeDeptModal();
           loadDepartmentsList();
         } else {
-          showToast(data.detail || "Bo'limni saqlashda xatolik yuz berdi.", "error");
+          showToast(extractErrorMessage(data, "Bo'limni saqlashda xatolik yuz berdi."), "error");
         }
       } catch (err) {
         showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
@@ -2233,12 +2293,12 @@
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        const data = await resp.json();
         if (resp.ok) {
           showToast("Bo'lim muvaffaqiyatli o'chirildi.", "success");
           loadDepartmentsList();
         } else {
-          const err = await resp.json();
-          showToast(err.detail || "Bo'limni o'chirishda xatolik.", "error");
+          showToast(extractErrorMessage(data, "Bo'limni o'chirishda xatolik."), "error");
         }
       } catch (e) {
         showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
