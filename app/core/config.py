@@ -35,8 +35,8 @@ class Settings(BaseSettings):
     DEFAULT_MONTHLY_KPI_TARGET: int = 150
 
     # Telegram Bot Sozlamalari
-    TELEGRAM_BOT_TOKEN: str = "YOUR_BOT_TOKEN_HERE"
-    TELEGRAM_BOT_USERNAME: str = "roffice_jizzax_bot"
+    TELEGRAM_BOT_TOKEN: str = "8634241703:AAH8P_RpdusYRUs09qJqWBTzh1JBP73AVY0"
+    TELEGRAM_BOT_USERNAME: str = "dublyajsanatirobot"
 
     # JBNUU HEMIS telefon raqamini tekshirish (Validate Phone) API
     JBNUU_VALIDATE_PHONE_URL: str = "https://student.jbnuu.uz/rest/v1/data/validate-phone"
