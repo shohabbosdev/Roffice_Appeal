@@ -117,7 +117,7 @@
             <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
             </svg>
-            <span>Mening xizmatlarim</span>
+            <span>Xizmatlar va bo'limlar</span>
           </button>
 
           <button
@@ -367,23 +367,28 @@
               </button>
             </div>
 
-            <!-- 7-Kunlik Dinamika Grafigi (Trend Chart) -->
-            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg space-y-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <!-- 7-Kunlik Dinamika Grafigi (Collapsible Trend Chart) -->
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-3.5 shadow-lg space-y-3">
+              <div class="flex items-center justify-between cursor-pointer select-none" onclick="toggleTrendsChart()">
                 <div class="text-xs font-bold text-slate-200 flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  <div class="w-6 h-6 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                   </div>
-                  <span>Oxirgi 7 kunlik murojaatlar dinamikasi</span>
+                  <span>Haftalik murojaatlar dinamikasi</span>
                 </div>
-                <div class="flex items-center gap-4 text-xs text-slate-400">
-                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-blue-500"></span> Kelib tushgan</span>
-                  <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-sm bg-emerald-500"></span> Bajarilgan</span>
+                <div class="flex items-center gap-3">
+                  <div class="hidden sm:flex items-center gap-3 text-[11px] text-slate-400">
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-blue-500"></span> Kelgan</span>
+                    <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-sm bg-emerald-500"></span> Bajarilgan</span>
+                  </div>
+                  <span id="trends-toggle-icon" class="text-slate-400 text-xs font-mono transition">▼</span>
                 </div>
               </div>
-              <!-- Mini bars container -->
-              <div id="appeals-trend-chart" class="grid grid-cols-7 gap-2 pt-4 items-end h-36 border-t border-slate-800/80">
-                <!-- Dynamically rendered -->
+              <!-- Mini bars container (Initially compact/collapsible) -->
+              <div id="appeals-trend-chart-wrap" class="hidden pt-2 border-t border-slate-800/80">
+                <div id="appeals-trend-chart" class="grid grid-cols-7 gap-2 items-end h-28">
+                  <!-- Dynamically rendered -->
+                </div>
               </div>
             </div>
           </div>
@@ -580,8 +585,6 @@
             <p class="text-xs text-slate-400">Universitetning qaysi ta'lim shakli talabalari masofaviy murojaat yo'llay olishini boshqaring. O'chirilgan ta'lim shakli talabalari faqat "Kelib hal etish" darchasidan navbat oladi.</p>
           </div>
 
-          <div id="policy-toast" class="hidden p-3.5 rounded-xl text-xs font-medium border"></div>
-
           <div id="policy-toggles-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <p class="text-xs text-slate-500">Yuklanmoqda...</p>
           </div>
@@ -589,28 +592,19 @@
 
         <!-- TAB 4: DARCHA QABULI (NAVAT) -->
         <div id="tab-queue" class="tab-pane hidden space-y-6">
-          <div>
-            <h3 class="text-lg font-bold text-white tracking-tight">Darcha qabul navbati</h3>
-            <p class="text-xs text-slate-400">Elektron talon orqali tashrif buyurgan talabalarni qabul qilish va xizmatni yakunlash</p>
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-lg font-bold text-white tracking-tight">Darcha qabul navbati</h3>
+              <p class="text-xs text-slate-400">Elektron talon orqali tashrif buyurgan talabalarni qabul qilish va xizmatni yakunlash</p>
+            </div>
+            <button onclick="loadQueueAppointments()" class="px-3 py-1.5 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer">
+              Yangilash
+            </button>
           </div>
 
-          <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-6 space-y-4">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl bg-slate-950 border border-slate-800">
-              <div>
-                <span class="inline-block px-2.5 py-0.5 rounded text-[11px] font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">TALON-TK-101</span>
-                <span class="font-semibold text-white text-sm ml-2">Qodirov Zoxidjon Tohir o'g'li</span>
-                <p class="text-xs text-slate-400 mt-1">Xizmat: Talabalik to'g'risida ma'lumotnoma berish • 1-darcha</p>
-              </div>
-              <div class="text-xs text-slate-400 font-mono">10:15 — 10:30</div>
-            </div>
-
-            <div class="flex gap-2">
-              <button onclick="showToast('Talaba qabulga chaqirildi. Darcha displeyida e\'lon berildi.', 'info')" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer">
-                Chaqirish
-              </button>
-              <button onclick="showToast('Qabul yakunlandi. Xodimga 3 KPI balli qo\'shildi.', 'success')" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 bg-slate-950 text-slate-200 text-xs font-medium transition cursor-pointer">
-                Qabulni yakunlash
-              </button>
+          <div id="queue-appointments-list" class="space-y-4">
+            <div class="p-8 text-center text-xs text-slate-500 border border-slate-800/80 rounded-2xl bg-slate-900/40">
+              Bugungi qabulga yozilgan talabalar navbati yuklanmoqda...
             </div>
           </div>
         </div>
@@ -1527,7 +1521,7 @@
 
       const titles = {
         'appeals': "Murojaatlar monitoringi",
-        'services': "Bo'lim va xizmatlar reyestri",
+        'services': "Xizmatlar va bo'limlar boshqaruvi",
         'policy': "Ta'lim shakli cheklovlari",
         'queue': "Darcha qabuli (elektron navbat)",
         'users': "Xodimlarni boshqarish va rollar biriktirish",
@@ -1546,6 +1540,7 @@
 
       if (tabId === 'appeals') loadStaffAppeals();
       if (tabId === 'services') loadAllServicesAndDepts();
+      if (tabId === 'queue') loadQueueAppointments();
       if (tabId === 'policy') loadEducationPolicy();
       if (tabId === 'users') loadStaffUsers();
       if (tabId === 'kpi') loadKPIOverview();
@@ -1734,12 +1729,20 @@
         if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'none';
         if (addServiceBtn) addServiceBtn.classList.add('hidden');
-      } else {
-        // Office head & admin
+      } else if (role === 'office_head') {
+        // Registrator ofisi boshlig'i
         if (policyBtn) policyBtn.style.display = 'flex';
         if (kpiBtn) kpiBtn.style.display = 'flex';
         if (calendarBtn) calendarBtn.style.display = 'flex';
-        if (queueBtn) queueBtn.style.display = 'flex';
+        if (queueBtn) queueBtn.style.display = 'none';
+        if (usersBtn) usersBtn.style.display = 'flex';
+        if (addServiceBtn) addServiceBtn.classList.remove('hidden');
+      } else {
+        // Tizim administratori (admin)
+        if (policyBtn) policyBtn.style.display = 'flex';
+        if (kpiBtn) kpiBtn.style.display = 'flex';
+        if (calendarBtn) calendarBtn.style.display = 'flex';
+        if (queueBtn) queueBtn.style.display = 'none';
         if (usersBtn) usersBtn.style.display = 'flex';
         if (addServiceBtn) addServiceBtn.classList.remove('hidden');
       }
@@ -2175,6 +2178,155 @@
         } else {
           const err = await resp.json();
           showToast(err.detail || "Bo'limni o'chirishda xatolik.", "error");
+        }
+      } catch (e) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      }
+    }
+
+    // 4.1. TAB: DARCHA QABUL NAVBATI (FRONT OFIS OPERATORLARI UCHUN)
+    async function loadQueueAppointments() {
+      const container = document.getElementById('queue-appointments-list');
+      if (!container) return;
+
+      container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 border border-slate-800/80 rounded-2xl bg-slate-900/40">Navbat ma\'lumotlari yuklanmoqda...</div>';
+
+      try {
+        const resp = await fetch('/api/v1/appointments', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!resp.ok) {
+          container.innerHTML = '<div class="p-8 text-center text-xs text-rose-400 border border-slate-800/80 rounded-2xl bg-slate-900/40">Navbat ma\'lumotlarini yuklab bo\'lmadi.</div>';
+          return;
+        }
+        const data = await resp.json();
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 border border-slate-800/80 rounded-2xl bg-slate-900/40">Bugungi kunda darcha qabuliga yozilgan faol talabalar navbati mavjud emas.</div>';
+          return;
+        }
+
+        const statusLabels = {
+          'booked': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">Kutilmoqda</span>',
+          'checked_in': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">Yetib kelgan (Zalda)</span>',
+          'in_service': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Qabul qilinmoqda</span>',
+          'completed': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Yakunlangan</span>',
+          'cancelled': '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-500/10 text-slate-400 border border-slate-500/20">Bekor qilingan</span>'
+        };
+
+        container.innerHTML = data.map(apt => {
+          const studentName = apt.student ? apt.student.full_name : "Talaba";
+          const serviceTitle = apt.service ? apt.service.title : "Nizomiy xizmat";
+          const deptName = apt.department ? apt.department.name : "Front-ofis";
+          const windowNum = apt.department?.window_number || "1-darcha";
+
+          return `
+            <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-3.5 hover:border-slate-700 transition">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div class="flex items-center gap-2.5">
+                  <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">${apt.ticket_number}</span>
+                  <span class="font-bold text-white text-sm">${studentName}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  ${statusLabels[apt.status] || apt.status}
+                  <span class="text-xs font-mono text-slate-300 bg-slate-950 px-2.5 py-0.5 rounded border border-slate-800">${apt.slot_time}</span>
+                </div>
+              </div>
+
+              <div class="text-xs text-slate-400">
+                Xizmat: <strong class="text-slate-200">${serviceTitle}</strong> • <span class="text-blue-400">${deptName} (${windowNum})</span>
+              </div>
+
+              <div class="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+                ${apt.status === 'booked' ? `
+                  <button onclick="handleAppointmentCheckIn(${apt.id})" class="px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition cursor-pointer">
+                    Kelganini tasdiqlash (Check-in)
+                  </button>
+                ` : ''}
+                ${apt.status === 'checked_in' || apt.status === 'in_service' ? `
+                  <button onclick="handleAppointmentComplete(${apt.id})" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-md shadow-emerald-600/20">
+                    Qabulni yakunlash (KPI)
+                  </button>
+                ` : ''}
+                ${apt.status !== 'completed' && apt.status !== 'cancelled' ? `
+                  <button onclick="handleAppointmentCancel(${apt.id})" class="px-2.5 py-1.5 rounded-xl border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+                    Bekor qilish
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        container.innerHTML = '<div class="p-8 text-center text-xs text-rose-400 border border-slate-800/80 rounded-2xl bg-slate-900/40">Server bilan aloqa o\'rnatib bo\'lmadi.</div>';
+      }
+    }
+
+    async function handleAppointmentCheckIn(id) {
+      try {
+        const resp = await fetch(`/api/v1/appointments/${id}/check-in`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (resp.ok) {
+          showToast("Talabaning kelgani tasdiqlandi (Check-in).", "success");
+          loadQueueAppointments();
+        } else {
+          const e = await resp.json();
+          showToast(e.detail || "Xatolik yuz berdi", "error");
+        }
+      } catch (e) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      }
+    }
+
+    async function handleAppointmentComplete(id) {
+      const ok = await openAppConfirm({
+        title: "Qabulni yakunlash",
+        message: "Talabaga darchada xizmat ko'rsatib bo'lindimi? Qabul yakunlangach tegishli KPI balli beriladi.",
+        confirmText: "Yakunlash",
+        cancelText: "Bekor qilish",
+        isDanger: false
+      });
+      if (!ok) return;
+
+      try {
+        const resp = await fetch(`/api/v1/appointments/${id}/complete`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (resp.ok) {
+          showToast("Darcha qabuli muvaffaqiyatli yakunlandi va KPI balli yozildi!", "success");
+          loadQueueAppointments();
+        } else {
+          const e = await resp.json();
+          showToast(e.detail || "Xatolik yuz berdi", "error");
+        }
+      } catch (e) {
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
+      }
+    }
+
+    async function handleAppointmentCancel(id) {
+      const ok = await openAppConfirm({
+        title: "Navbatni bekor qilish",
+        message: "Ushbu navbat talonini bekor qilishga ishonchingiz komilmi?",
+        confirmText: "Bekor qilish",
+        cancelText: "Ortga",
+        isDanger: true
+      });
+      if (!ok) return;
+
+      try {
+        const resp = await fetch(`/api/v1/appointments/${id}/cancel`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (resp.ok) {
+          showToast("Navbat taloni bekor qilindi.", "info");
+          loadQueueAppointments();
+        } else {
+          const e = await resp.json();
+          showToast(e.detail || "Xatolik yuz berdi", "error");
         }
       } catch (e) {
         showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
@@ -2713,6 +2865,20 @@
         desc.innerHTML = `Sizda <strong>${overdueList.length} ta</strong> murojaatning SLA muddati o'tgan va <strong>${nearOverdueList.length} ta</strong> murojaatning muddati 24 soat ichida tugaydi. Iltimos, zudlik bilan ko'rib chiqing!`;
       } else {
         banner.classList.add('hidden');
+      }
+    }
+
+    function toggleTrendsChart() {
+      const wrap = document.getElementById('appeals-trend-chart-wrap');
+      const icon = document.getElementById('trends-toggle-icon');
+      if (!wrap) return;
+      const isHidden = wrap.classList.contains('hidden');
+      if (isHidden) {
+        wrap.classList.remove('hidden');
+        if (icon) icon.innerText = '▲';
+      } else {
+        wrap.classList.add('hidden');
+        if (icon) icon.innerText = '▼';
       }
     }
 
@@ -3371,11 +3537,7 @@
         if (resp.ok) {
           currentPolicy = await resp.json();
           renderPolicyToggles(currentPolicy);
-
-          const toast = document.getElementById('policy-toast');
-          toast.className = 'p-3.5 rounded-xl text-xs font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 block';
-          toast.innerText = `Sozlama saqlandi: ${code} ta'lim shakliga onlayn murojaat ${isAllowed ? 'ruxsat berildi' : 'cheklandi'}.`;
-          setTimeout(() => { toast.classList.add('hidden'); }, 3500);
+          showToast(`Sozlama saqlandi: ${code} ta'lim shakliga onlayn murojaat ${isAllowed ? 'ruxsat berildi' : 'cheklandi'}.`, 'success');
         } else {
           const err = await resp.json();
           showToast(err.detail || "Siyosatni o'zgartirib bo'lmadi", "error");
