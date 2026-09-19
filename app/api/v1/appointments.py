@@ -51,7 +51,9 @@ async def book_appointment(
         time_slot=data.time_slot
     )
     result = await db.execute(
-        select(Appointment).options(selectinload(Appointment.service)).where(Appointment.id == appointment.id)
+        select(Appointment)
+        .options(selectinload(Appointment.service), selectinload(Appointment.student))
+        .where(Appointment.id == appointment.id)
     )
     reloaded_appointment = result.scalar_one()
 
@@ -77,7 +79,10 @@ async def get_appointments(
     db: AsyncSession = Depends(get_db)
 ):
     """Foydalanuvchi roliga mos navbatlar ro'yxati."""
-    query = select(Appointment).options(selectinload(Appointment.service))
+    query = select(Appointment).options(
+        selectinload(Appointment.service),
+        selectinload(Appointment.student)
+    )
 
     if current_user.role == UserRole.STUDENT:
         query = query.where(Appointment.student_id == current_user.id)
@@ -105,7 +110,9 @@ async def get_appointment(
 ):
     """Talon ma'lumotlari, darcha raqami va belgilangan vaqt."""
     result = await db.execute(
-        select(Appointment).options(selectinload(Appointment.service)).where(Appointment.id == appointment_id)
+        select(Appointment)
+        .options(selectinload(Appointment.service), selectinload(Appointment.student))
+        .where(Appointment.id == appointment_id)
     )
     appointment = result.scalar_one_or_none()
     if not appointment:
@@ -140,7 +147,9 @@ async def check_in_appointment(
     await db.refresh(appointment)
 
     result = await db.execute(
-        select(Appointment).options(selectinload(Appointment.service)).where(Appointment.id == appointment.id)
+        select(Appointment)
+        .options(selectinload(Appointment.service), selectinload(Appointment.student))
+        .where(Appointment.id == appointment.id)
     )
     return result.scalar_one()
 
@@ -160,7 +169,9 @@ async def complete_appointment(
         notes=data.notes
     )
     result = await db.execute(
-        select(Appointment).options(selectinload(Appointment.service)).where(Appointment.id == appointment.id)
+        select(Appointment)
+        .options(selectinload(Appointment.service), selectinload(Appointment.student))
+        .where(Appointment.id == appointment.id)
     )
     return result.scalar_one()
 
@@ -187,6 +198,8 @@ async def cancel_appointment(
         await db.refresh(appointment)
 
     result = await db.execute(
-        select(Appointment).options(selectinload(Appointment.service)).where(Appointment.id == appointment.id)
+        select(Appointment)
+        .options(selectinload(Appointment.service), selectinload(Appointment.student))
+        .where(Appointment.id == appointment.id)
     )
     return result.scalar_one()

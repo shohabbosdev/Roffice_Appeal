@@ -291,6 +291,7 @@ class AppointmentOut(BaseModel):
     notes: Optional[str] = None
     earned_kpi_points: int
     service: Optional[ServiceOut] = None
+    student: Optional[UserOut] = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -321,6 +322,7 @@ class EmployeeKPIOut(BaseModel):
     total_appointments_completed: int
     average_rating: float
     kpi_percentage: float
+    employee: Optional[UserOut] = None
 
     model_config = ConfigDict(from_attributes=True)
 

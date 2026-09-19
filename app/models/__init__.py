@@ -157,7 +157,7 @@ class EmployeeKPITarget(Base):
     kpi_percentage: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
-    employee = relationship("User", back_populates="kpi_records")
+    employee = relationship("User", back_populates="kpi_records", lazy="selectin")
 
 
 # 5. Appeal Model
@@ -196,9 +196,9 @@ class Appeal(Base):
     reassign_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     earned_kpi_points: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
-    student = relationship("User", foreign_keys=[student_id], back_populates="appeals_created")
+    student = relationship("User", foreign_keys=[student_id], back_populates="appeals_created", lazy="selectin")
     assigned_staff = relationship("User", foreign_keys=[assigned_staff_id], back_populates="appeals_assigned")
-    service = relationship("Service", back_populates="appeals")
+    service = relationship("Service", back_populates="appeals", lazy="selectin")
 
 
 # 6. Appointment Model (Kelib hal etish / Navbat)
@@ -223,8 +223,8 @@ class Appointment(Base):
     notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     earned_kpi_points: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
-    student = relationship("User", foreign_keys=[student_id], back_populates="appointments")
-    service = relationship("Service", back_populates="appointments")
+    student = relationship("User", foreign_keys=[student_id], back_populates="appointments", lazy="selectin")
+    service = relationship("Service", back_populates="appointments", lazy="selectin")
 
     __table_args__ = (
         Index("ix_appointments_date_service_slot", "appointment_date", "service_id", "time_slot"),

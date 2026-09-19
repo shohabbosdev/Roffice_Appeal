@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.models import EmployeeKPITarget, User, UserRole
 from app.schemas import EmployeeKPIOut, KPIAwardRequest
@@ -27,7 +28,10 @@ async def get_my_kpi(
 ):
     """Xodim o'zining to'plagan ballari, ijro etgan murojaatlari va foizini ko'radi."""
     kpi = await KPIService.get_or_create_monthly_target(db, current_user.id, period)
-    return kpi
+    res = await db.execute(
+        select(EmployeeKPITarget).options(selectinload(EmployeeKPITarget.employee)).where(EmployeeKPITarget.id == kpi.id)
+    )
+    return res.scalar_one()
 
 
 @router.get("/overview", response_model=List[EmployeeKPIOut], summary="Rahbariyat uchun barcha xodimlarning KPI hisoboti")
@@ -40,7 +44,12 @@ async def get_kpi_overview(
     if not period:
         period = datetime.now(timezone.utc).strftime("%Y-%m")
 
-    stmt = select(EmployeeKPITarget).where(EmployeeKPITarget.period == period).order_by(EmployeeKPITarget.kpi_percentage.desc())
+    stmt = (
+        select(EmployeeKPITarget)
+        .options(selectinload(EmployeeKPITarget.employee))
+        .where(EmployeeKPITarget.period == period)
+        .order_by(EmployeeKPITarget.kpi_percentage.desc())
+    )
     result = await db.execute(stmt)
     return result.scalars().all()
 
