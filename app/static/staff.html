@@ -338,7 +338,7 @@
           <!-- Analytics & SLA Radar Section -->
           <div class="space-y-4">
             <!-- Stats Row -->
-            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4" id="appeals-stats-row">
+            <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4" id="appeals-stats-row">
               <div class="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-900/60 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-lg space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="text-[11px] uppercase tracking-wider text-slate-400 font-bold">Jami murojaatlar</span>
@@ -381,6 +381,20 @@
                 </div>
                 <div id="stat-done" class="text-2xl sm:text-3xl font-extrabold text-emerald-400 tracking-tight">—</div>
                 <div class="text-[11px] text-emerald-400/70">Muvaffaqiyatli yakunlandi</div>
+              </div>
+
+              <div class="relative overflow-hidden bg-gradient-to-br from-purple-950/40 via-slate-900 to-rose-950/30 border border-purple-500/30 rounded-2xl p-4 sm:p-5 shadow-lg space-y-2 cursor-pointer hover:border-purple-400/60 transition group" onclick="filterDisputedAndEscalated()" title="Nizoli va eskalatsiya qilingan arizalarni saralash">
+                <div class="flex items-center justify-between">
+                  <span class="text-[11px] uppercase tracking-wider text-purple-300 font-bold">Nizo va Eskalatsiya</span>
+                  <div class="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 group-hover:scale-110 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                  </div>
+                </div>
+                <div id="stat-disputed" class="text-2xl sm:text-3xl font-extrabold text-purple-300 tracking-tight">—</div>
+                <div class="text-[11px] text-purple-400/80 font-medium flex items-center gap-1 group-hover:text-purple-300">
+                  <span>Rahbariyat ko'rigi</span>
+                  <span>➜</span>
+                </div>
               </div>
             </div>
 
@@ -519,7 +533,19 @@
                 onclick="toggleOverdueFilter()"
                 class="px-3 py-1.5 rounded-xl border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition cursor-pointer text-xs font-medium flex items-center gap-1.5"
               >
-                <span>🚨</span> <span>Faqat muddati o'tganlar</span>
+                <span>🚨</span> <span>Kechikkanlar</span>
+              </button>
+
+              <!-- Quick Disputed / Escalated Button -->
+              <button
+                type="button"
+                id="disputed-toggle-btn"
+                onclick="toggleDisputedFilter()"
+                class="px-3 py-1.5 rounded-xl border border-slate-800 text-slate-400 hover:text-purple-400 hover:border-purple-500/40 transition cursor-pointer text-xs font-medium flex items-center gap-1.5"
+                title="Faqat nizoli va prorektorga oshirilgan murojaatlarni saralash"
+              >
+                <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                <span>Nizolar va Eskalatsiyalar</span>
               </button>
 
               <span id="filtered-count-badge" class="ml-auto text-[11px] font-medium text-slate-400 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800">
@@ -1413,6 +1439,78 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PROREKTOR FINAL DECISION (Prorektorning yakuniy majburiy qarori) -->
+  <div id="prorektor-decision-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-purple-500/30 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></span>
+            <span>Prorektor yakuniy qarori</span>
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">O'quv ishlari bo'yicha prorektorning qat'iy va majburiy xulosasi</p>
+        </div>
+        <button onclick="closeProrektorDecisionModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+      </div>
+
+      <div id="prorektor-modal-appeal-info" class="p-3.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-300 space-y-2">
+        <!-- JS orqali to'ldiriladi: Talaba, e'tiroz sababi, ijrochi javobi -->
+      </div>
+
+      <form onsubmit="handleProrektorDecisionSubmit(event)" class="space-y-3">
+        <input type="hidden" id="prorektor-appeal-id">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            Prorektor yakuniy xulosasi va buyrug'i <span class="text-purple-400">*</span>
+          </label>
+          <textarea id="prorektor-final-decision-text" rows="4" required
+            class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-purple-500 resize-none"
+            placeholder="Masalan: Murojaat to'liq o'rganildi. Talabaning vajlari asosli deb topilib, tegishli tartibda ma'lumotnoma rasmiylashtirilsin..."></textarea>
+        </div>
+
+        <div class="p-3 bg-purple-950/20 border border-purple-500/20 rounded-xl text-[11px] text-purple-300">
+          ℹ️ Ushbu qaror qabul qilingach, murojaat holati avtomatik ravishda <strong>YAKUNLANDI (Completed)</strong> holatiga o'tadi va talaba hamda ijrochiga Telegram orqali xabar beriladi.
+        </div>
+
+        <div class="flex gap-2">
+          <button type="submit" id="prorektor-submit-btn" class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs transition cursor-pointer shadow-lg shadow-purple-600/20 flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Qarorni tasdiqlash va yopish</span>
+          </button>
+          <button type="button" onclick="closeProrektorDecisionModal()" class="px-4 py-2.5 rounded-xl border border-slate-800 text-slate-300 text-xs font-medium transition cursor-pointer">
+            Bekor
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: APPEAL AUDIT TRAIL (Murojaat tarixi va to'liq audit) -->
+  <div id="appeal-audit-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            <span>Murojaat xronologiyasi va Audit Trail</span>
+          </h3>
+          <p id="audit-modal-ticket-sub" class="text-xs text-slate-400 mt-0.5">Talon: #—</p>
+        </div>
+        <button onclick="closeAppealAuditModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+      </div>
+
+      <div id="audit-modal-timeline" class="space-y-3">
+        <!-- JS orqali xronologiya bloklari to'ldiriladi -->
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 flex justify-end">
+        <button type="button" onclick="closeAppealAuditModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition cursor-pointer">
+          Yopish
+        </button>
+      </div>
     </div>
   </div>
 
@@ -4014,6 +4112,7 @@
     let allStaffAppeals = [];
     let cachedStaffUsers = [];
     let filterOnlyOverdue = false;
+    let filterOnlyDisputed = false;
 
     async function loadStaffAppeals() {
       const container = document.getElementById('staff-appeals-list');
@@ -4033,10 +4132,14 @@
           const newCount = data.filter(a => a.status === 'new').length;
           const inpCount = data.filter(a => ['assigned','in_progress','clarification_needed'].includes(a.status)).length;
           const doneCount = data.filter(a => ['resolved','completed','auto_closed'].includes(a.status)).length;
+          const disputedCount = data.filter(a => ['disputed', 'escalated_prorektor', 'escalated_head'].includes(a.status)).length;
+
           document.getElementById('stat-total').textContent = total;
           document.getElementById('stat-new').textContent = newCount;
           document.getElementById('stat-inprogress').textContent = inpCount;
           document.getElementById('stat-done').textContent = doneCount;
+          const statDisputedEl = document.getElementById('stat-disputed');
+          if (statDisputedEl) statDisputedEl.textContent = disputedCount;
 
           // 2. SLA Risk Radar
           updateSlaRiskRadar(allStaffAppeals);
@@ -4167,12 +4270,34 @@
       const btn = document.getElementById('overdue-toggle-btn');
       if (btn) {
         if (filterOnlyOverdue) {
-          btn.className = "px-2.5 py-1.5 rounded-lg border border-rose-500/60 bg-rose-500/20 text-rose-300 font-bold transition cursor-pointer text-xs";
+          btn.className = "px-3 py-1.5 rounded-xl border border-rose-500/60 bg-rose-500/20 text-rose-300 font-bold transition cursor-pointer text-xs flex items-center gap-1.5";
         } else {
-          btn.className = "px-2.5 py-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition cursor-pointer text-xs font-medium";
+          btn.className = "px-3 py-1.5 rounded-xl border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition cursor-pointer text-xs font-medium flex items-center gap-1.5";
         }
       }
       applyAppealsFilter();
+    }
+
+    function toggleDisputedFilter(forceVal) {
+      filterOnlyDisputed = forceVal !== undefined ? forceVal : !filterOnlyDisputed;
+      const btn = document.getElementById('disputed-toggle-btn');
+      if (btn) {
+        if (filterOnlyDisputed) {
+          btn.className = "px-3 py-1.5 rounded-xl border border-purple-500/60 bg-purple-500/20 text-purple-300 font-bold transition cursor-pointer text-xs flex items-center gap-1.5";
+        } else {
+          btn.className = "px-3 py-1.5 rounded-xl border border-slate-800 text-slate-400 hover:text-purple-400 hover:border-purple-500/40 transition cursor-pointer text-xs font-medium flex items-center gap-1.5";
+        }
+      }
+      applyAppealsFilter();
+    }
+
+    function filterDisputedAndEscalated() {
+      filterOnlyOverdue = false;
+      const overdueBtn = document.getElementById('overdue-toggle-btn');
+      if (overdueBtn) overdueBtn.className = "px-3 py-1.5 rounded-xl border border-slate-800 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition cursor-pointer text-xs font-medium flex items-center gap-1.5";
+      toggleDisputedFilter(true);
+      const listEl = document.getElementById('staff-appeals-list');
+      if (listEl) listEl.scrollIntoView({ behavior: 'smooth' });
     }
 
     function handleAppealsFilter() {
@@ -4195,6 +4320,9 @@
           const isClosed = ['resolved','completed','auto_closed','cancelled','rejected'].includes(app.status);
           const isOverdue = app.sla_deadline_at && new Date(app.sla_deadline_at) < now;
           if (isClosed || !isOverdue) return false;
+        }
+        if (filterOnlyDisputed) {
+          if (!['disputed', 'escalated_prorektor', 'escalated_head'].includes(app.status)) return false;
         }
         if (searchQ) {
           const ticketMatch = (app.ticket_number || '').toLowerCase().includes(searchQ);
@@ -4306,8 +4434,38 @@
               </div>
             ` : ''}
 
+            ${app.dispute_reason ? `
+              <div class="p-3.5 bg-rose-950/30 border border-rose-500/40 rounded-xl space-y-1">
+                <span class="text-[10px] font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                  Talabaning e'tiroz / nizo sababi:
+                </span>
+                <p class="text-xs text-rose-200 leading-relaxed">${app.dispute_reason}</p>
+              </div>
+            ` : ''}
+
+            ${app.status === 'escalated_prorektor' ? `
+              <div class="p-3.5 bg-purple-950/30 border border-purple-500/40 rounded-xl space-y-1">
+                <span class="text-[10px] font-bold text-purple-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+                  Prorektor nazoratiga eskalatsiya qilingan:
+                </span>
+                <p class="text-xs text-purple-200 leading-relaxed">${app.clarification_message || "Rahbariyat ko'rigi va yakuniy qarori talab etiladi."}</p>
+              </div>
+            ` : ''}
+
             <!-- Action buttons -->
             <div class="flex items-center gap-2.5 pt-2 flex-wrap border-t border-slate-800/80">
+              <!-- Xronologiya va Audit Trail tugmasi -->
+              <button
+                onclick="openAppealAuditModal(${app.id})"
+                class="px-3 py-2 rounded-xl border border-slate-700 hover:border-blue-500/50 bg-slate-950 text-slate-300 hover:text-blue-300 text-xs font-medium transition cursor-pointer flex items-center gap-1.5"
+                title="Murojaatning to'liq xronologiyasi va audit ma'lumotlari"
+              >
+                <svg class="w-3.5 h-3.5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Xronologiya / Audit</span>
+              </button>
+
               ${isAdminOrHead ? `
                 <button
                   onclick="openReassignModal(${app.id})"
@@ -4336,7 +4494,19 @@
                 </button>
               ` : ''}
 
-              ${app.status === 'disputed' ? `
+              <!-- Prorektor yakuniy qarorini chiqarish tugmasi (Prorektor yoki Admin uchun) -->
+              ${['vice_rector', 'admin'].includes(userRole) && ['disputed', 'escalated_prorektor'].includes(app.status) ? `
+                <button
+                  onclick="openProrektorDecisionModal(${app.id})"
+                  class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-purple-600/20"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span>Prorektor qarorini chiqarish</span>
+                </button>
+              ` : ''}
+
+              <!-- Boshliq uchun eskalatsiya tugmasi -->
+              ${userRole === 'office_head' && app.status === 'disputed' ? `
                 <button onclick="openEscalateModal(${app.id})" class="px-3.5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-semibold transition cursor-pointer flex items-center gap-1.5 shadow-md shadow-amber-600/20">
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
                   <span>Prorektorga eskalatsiya</span>
@@ -4636,6 +4806,194 @@
       } catch (err) {
         showToast('Server bilan aloqa o\'rnatib bo\'lmadi.', 'error');
       }
+    }
+
+    // ======================================================
+    // PROREKTOR FINAL DECISION MODAL HANDLERS
+    // ======================================================
+    function openProrektorDecisionModal(id) {
+      const appeal = allStaffAppeals.find(a => a.id === id);
+      if (!appeal) return;
+
+      document.getElementById('prorektor-appeal-id').value = id;
+      document.getElementById('prorektor-final-decision-text').value = '';
+
+      const infoBox = document.getElementById('prorektor-modal-appeal-info');
+      infoBox.innerHTML = `
+        <div class="flex items-center justify-between pb-2 border-b border-slate-800">
+          <strong class="font-mono text-emerald-400">#${appeal.ticket_number}</strong>
+          <span class="text-slate-400">${appeal.service ? appeal.service.title : '—'}</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Talaba:</span>
+          <span class="text-white font-medium">${appeal.student ? appeal.student.full_name : 'Talaba'} (${appeal.student?.username || ''})</span>
+        </div>
+        <div>
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Murojaat mavzusi:</span>
+          <span class="text-slate-200">${appeal.subject}</span>
+        </div>
+        ${appeal.resolution_text ? `
+          <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+            <span class="text-emerald-400 block text-[10px] uppercase font-bold">Ijrochining dastlabki xulosasi:</span>
+            <span class="text-slate-300 text-[11px]">${appeal.resolution_text}</span>
+          </div>
+        ` : ''}
+        ${appeal.dispute_reason ? `
+          <div class="p-2.5 rounded-lg bg-rose-950/40 border border-rose-500/30 text-rose-200">
+            <span class="text-rose-400 block text-[10px] uppercase font-bold">Talaba e'tirozi (vajlari):</span>
+            <span class="text-[11px]">${appeal.dispute_reason}</span>
+          </div>
+        ` : ''}
+        ${appeal.clarification_message ? `
+          <div class="p-2.5 rounded-lg bg-purple-950/40 border border-purple-500/30 text-purple-200">
+            <span class="text-purple-300 block text-[10px] uppercase font-bold">Boshliqning eskalatsiya yozuvi:</span>
+            <span class="text-[11px]">${appeal.clarification_message}</span>
+          </div>
+        ` : ''}
+      `;
+
+      document.getElementById('prorektor-decision-modal').classList.remove('hidden');
+    }
+
+    function closeProrektorDecisionModal() {
+      document.getElementById('prorektor-decision-modal').classList.add('hidden');
+    }
+
+    async function handleProrektorDecisionSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('prorektor-appeal-id').value;
+      const decision = document.getElementById('prorektor-final-decision-text').value.trim();
+      const btn = document.getElementById('prorektor-submit-btn');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>Tasdiqlanmoqda...</span>';
+
+      try {
+        const resp = await fetch(`/api/v1/appeals/${id}/prorektor-decision`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+          body: JSON.stringify({ final_decision: decision })
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          closeProrektorDecisionModal();
+          showToast('Prorektorning yakuniy qarori tasdiqlandi va murojaat yopildi.', 'success');
+          loadStaffAppeals();
+        } else {
+          showToast(res.detail || 'Qaror chiqarishda xatolik', 'error');
+        }
+      } catch (err) {
+        showToast('Server bilan aloqa uzildi: ' + err, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Qarorni tasdiqlash va yopish</span>';
+      }
+    }
+
+    // ======================================================
+    // APPEAL AUDIT TRAIL MODAL (XRONOLOGIYA & AUDIT)
+    // ======================================================
+    function openAppealAuditModal(id) {
+      const appeal = allStaffAppeals.find(a => a.id === id);
+      if (!appeal) return;
+
+      document.getElementById('audit-modal-ticket-sub').innerText = `Talon: #${appeal.ticket_number} • ${appeal.service ? appeal.service.title : ''}`;
+      const timeline = document.getElementById('audit-modal-timeline');
+
+      const steps = [];
+
+      // Step 1: Created
+      if (appeal.created_at) {
+        steps.push({
+          title: "Murojaat yaratildi",
+          time: new Date(appeal.created_at).toLocaleString('uz-UZ'),
+          desc: `Talaba (${appeal.student ? appeal.student.full_name : 'Talaba'}) tizim orqali arizani yo'lladi.`,
+          badge: "Kelib tushdi",
+          borderCls: "border-blue-500",
+          textCls: "text-blue-400"
+        });
+      }
+
+      // Step 2: Assigned
+      if (appeal.assigned_at || appeal.assigned_staff) {
+        steps.push({
+          title: "Xodimga biriktirildi",
+          time: appeal.assigned_at ? new Date(appeal.assigned_at).toLocaleString('uz-UZ') : '—',
+          desc: `Mas'ul ijrochi: ${appeal.assigned_staff ? appeal.assigned_staff.full_name : 'Belgilanmagan'}`,
+          badge: "Ijroda",
+          borderCls: "border-amber-500",
+          textCls: "text-amber-400"
+        });
+      }
+
+      // Step 3: Resolved
+      if (appeal.resolved_at || appeal.resolution_text) {
+        steps.push({
+          title: "Ijrochi xulosasi tayyorlandi",
+          time: appeal.resolved_at ? new Date(appeal.resolved_at).toLocaleString('uz-UZ') : '—',
+          desc: appeal.resolution_text || "Xizmat ko'rsatildi.",
+          badge: "Hal etildi",
+          borderCls: "border-emerald-500",
+          textCls: "text-emerald-400"
+        });
+      }
+
+      // Step 4: Disputed
+      if (appeal.dispute_reason) {
+        steps.push({
+          title: "Talaba tomonidan e'tiroz (nizo) bildirildi",
+          time: "—",
+          desc: appeal.dispute_reason,
+          badge: "Nizoli",
+          borderCls: "border-rose-500",
+          textCls: "text-rose-400"
+        });
+      }
+
+      // Step 5: Escalated
+      if (appeal.status === 'escalated_prorektor' || (appeal.clarification_message && appeal.status === 'completed')) {
+        steps.push({
+          title: "Prorektor nazoratiga uzatildi (Eskalatsiya)",
+          time: "—",
+          desc: appeal.clarification_message || "Rahbariyat ko'rigiga yo'naltirildi.",
+          badge: "Eskalatsiya",
+          borderCls: "border-purple-500",
+          textCls: "text-purple-300"
+        });
+      }
+
+      // Step 6: Rating / Completed
+      if (appeal.status === 'completed') {
+        steps.push({
+          title: "Murojaat to'liq yakunlandi",
+          time: appeal.closed_at ? new Date(appeal.closed_at).toLocaleString('uz-UZ') : '—',
+          desc: appeal.rating ? `Talaba bahosi: ${'★'.repeat(appeal.rating)} (${appeal.rating}/5). Izoh: ${appeal.rating_comment || 'Izohsiz'}` : "Yakuniy qaror asosida yopildi.",
+          badge: "Yakunlangan",
+          borderCls: "border-emerald-500",
+          textCls: "text-emerald-400"
+        });
+      }
+
+      timeline.innerHTML = steps.map((s, idx) => `
+        <div class="relative pl-6 pb-3 border-l-2 border-slate-800 last:border-l-0">
+          <span class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-900 border-2 ${s.borderCls} flex items-center justify-center text-[9px] ${s.textCls} font-bold">
+            ${idx + 1}
+          </span>
+          <div class="space-y-1">
+            <div class="flex items-center justify-between gap-2 flex-wrap">
+              <strong class="text-xs text-white font-semibold">${s.title}</strong>
+              <span class="text-[10px] text-slate-500">${s.time}</span>
+            </div>
+            <p class="text-xs text-slate-300 leading-relaxed">${s.desc}</p>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('appeal-audit-modal').classList.remove('hidden');
+    }
+
+    function closeAppealAuditModal() {
+      document.getElementById('appeal-audit-modal').classList.add('hidden');
     }
 
     // Clarify Modal
