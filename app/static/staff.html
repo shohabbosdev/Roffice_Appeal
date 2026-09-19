@@ -34,6 +34,15 @@
       if (!p || p.startsWith('http')) return p || '';
       return (window.APP_BASE || '') + (p.startsWith('/') ? p : '/' + p);
     }
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
   </script>
 
   <!-- Favicon -->
@@ -6284,7 +6293,7 @@
       if (!token) return;
 
       try {
-        const res = await fetch(apiUrl('/system/metrics'), {
+        const res = await fetch(apiUrl('/api/v1/system/metrics'), {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) {
@@ -6411,7 +6420,7 @@
       }
 
       try {
-        const res = await fetch(apiUrl('/system/backups'), {
+        const res = await fetch(apiUrl('/api/v1/system/backups'), {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) throw new Error("Zaxiralar ro'yxatini yuklab bo'lmadi");
@@ -6491,7 +6500,7 @@
       }
 
       try {
-        const res = await fetch(apiUrl('/system/backups'), {
+        const res = await fetch(apiUrl('/api/v1/system/backups'), {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -6520,7 +6529,7 @@
 
       try {
         showToast("Zaxira fayli yuklab olinmoqda...", "info");
-        const res = await fetch(apiUrl(`/system/backups/${encodeURIComponent(filename)}/download`), {
+        const res = await fetch(apiUrl(`/api/v1/system/backups/${encodeURIComponent(filename)}/download`), {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) {
