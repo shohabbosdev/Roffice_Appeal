@@ -208,6 +208,14 @@ async def get_portal():
     return JSONResponse(status_code=404, content={"message": "Portal HTML fayli topilmadi"})
 
 
+@app.get("/favicon.ico", include_in_schema=False)
+async def get_favicon():
+    favicon_path = Path(__file__).resolve().parent / "static" / "img" / "logo.png"
+    if favicon_path.exists():
+        return FileResponse(str(favicon_path), media_type="image/png")
+    return Response(status_code=204)
+
+
 @app.get("/queue-board", tags=["Asosiy"])
 @app.get("/board", tags=["Asosiy"])
 @app.get("/display", tags=["Asosiy"])

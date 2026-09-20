@@ -151,3 +151,46 @@ async def test_assigned_services_and_kpi_award():
         assert duties_resp.status_code == 200
         catalog = duties_resp.json()
         assert len(catalog) >= 5
+
+
+@pytest.mark.asyncio
+async def test_staff_update_endpoint_and_password_reset():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        admin_login = await ac.post("/api/v1/auth/login", json={
+            "username": "admin",
+            "password": "AdminPass123!"
+        })
+        assert admin_login.status_code == 200
+        admin_headers = {"Authorization": f"Bearer {admin_login.json()['access_token']}"}
+
+        # Create temporary staff to test update and password reset
+        suffix = uuid.uuid4().hex[:6]
+        tmp_username = f"upd_staff_{suffix}"
+        c_res = await ac.post("/api/v1/users/staff", headers=admin_headers, json={
+            "username": tmp_username,
+            "full_name": "Test Update Staff",
+            "role": "back_staff"
+        })
+        assert c_res.status_code == 201
+        staff_id = c_res.json()["user"]["id"]
+
+        # 1. Update staff via PUT /api/v1/users/staff/{id}
+        update_resp = await ac.put(f"/api/v1/users/staff/{staff_id}", headers=admin_headers, json={
+            "full_name": "Updated Staff Name",
+            "reset_password": True
+        })
+        assert update_resp.status_code == 200
+        update_data = update_resp.json()
+        assert update_data["user"]["full_name"] == "Updated Staff Name"
+        assert update_data["new_temporary_password"] is not None
+        assert len(update_data["new_temporary_password"]) == 8
+        assert update_data["must_change_password"] is True
+
+        # 2. Login with newly generated temporary password
+        tmp_login = await ac.post("/api/v1/auth/login", json={
+            "username": tmp_username,
+            "password": update_data["new_temporary_password"]
+        })
+        assert tmp_login.status_code == 200
+        assert tmp_login.json()["must_change_password"] is True

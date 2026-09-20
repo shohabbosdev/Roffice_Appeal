@@ -136,6 +136,12 @@ class StaffUpdate(BaseModel):
     service_ids: Optional[List[int]] = None
 
 
+class StaffUpdateResponse(BaseModel):
+    user: UserOut
+    new_temporary_password: Optional[str] = None
+    must_change_password: Optional[bool] = None
+
+
 class StaffServiceAssignRequest(BaseModel):
     service_ids: List[int]
 

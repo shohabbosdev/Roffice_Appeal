@@ -11,7 +11,7 @@ from app.core.config import settings
 from app.models import User, UserRole, Service
 from app.schemas import (
     UserOut, UserRoleUpdate, StaffCreate, StaffCreateResponse,
-    StaffUpdate, UpdateCredentialsRequest, ServiceOut, StaffServiceAssignRequest
+    StaffUpdate, StaffUpdateResponse, UpdateCredentialsRequest, ServiceOut, StaffServiceAssignRequest
 )
 from app.api.deps import require_role, get_current_user
 from app.services.audit_service import AuditService
@@ -325,7 +325,8 @@ async def create_staff(
     )
 
 
-@router.put("/{user_id}", response_model=UserOut, summary="Xodim ma'lumotlari va xizmat vazifalarini to'liq tahrirlash")
+@router.put("/staff/{user_id}", response_model=StaffUpdateResponse, summary="Xodim ma'lumotlari va xizmat vazifalarini to'liq tahrirlash")
+@router.put("/{user_id}", response_model=StaffUpdateResponse, summary="Xodim ma'lumotlari va xizmat vazifalarini to'liq tahrirlash")
 async def update_staff(
     user_id: int,
     data: StaffUpdate,
@@ -373,15 +374,22 @@ async def update_staff(
         else:
             user.assigned_services = []
 
+    generated_pwd = None
+    must_change = None
+
     # Agar admin xodimga yangi parol belgilasa
     if data.new_password and len(data.new_password.strip()) >= 6:
         user.hashed_password = hash_password(data.new_password.strip())
         user.must_change_password = False
+        generated_pwd = data.new_password.strip()
+        must_change = False
     elif data.reset_password:
         chars = string.ascii_letters + string.digits
         new_otp = "".join(secrets.choice(chars) for _ in range(8))
         user.hashed_password = hash_password(new_otp)
         user.must_change_password = True
+        generated_pwd = new_otp
+        must_change = True
 
     await db.commit()
 
@@ -390,7 +398,13 @@ async def update_staff(
         .options(selectinload(User.department), selectinload(User.assigned_services))
         .where(User.id == user.id)
     )
-    return (await db.execute(query)).scalar_one()
+    reloaded_user = (await db.execute(query)).scalar_one()
+
+    return StaffUpdateResponse(
+        user=reloaded_user,
+        new_temporary_password=generated_pwd,
+        must_change_password=must_change
+    )
 
 
 @router.patch("/{user_id}/role", response_model=UserOut, summary="Xodimning rolini admin tomonidan o'zgartirish")
@@ -421,6 +435,7 @@ async def update_user_role(
     return user
 
 
+@router.delete("/staff/{user_id}", summary="Xodimni tizimdan o'chirish / nofaol qilish")
 @router.delete("/{user_id}", summary="Xodimni tizimdan o'chirish / nofaol qilish")
 async def delete_staff(
     user_id: int,

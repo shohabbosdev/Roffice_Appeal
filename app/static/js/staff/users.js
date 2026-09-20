@@ -374,6 +374,35 @@ async function loadDepartmentsDropdown() {
       document.getElementById('edit-staff-modal').classList.add('hidden');
     }
 
+    function generateRandomPassword(targetInputId, length = 8) {
+      const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+      const lower = "abcdefghjkmnpqrstuvwxyz";
+      const digits = "23456789";
+      const special = "#$@!%";
+      const all = upper + lower + digits + special;
+      
+      let pwd = "";
+      pwd += upper[Math.floor(Math.random() * upper.length)];
+      pwd += lower[Math.floor(Math.random() * lower.length)];
+      pwd += digits[Math.floor(Math.random() * digits.length)];
+      pwd += special[Math.floor(Math.random() * special.length)];
+      for (let i = 4; i < length; i++) {
+        pwd += all[Math.floor(Math.random() * all.length)];
+      }
+      // Tasodifiy almashtirish
+      pwd = pwd.split('').sort(() => 0.5 - Math.random()).join('');
+      
+      if (targetInputId) {
+        const input = document.getElementById(targetInputId);
+        if (input) {
+          input.value = pwd;
+          input.focus();
+        }
+      }
+      showToast("Yangi xavfsiz parol generatsiya qilindi!", "info");
+      return pwd;
+    }
+
     async function handleUpdateStaff(e) {
       e.preventDefault();
       const userId = document.getElementById('edit-staff-id').value;
@@ -418,7 +447,8 @@ async function loadDepartmentsDropdown() {
         if (resp.ok) {
           closeEditStaffModal();
           if (data.new_temporary_password) {
-            document.getElementById('temp-username-val').innerText = data.user.username;
+            const uName = (data.user && data.user.username) ? data.user.username : username;
+            document.getElementById('temp-username-val').innerText = uName;
             document.getElementById('temp-password-val').innerText = data.new_temporary_password;
             document.getElementById('temp-password-modal').classList.remove('hidden');
           } else {
