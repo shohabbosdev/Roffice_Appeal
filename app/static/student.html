@@ -601,6 +601,29 @@
     let selectedSlot = "";
     let allServices = [];
 
+    // === STANDART O'ZBEKCHA SANA VA VAQT FORMATLASH ===
+    function formatDateTime(dateInput) {
+      if (!dateInput) return '—';
+      const d = new Date(dateInput);
+      if (isNaN(d.getTime())) return '—';
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      return `${day}.${month}.${year} ${hours}:${minutes}`;
+    }
+
+    function formatDateOnly(dateInput) {
+      if (!dateInput) return '—';
+      const d = new Date(dateInput);
+      if (isNaN(d.getTime())) return '—';
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${day}.${month}.${year}`;
+    }
+
     // === GLOBAL RESPONSIVE TOAST NOTIFICATION SYSTEM ===
     function showToast(message, type = 'info') {
       let container = document.getElementById('student-toast-container');
@@ -1021,7 +1044,7 @@
         const res = await resp.json();
         if (resp.ok) {
           resBox.className = 'p-3.5 rounded-xl text-xs font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 block';
-          resBox.innerHTML = `Murojaat qabul qilindi. <strong>Talon raqami: #${res.ticket_number}</strong><br>SLA ijro muddati: ${new Date(res.sla_deadline_at).toLocaleString('uz')}`;
+          resBox.innerHTML = `Murojaat qabul qilindi. <strong>Talon raqami: #${res.ticket_number}</strong><br>SLA ijro muddati: ${formatDateTime(res.sla_deadline_at)}`;
           document.getElementById('appeal-form').reset();
           clearUploadedFile();
           localStorage.removeItem('student_appeal_draft');
@@ -1190,7 +1213,7 @@
             <div class="flex items-center justify-between flex-wrap gap-2">
               <div class="flex items-center gap-2">
                 <span class="font-mono text-xs font-bold text-blue-400 bg-blue-950/40 px-2 py-0.5 rounded-lg border border-blue-800/40">#${app.ticket_number}</span>
-                <span class="text-[11px] text-slate-400 font-mono">${app.created_at ? new Date(app.created_at).toLocaleDateString('uz-UZ') : ''}</span>
+                <span class="text-[11px] text-slate-400 font-mono">${app.created_at ? formatDateTime(app.created_at) : ''}</span>
               </div>
               <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium border ${statusBadge}">${statusLabel}</span>
             </div>
@@ -1751,7 +1774,7 @@
     function showFeedbackWall(appeal) {
       document.getElementById('fw-appeal-title').innerText = appeal.subject || "Arizangiz ko'rib chiqildi";
       document.getElementById('fw-ticket-number').innerText = appeal.ticket_number;
-      document.getElementById('fw-resolved-date').innerText = appeal.resolved_at ? new Date(appeal.resolved_at).toLocaleDateString() : '';
+      document.getElementById('fw-resolved-date').innerText = appeal.resolved_at ? formatDateTime(appeal.resolved_at) : '';
       document.getElementById('fw-resolution-text').innerText = appeal.resolution_text || "Xizmat muvaffaqiyatli ko'rsatildi.";
       
       const docsBox = document.getElementById('fw-docs-container');
@@ -1902,7 +1925,7 @@
             circleStyle = "bg-rose-500/20 border-rose-500 text-rose-400";
           }
 
-          const timeStr = step.timestamp ? new Date(step.timestamp).toLocaleString('uz-UZ', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+          const timeStr = step.timestamp ? formatDateTime(step.timestamp) : '';
 
           stepsHtml += `
             <div class="relative flex items-start gap-3.5 pl-1 group">
@@ -2106,12 +2129,12 @@
                   <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${prioBadge}">
                     ${prioTitle}
                   </span>
-                  <span class="text-[11px] text-slate-400">${new Date(a.created_at).toLocaleDateString()}</span>
+                  <span class="text-[11px] text-slate-400">${formatDateOnly(a.created_at)}</span>
                 </div>
                 ${a.is_read ? `
                   <span class="text-[11px] font-semibold text-emerald-400 flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                    <span>O'qildi ${a.read_at ? '(' + new Date(a.read_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ')' : ''}</span>
+                    <span>O'qildi ${a.read_at ? '(' + formatDateTime(a.read_at) + ')' : ''}</span>
                   </span>
                 ` : `
                   <span class="text-[11px] font-bold text-amber-400 animate-pulse">● Yangi</span>

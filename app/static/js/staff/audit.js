@@ -91,16 +91,7 @@ async function loadAuditLogs() {
 
       const rows = logs.map(l => {
         // Date formatting
-        let dateStr = '—';
-        if (l.created_at) {
-          try {
-            const d = new Date(l.created_at);
-            dateStr = d.toLocaleDateString('uz-UZ', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
-              d.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-          } catch (e) {
-            dateStr = l.created_at;
-          }
-        }
+        const dateStr = l.created_at ? formatDateTime(l.created_at) : '—';
 
         // Action badge styling
         const act = (l.action || '').toUpperCase();

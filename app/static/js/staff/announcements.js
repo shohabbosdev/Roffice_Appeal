@@ -67,7 +67,7 @@ let currentAnalyticsAnnId = null;
                 <div class="flex items-center gap-3 text-xs text-slate-400">
                   <span>Muallif: <b class="text-slate-200">${authorName}</b></span>
                   <span>•</span>
-                  <span>${new Date(a.created_at).toLocaleDateString()}</span>
+                  <span>${formatDateOnly(a.created_at)}</span>
                 </div>
               </div>
 
@@ -232,7 +232,7 @@ let currentAnalyticsAnnId = null;
 
         const ann = data.announcement;
         document.getElementById('ana-modal-title').innerText = `"${ann.title}" e'loni monitoringi`;
-        document.getElementById('ana-modal-sub').innerText = `Chiqarilgan sana: ${new Date(ann.created_at).toLocaleDateString()}`;
+        document.getElementById('ana-modal-sub').innerText = `Chiqarilgan sana: ${formatDateTime(ann.created_at)}`;
 
         document.getElementById('ana-total-students').innerText = data.total_target_students + " nafar";
         document.getElementById('ana-read-count').innerText = data.read_count + " nafar";

@@ -239,8 +239,8 @@ async function loadStaffAppeals() {
         const deadline = app.sla_deadline_at ? new Date(app.sla_deadline_at) : null;
         const isClosed = ['resolved', 'completed', 'auto_closed', 'cancelled', 'rejected'].includes(app.status);
         const isOverdue = deadline && deadline < now && !isClosed;
-        const slaStr = deadline ? deadline.toLocaleString('uz-UZ', { dateStyle: 'short', timeStyle: 'short' }) : '—';
-        const createdStr = app.created_at ? new Date(app.created_at).toLocaleString('uz-UZ', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+        const slaStr = deadline ? formatDateTime(deadline) : '—';
+        const createdStr = app.created_at ? formatDateTime(app.created_at) : '—';
 
         html += `
           <div class="bg-slate-900/80 border ${isOverdue ? 'border-rose-500/50 shadow-rose-950/20 bg-gradient-to-b from-rose-950/10 to-slate-900/80' : 'border-slate-800/90'} rounded-2xl p-5 space-y-4 shadow-lg hover:border-slate-700 transition">
@@ -804,7 +804,7 @@ async function loadStaffAppeals() {
       if (appeal.created_at) {
         steps.push({
           title: "Murojaat yaratildi",
-          time: new Date(appeal.created_at).toLocaleString('uz-UZ'),
+          time: formatDateTime(appeal.created_at),
           desc: `Talaba (${appeal.student ? appeal.student.full_name : 'Talaba'}) tizim orqali arizani yo'lladi.`,
           badge: "Kelib tushdi",
           borderCls: "border-blue-500",
@@ -816,7 +816,7 @@ async function loadStaffAppeals() {
       if (appeal.assigned_at || appeal.assigned_staff) {
         steps.push({
           title: "Xodimga biriktirildi",
-          time: appeal.assigned_at ? new Date(appeal.assigned_at).toLocaleString('uz-UZ') : '—',
+          time: appeal.assigned_at ? formatDateTime(appeal.assigned_at) : '—',
           desc: `Mas'ul ijrochi: ${appeal.assigned_staff ? appeal.assigned_staff.full_name : 'Belgilanmagan'}`,
           badge: "Ijroda",
           borderCls: "border-amber-500",
@@ -828,7 +828,7 @@ async function loadStaffAppeals() {
       if (appeal.resolved_at || appeal.resolution_text) {
         steps.push({
           title: "Ijrochi xulosasi tayyorlandi",
-          time: appeal.resolved_at ? new Date(appeal.resolved_at).toLocaleString('uz-UZ') : '—',
+          time: appeal.resolved_at ? formatDateTime(appeal.resolved_at) : '—',
           desc: appeal.resolution_text || "Xizmat ko'rsatildi.",
           badge: "Hal etildi",
           borderCls: "border-emerald-500",
@@ -864,7 +864,7 @@ async function loadStaffAppeals() {
       if (appeal.status === 'completed') {
         steps.push({
           title: "Murojaat to'liq yakunlandi",
-          time: appeal.closed_at ? new Date(appeal.closed_at).toLocaleString('uz-UZ') : '—',
+          time: appeal.closed_at ? formatDateTime(appeal.closed_at) : '—',
           desc: appeal.rating ? `Talaba bahosi: ${'★'.repeat(appeal.rating)} (${appeal.rating}/5). Izoh: ${appeal.rating_comment || 'Izohsiz'}` : "Yakuniy qaror asosida yopildi.",
           badge: "Yakunlangan",
           borderCls: "border-emerald-500",

@@ -95,10 +95,7 @@ async function loadSystemMetrics() {
         }
         if (data.uptime && data.uptime.started_at) {
           const startedAt = document.getElementById('sys-started-at');
-          try {
-            const st = new Date(data.uptime.started_at);
-            if (startedAt) startedAt.innerText = `Ishga tushdi: ${st.toLocaleDateString()} ${st.toLocaleTimeString()}`;
-          } catch (e) { }
+          if (startedAt) startedAt.innerText = `Ishga tushdi: ${formatDateTime(data.uptime.started_at)}`;
         }
 
         // 6. DB Stats
@@ -148,11 +145,7 @@ async function loadSystemMetrics() {
         }
 
         tbody.innerHTML = backups.map(b => {
-          let dateStr = b.created_at || '';
-          try {
-            const d = new Date(b.created_at);
-            dateStr = `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
-          } catch (e) { }
+          const dateStr = b.created_at ? formatDateTime(b.created_at) : '—';
 
           return `
             <tr class="hover:bg-slate-800/40 transition">
