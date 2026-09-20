@@ -303,11 +303,15 @@ async function openRoleModal(roleId = null) {
   renderPermissionsMatrix(role ? (role.permissions || []) : [], isImmutable);
 
   modal.classList.remove('hidden');
+  modal.style.display = 'flex';
 }
 
 function closeRoleModal() {
   const modal = document.getElementById('role-matrix-modal');
-  if (modal) modal.classList.add('hidden');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
   currentEditingRoleId = null;
 }
 
@@ -504,6 +508,7 @@ async function openStaffPermissionsModal(userId) {
 
     renderStaffOverrideMatrix(data.role_permissions || [], data.custom_permissions || []);
     modal.classList.remove('hidden');
+    modal.style.display = 'flex';
   } catch (err) {
     console.error("Xodim huquqlari yuklanmadi:", err);
     showToast("Server bilan aloqa xatosi.", "error");
@@ -512,7 +517,10 @@ async function openStaffPermissionsModal(userId) {
 
 function closeStaffPermissionsModal() {
   const modal = document.getElementById('staff-override-modal');
-  if (modal) modal.classList.add('hidden');
+  if (modal) {
+    modal.classList.add('hidden');
+    modal.style.display = 'none';
+  }
   currentEditingStaffId = null;
 }
 
