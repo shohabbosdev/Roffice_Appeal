@@ -323,4 +323,16 @@ class AnnouncementRead(Base):
     )
 
 
+# 11. Captcha Challenge Model (Brute-Force & Bot Himoyasi)
+class CaptchaChallenge(Base):
+    __tablename__ = "captcha_challenges"
 
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)  # UUID
+    hashed_code: Mapped[str] = mapped_column(String(128), nullable=False)  # SHA-256 kichik harflarda
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    is_used: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    __table_args__ = (
+        Index("ix_captcha_expires_at", "expires_at"),
+    )

@@ -216,6 +216,47 @@
             </div>
           </div>
 
+          <!-- Captcha Security Block (Brute-force himoyasi) -->
+          <div class="space-y-2 pt-1">
+            <div class="flex items-center justify-between">
+              <label for="login-captcha-code" class="block text-xs font-semibold text-slate-300">
+                Xavfsizlik kodi <span class="text-[11px] text-blue-400 font-normal">(kichik harflarda)</span>
+              </label>
+              <button
+                type="button"
+                onclick="loadCaptcha()"
+                class="inline-flex items-center gap-1 text-[11px] text-blue-400 hover:text-blue-300 transition cursor-pointer font-medium"
+                title="Yangi captcha olish"
+              >
+                <svg id="captcha-reload-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>Yangilash</span>
+              </button>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <!-- SVG Captcha Image Container -->
+              <div id="captcha-img-box" class="h-12 w-40 flex-shrink-0 bg-slate-950 border border-slate-800 rounded-xl overflow-hidden flex items-center justify-center shadow-inner cursor-pointer" onclick="loadCaptcha()" title="Rasmni yangilash uchun bosing">
+                <span class="text-[11px] text-slate-500 animate-pulse">Yuklanmoqda...</span>
+              </div>
+
+              <!-- Input Code -->
+              <input
+                type="text"
+                id="login-captcha-code"
+                maxlength="6"
+                class="flex-1 bg-slate-950/80 border border-slate-800 rounded-xl px-3.5 py-2.5 text-sm text-center font-mono font-bold tracking-widest text-emerald-400 placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition lowercase"
+                placeholder="kod"
+                autocomplete="off"
+                autocapitalize="none"
+                spellcheck="false"
+                required
+              >
+            </div>
+            <input type="hidden" id="login-captcha-id" value="">
+          </div>
+
           <button
             type="submit"
             id="submit-btn"
@@ -258,10 +299,37 @@
       }
     }
 
+    async function loadCaptcha() {
+      const box = document.getElementById('captcha-img-box');
+      const codeInput = document.getElementById('login-captcha-code');
+      const reloadIcon = document.getElementById('captcha-reload-icon');
+      if (reloadIcon) reloadIcon.classList.add('animate-spin');
+
+      try {
+        const resp = await fetch(apiUrl('/api/v1/auth/captcha'));
+        if (resp.ok) {
+          const data = await resp.json();
+          document.getElementById('login-captcha-id').value = data.captcha_id;
+          box.innerHTML = data.captcha_svg;
+          if (codeInput) codeInput.value = '';
+        } else {
+          box.innerHTML = '<span class="text-[10px] text-rose-400 font-medium">Xatolik</span>';
+        }
+      } catch (err) {
+        box.innerHTML = '<span class="text-[10px] text-rose-400 font-medium">Tarmoq xatosi</span>';
+      } finally {
+        if (reloadIcon) {
+          setTimeout(() => reloadIcon.classList.remove('animate-spin'), 300);
+        }
+      }
+    }
+
     async function handleUnifiedLogin(e) {
       e.preventDefault();
       const username = document.getElementById('login-username').value.trim();
       const password = document.getElementById('login-password').value;
+      const captchaId = document.getElementById('login-captcha-id').value;
+      const captchaCode = document.getElementById('login-captcha-code').value.trim().toLowerCase();
       const alertBox = document.getElementById('login-alert');
       const btn = document.getElementById('submit-btn');
 
@@ -279,7 +347,12 @@
         const resp = await fetch(apiUrl('/api/v1/auth/login'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
+          body: JSON.stringify({
+            username: username,
+            password: password,
+            captcha_id: captchaId || null,
+            captcha_code: captchaCode || null
+          })
         });
         const data = await resp.json();
 
@@ -301,10 +374,13 @@
             }
           }, 350);
         } else {
+          // Xatolikda captchani darhol yangilash (bir martalik xavfsizlik)
+          loadCaptcha();
           alertBox.className = 'mb-5 p-3.5 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
           alertBox.innerText = data.detail || "Foydalanuvchi nomi yoki parol noto'g'ri.";
         }
       } catch (err) {
+        loadCaptcha();
         alertBox.className = 'mb-5 p-3.5 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
         alertBox.innerText = "Server bilan aloqa o'rnatib bo'lmadi. Tarmoqni tekshiring.";
       } finally {
@@ -317,6 +393,9 @@
         `;
       }
     }
+
+    // Sahifa ochilganda Captcha yuklash
+    document.addEventListener('DOMContentLoaded', loadCaptcha);
   </script>
 </body>
 </html>

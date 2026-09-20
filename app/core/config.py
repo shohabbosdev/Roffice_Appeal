@@ -47,6 +47,11 @@ class Settings(BaseSettings):
     MAX_UPLOAD_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
     ALLOWED_EXTENSIONS: List[str] = [".pdf", ".png", ".jpg", ".jpeg", ".doc", ".docx"]
 
+    # Captcha xavfsizlik sozlamalari (Brute-force va Bot himoyasi)
+    CAPTCHA_ENABLED: bool = True
+    CAPTCHA_TTL_SECONDS: int = 120
+    TESTING: bool = False
+
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 

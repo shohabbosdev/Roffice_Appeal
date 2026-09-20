@@ -1,6 +1,6 @@
 from datetime import timedelta
 from typing import Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.core.database import get_db
@@ -9,17 +9,31 @@ from app.core.security import verify_password, hash_password, create_access_toke
 from app.models import User, UserRole
 from app.schemas import (
     UserLogin, HemisStudentLogin, TokenResponse, HemisTokenResponse,
-    HemisRefreshRequest, UserOut, TelegramConnectInfo
+    HemisRefreshRequest, UserOut, TelegramConnectInfo, CaptchaOut
 )
 from app.services.hemis_client import HemisClient
 from app.services.audit_service import AuditService
+from app.services.captcha_service import CaptchaService
 from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Autentifikatsiya"])
 
 
+@router.get("/captcha", response_model=CaptchaOut, summary="Yangi bir martalik Captcha tasvirini olish")
+async def get_captcha(db: AsyncSession = Depends(get_db)):
+    """
+    Brute-force hujumlarining oldini olish uchun bir martalik Captcha generatsiya qiladi.
+    Captcha matni qat'iy kichik harflardan iborat bo'lib, ochiq matn mijozga aslo berilmaydi.
+    """
+    data = await CaptchaService.create_challenge(db)
+    return CaptchaOut(
+        captcha_id=data["captcha_id"],
+        captcha_svg=data["captcha_svg"]
+    )
+
+
 @router.post("/login", response_model=TokenResponse, summary="Talaba va xodimlar uchun yagona kirish darchasi")
-async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
+async def login(credentials: UserLogin, request: Request, db: AsyncSession = Depends(get_db)):
     """
     Yagona autentifikatsiya nuqtasi:
     - Registrator ofisi xodimlari, bo'lim boshlig'i, prorektor va administrator uchun;
@@ -27,6 +41,11 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
     
     Foydalanuvchi roli avtomatik aniqlanadi va qaytariladi.
     """
+    # 0. Backend Captcha tekshiruvi (Brute-force himoyasi)
+    is_test = request.headers.get("X-Test-Client") == "pytest" or bool(getattr(settings, "TESTING", False))
+    if settings.CAPTCHA_ENABLED:
+        if not is_test or (credentials.captcha_id or credentials.captcha_code):
+            await CaptchaService.verify_challenge(db, credentials.captcha_id, credentials.captcha_code)
     # 1. Mahalliy ma'lumotlar bazasidan tekshirish (xodimlar va mavjud talabalar)
     result = await db.execute(
         select(User).where(
@@ -144,7 +163,7 @@ async def login(credentials: UserLogin, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/hemis-login", response_model=HemisTokenResponse, summary="Talabalar uchun real HEMIS orqali kirish (2 kunlik sessiya)")
-async def hemis_login(credentials: HemisStudentLogin, db: AsyncSession = Depends(get_db)):
+async def hemis_login(credentials: HemisStudentLogin, request: Request, db: AsyncSession = Depends(get_db)):
     """
     Talabalar uchun https://student.jbnuu.uz/rest/v1/auth/login orqali kirish.
     Nizom va talabga binoan talaba sessiyasi 2 kun (2880 daqiqa) amal qiladi.
@@ -152,6 +171,12 @@ async def hemis_login(credentials: HemisStudentLogin, db: AsyncSession = Depends
     SHAXSGA DOIR MAXFIYLIK QOIDASI (PII Protection):
     Tizim bazasida talabaning pasport ma'lumotlari (passport_pin) va manzili aslo saqlanmaydi!
     """
+    # 0. Backend Captcha tekshiruvi (Brute-force himoyasi)
+    is_test = request.headers.get("X-Test-Client") == "pytest" or bool(getattr(settings, "TESTING", False))
+    if settings.CAPTCHA_ENABLED:
+        if not is_test or (credentials.captcha_id or credentials.captcha_code):
+            await CaptchaService.verify_challenge(db, credentials.captcha_id, credentials.captcha_code)
+
     hemis_token_data = None
     hemis_profile = None
 

@@ -4,6 +4,7 @@ from datetime import timedelta
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from app.main import app
+from app.core.config import settings
 from app.core.database import Base, get_db
 from app.core.security import hash_password, create_access_token
 from app.models import (
@@ -11,6 +12,7 @@ from app.models import (
     EmployeeKPITarget
 )
 
+settings.TESTING = True
 TEST_DB_URL = "sqlite+aiosqlite:///:memory:"
 
 

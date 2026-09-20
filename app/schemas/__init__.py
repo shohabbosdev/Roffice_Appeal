@@ -10,11 +10,20 @@ from app.models import (
 class UserLogin(BaseModel):
     username: str
     password: str
+    captcha_id: Optional[str] = None
+    captcha_code: Optional[str] = None
 
 
 class HemisStudentLogin(BaseModel):
     hemis_login: str
     password: str
+    captcha_id: Optional[str] = None
+    captcha_code: Optional[str] = None
+
+
+class CaptchaOut(BaseModel):
+    captcha_id: str
+    captcha_svg: str
 
 
 class TokenResponse(BaseModel):
