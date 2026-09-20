@@ -331,8 +331,6 @@ async function loadExecutiveAnalytics() {
 
       showToast("Tahliliy hisobot formatlangan Excel (.xls) fayliga muvaffaqiyatli yuklab olindi!", "success");
     }
-    window.exportAnalyticsExcel = exportAnalyticsCsv;
-    window.exportAnalyticsCsv = exportAnalyticsCsv;
-
-    // 15. Centralized Audit Logs Management System
-    let auditLogsData = [];
+    window.exportExecutiveAnalyticsToExcel = exportExecutiveAnalyticsToExcel;
+    window.exportAnalyticsExcel = exportExecutiveAnalyticsToExcel;
+    window.exportAnalyticsCsv = exportExecutiveAnalyticsToExcel;

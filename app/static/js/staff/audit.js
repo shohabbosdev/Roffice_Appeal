@@ -1,4 +1,6 @@
-async function loadAuditLogs() {
+    let auditLogsData = [];
+
+    async function loadAuditLogs() {
       const entityFilter = document.getElementById('audit-entity-filter');
       const actionFilter = document.getElementById('audit-action-filter');
       const searchInput = document.getElementById('audit-search-input');

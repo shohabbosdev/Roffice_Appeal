@@ -1606,21 +1606,27 @@
           </div>
 
           <!-- Admin-Only: Telegram Bot & HEMIS Integratsiya Sozlamalari -->
-          <div id="admin-integration-settings-card" class="hidden bg-slate-900/80 rounded-2xl border border-indigo-500/30 p-5 sm:p-6 shadow-xl space-y-4">
+          <div id="admin-integration-settings-card"
+            class="hidden bg-slate-900/80 rounded-2xl border border-indigo-500/30 p-5 sm:p-6 shadow-xl space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
               <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold text-lg">
+                <div
+                  class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold text-lg">
                   🤖
                 </div>
                 <div>
                   <h4 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
                     Telegram Bot va HEMIS Integratsiya Sozlamalari
-                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase">Faqat Asosiy Administrator</span>
+                    <span
+                      class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase">Faqat
+                      Asosiy Administrator</span>
                   </h4>
-                  <p class="text-xs text-slate-400 mt-0.5">Ushbu sozlamalar to'g'ridan-to'g'ri ma'lumotlar bazasida xavfsiz shifrlangan holda saqlanadi.</p>
+                  <p class="text-xs text-slate-400 mt-0.5">Ushbu sozlamalar to'g'ridan-to'g'ri ma'lumotlar bazasida
+                    xavfsiz shifrlangan holda saqlanadi.</p>
                 </div>
               </div>
-              <span id="tg-bot-status-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 self-start sm:self-auto">
+              <span id="tg-bot-status-badge"
+                class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 self-start sm:self-auto">
                 Bot: Faol
               </span>
             </div>
@@ -1638,7 +1644,8 @@
                       class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-7 pr-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
                       placeholder="rofficejbnuubot">
                   </div>
-                  <span class="text-[10px] text-slate-500 mt-1 block">Foydalanuvchilar qidirib topishi va ulanishi uchun bot username</span>
+                  <span class="text-[10px] text-slate-500 mt-1 block">Foydalanuvchilar qidirib topishi va ulanishi uchun
+                    bot username</span>
                 </div>
 
                 <!-- Admin Telegram Chat ID -->
@@ -1649,7 +1656,8 @@
                   <input type="number" id="cfg-admin-tg-id" required
                     class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
                     placeholder="8515413686">
-                  <span class="text-[10px] text-slate-500 mt-1 block">Tizim nosozliklari, zaxira nusxalari va favqulodda xabarlar shu ID ga yuboriladi</span>
+                  <span class="text-[10px] text-slate-500 mt-1 block">Tizim nosozliklari, zaxira nusxalari va favqulodda
+                    xabarlar shu ID ga yuboriladi</span>
                 </div>
 
                 <!-- Telegram Bot Token -->
@@ -1660,7 +1668,8 @@
                   <input type="password" id="cfg-tg-bot-token"
                     class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
                     placeholder="O'zgartirish uchun yangi tokenni kiriting">
-                  <span id="cfg-tg-bot-token-hint" class="text-[10px] text-emerald-400 mt-1 block">Bazada shifrlangan holda o'rnatilgan</span>
+                  <span id="cfg-tg-bot-token-hint" class="text-[10px] text-emerald-400 mt-1 block">Bazada shifrlangan
+                    holda o'rnatilgan</span>
                 </div>
 
                 <!-- JBNUU HEMIS API Token -->
@@ -1671,7 +1680,8 @@
                   <input type="password" id="cfg-jbnuu-api-token"
                     class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
                     placeholder="O'zgartirish uchun yangi HEMIS tokenni kiriting">
-                  <span id="cfg-jbnuu-token-hint" class="text-[10px] text-emerald-400 mt-1 block">Bazada shifrlangan holda o'rnatilgan</span>
+                  <span id="cfg-jbnuu-token-hint" class="text-[10px] text-emerald-400 mt-1 block">Bazada shifrlangan
+                    holda o'rnatilgan</span>
                 </div>
               </div>
 
@@ -2663,7 +2673,8 @@
             </label>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-400 mb-1">Yoki yangi maxsus parol o'rnatish (kamida 6 belgi):</label>
+            <label class="block text-[11px] text-slate-400 mb-1">Yoki yangi maxsus parol o'rnatish (kamida 6
+              belgi):</label>
             <div class="flex items-center gap-2">
               <input type="text" id="edit-staff-new-password"
                 class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-amber-500"
@@ -3005,8 +3016,7 @@
       <script src="static/js/staff/policy.js?v=2.2.1"></script>
       <script src="static/js/staff/kpi.js?v=2.2.1"></script>
       <script src="static/js/staff/calendar.js?v=2.2.1"></script>
-      <script src="static/js/staff/analytics.js?v=2.2.1"></script>
-      <script src="static/js/staff/audit.js?v=2.2.1"></script>
+      <script src="static/js/staff/analytics.js?v=2.2.3"></script>
+      <script src="static/js/staff/audit.js?v=2.2.3"></script>
       <script src="static/js/staff/system.js?v=2.2.2"></script>
       <script src="static/js/staff/announcements.js?v=2.2.1"></script>
-      <!-- End of Document (HTML5 compliant implicit body/html closure) -->
