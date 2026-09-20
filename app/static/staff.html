@@ -83,6 +83,10 @@
     }
   </script>
   <style>
+    .hidden {
+      display: none !important;
+    }
+
     body {
       font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       -webkit-tap-highlight-color: transparent;
@@ -1404,7 +1408,7 @@
         </div>
 
         <!-- ================= TAB: SYSTEM MONITORING & BACKUPS ================= -->
-        <div id="tab-system" class="space-y-6 hidden">
+        <div id="tab-system" class="tab-pane hidden space-y-6">
           <!-- Top Info & Actions -->
           <div
             class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
@@ -1574,7 +1578,7 @@
         </div>
 
         <!-- ================= TAB: ANNOUNCEMENTS CENTER ================= -->
-        <div id="tab-announcements" class="space-y-6 hidden">
+        <div id="tab-announcements" class="tab-pane hidden space-y-6">
           <!-- Top Info & Action Button -->
           <div
             class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
@@ -1687,8 +1691,8 @@
       </form>
     </div>
   </template>
-  <div id="first-login-modal"
-    class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4"></div>
+  <div id="first-login-modal" style="display: none;"
+    class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 items-center justify-center p-4"></div>
 
   <!-- TEMPLATE: SELF-PROFILE / SECURITY (CHANGE USERNAME & PASSWORD) -->
   <template id="self-profile-template">
@@ -1753,8 +1757,8 @@
       </form>
     </div>
   </template>
-  <div id="self-profile-modal"
-    class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"></div>
+  <div id="self-profile-modal" style="display: none;"
+    class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 items-center justify-center p-4"></div>
 
   <!-- MODAL: TEMPORARY PASSWORD GENERATED (AFTER ADMIN CREATES STAFF) -->
   <div id="temp-password-modal"
@@ -4439,7 +4443,7 @@
           token = data.access_token;
           localStorage.setItem('roffice_token', token);
           localStorage.setItem('roffice_must_change_password', 'false');
-          document.getElementById('first-login-modal').classList.add('hidden');
+          closeFirstLoginModal();
           showToast("Parolingiz muvaffaqiyatli o'zgartirildi. Tizimga xush kelibsiz!", "success");
           loadCurrentUserProfile();
         } else {
@@ -4457,7 +4461,20 @@
         const tmpl = document.getElementById('first-login-template');
         if (tmpl) modal.appendChild(tmpl.content.cloneNode(true));
       }
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeFirstLoginModal() {
+      const modal = document.getElementById('first-login-modal');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
     }
 
     // 6. VOLUNTARY CREDENTIALS MODAL
@@ -4467,14 +4484,22 @@
         const tmpl = document.getElementById('self-profile-template');
         if (tmpl) modal.appendChild(tmpl.content.cloneNode(true));
       }
-      if (modal) modal.classList.remove('hidden');
+      if (modal) {
+        modal.style.display = 'flex';
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
       const alertBox = document.getElementById('self-cred-alert');
       if (alertBox) alertBox.classList.add('hidden');
     }
 
     function closeCredentialsModal() {
       const modal = document.getElementById('self-profile-modal');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
     }
 
     async function handleSelfCredentialUpdate(e) {
