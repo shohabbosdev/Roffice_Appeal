@@ -3,7 +3,8 @@ import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app
 from app.core.database import AsyncSessionLocal
-from app.models import User, Appeal, Service, Appointment
+from app.core.security import hash_password
+from app.models import User, Appeal, Service, Appointment, UserRole
 from app.services.telegram_service import TelegramService
 from app.services.telegram_bot import handle_telegram_update
 
@@ -185,4 +186,60 @@ async def test_telegram_webhook_endpoint(client: AsyncClient):
     )
     assert resp_ok.status_code == 200
     assert resp_ok.json() == {"ok": True}
+
+
+@pytest.mark.asyncio
+async def test_staff_direct_phone_contact_link_without_hemis(monkeypatch):
+    """
+    Xodim o'z telefon raqamini kiritgan bo'lsa, Telegramda kontakt yuborganida
+    HEMISga bormasdan (hatto HEMIS chaqiruvi bloklansa ham) darhol telegram_chat_id bog'lanishi kerak.
+    """
+    unique_suffix = uuid.uuid4().hex[:6]
+    staff_username = f"officer_{unique_suffix}"
+    staff_phone = f"+99890{uuid.uuid4().int % 10000000:07d}"
+
+    # Create staff in DB with phone
+    async with AsyncSessionLocal() as db:
+        staff = User(
+            username=staff_username,
+            hashed_password=hash_password("StaffPass123!"),
+            full_name="Dilshod Qodirov",
+            role=UserRole.FRONT_STAFF,
+            phone=staff_phone,
+            is_active=True
+        )
+        db.add(staff)
+        await db.commit()
+        await db.refresh(staff)
+        staff_id = staff.id
+
+    # HEMIS chaqirilmasligi kerakligini isbotlash: chaqirilsa AssertionError tashlaydi
+    async def mock_hemis_should_not_be_called(phone):
+        raise AssertionError("HEMIS API chaqirilmasligi kerak, chunki xodim mahalliy bazada mavjud!")
+
+    monkeypatch.setattr(TelegramService, "validate_phone_with_jbnuu", mock_hemis_should_not_be_called)
+
+    staff_chat_id = uuid.uuid4().int % 1000000000
+    update = {
+        "update_id": 2001,
+        "message": {
+            "message_id": 10,
+            "from": {"id": staff_chat_id, "username": f"tg_officer_{unique_suffix}"},
+            "chat": {"id": staff_chat_id},
+            "contact": {
+                "phone_number": staff_phone,
+                "user_id": staff_chat_id,
+                "first_name": "Dilshod"
+            }
+        }
+    }
+
+    await handle_telegram_update(update)
+
+    # Verify staff was instantly linked without HEMIS!
+    async with AsyncSessionLocal() as db:
+        linked_staff = await db.get(User, staff_id)
+        assert linked_staff.telegram_chat_id == staff_chat_id
+        assert linked_staff.telegram_username == f"tg_officer_{unique_suffix}"
+        assert linked_staff.telegram_connected_at is not None
 

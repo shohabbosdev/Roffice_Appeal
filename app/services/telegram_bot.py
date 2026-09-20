@@ -120,8 +120,54 @@ async def handle_telegram_update(update: dict):
 
             phone_raw = contact.get("phone_number", "")
             formatted_phone = TelegramService.format_phone_number(phone_raw)
+            digits_only = "".join(ch for ch in phone_raw if ch.isdigit())
+            last_9 = digits_only[-9:] if len(digits_only) >= 9 else digits_only
 
-            # JBNUU HEMIS tizimidan telefon raqamini tekshirish
+            # -----------------------------------------------------------------
+            # 1-BOSQICH: Eng avvalo mahalliy bazamizdagi xodimlar va foydalanuvchilarni
+            # kiritilgan telefon raqami bo'yicha to'g'ridan-to'g'ri tekshirish.
+            # Bu HEMISga qaramlikni yo'qotadi va xodimlar uchun tezkor bog'lanishni ta'minlaydi.
+            # -----------------------------------------------------------------
+            local_conditions = [
+                User.phone == formatted_phone,
+                User.phone == digits_only,
+            ]
+            if len(digits_only) >= 9:
+                local_conditions.append(User.phone.endswith(last_9))
+
+            local_user = (await db.execute(
+                select(User).where(or_(*local_conditions))
+            )).scalars().first()
+
+            if local_user:
+                local_user.telegram_chat_id = chat_id
+                local_user.telegram_username = username
+                local_user.telegram_connected_at = datetime.now(timezone.utc)
+                if not local_user.phone:
+                    local_user.phone = formatted_phone
+                await db.commit()
+
+                success_msg = (
+                    f"🎉 <b>Hurmatli {local_user.full_name}!</b>\n\n"
+                    f"Registrator ofisi axborot tizimidagi profilingiz telefon raqamingiz orqali "
+                    f"muvaffaqiyatli tasdiqlandi va botga ulandi! ✅\n\n"
+                    f"• <b>Foydalanuvchi logini:</b> {local_user.username}\n"
+                    f"• <b>Tizimdagi rolingiz:</b> {local_user.role.value}\n"
+                    f"• <b>Tasdiqlangan telefon:</b> {formatted_phone}\n\n"
+                    f"Endi barcha xizmat xabarnomalari, yangi murojaatlar, ijro statuslari va "
+                    f"navbat talonlari to'g'ridan-to'g'ri ushbu bot orqali yetkaziladi."
+                )
+                await TelegramService.send_telegram_message(
+                    chat_id=chat_id,
+                    text=success_msg,
+                    reply_markup={"remove_keyboard": True}
+                )
+                return
+
+            # -----------------------------------------------------------------
+            # 2-BOSQICH: Agar mahalliy bazada telefon topilmasa -> HEMIS API orqali
+            # universitet talabalar bazasidan tekshirish (fallback).
+            # -----------------------------------------------------------------
             res = await TelegramService.validate_phone_with_jbnuu(formatted_phone)
 
             if res.get("success") is True:
@@ -129,7 +175,7 @@ async def handle_telegram_update(update: dict):
                 emp_id_num = data.get("employee_id_number")
                 raw_id = str(data.get("id")) if data.get("id") else None
 
-                # Bazasimizdan Userni qidirish
+                # Bazamizdan talaba foydalanuvchisini qidirish
                 conditions = []
                 if emp_id_num:
                     conditions.append(User.hemis_student_id == str(emp_id_num))
@@ -176,11 +222,11 @@ async def handle_telegram_update(update: dict):
                         reply_markup={"remove_keyboard": True}
                     )
             else:
-                # HEMISda telefon topilmadi
+                # HEMISda ham, mahalliy xodimlar bazasida ham topilmadi
                 err_msg = (
-                    f"❌ Kechirasiz, <b>{formatted_phone}</b> telefon raqami universitet HEMIS "
-                    f"ma'lumotlar bazasida topilmadi.\n\n"
-                    f"Iltimos, dekanat yoki kadrlar bo'limida qayd etilgan rasmiy telefon raqamingizdan foydalaning."
+                    f"❌ Kechirasiz, <b>{formatted_phone}</b> telefon raqami Registrator ofisi "
+                    f"xodimlari ro'yxatida ham, universitet HEMIS ma'lumotlar bazasida ham topilmadi.\n\n"
+                    f"Iltimos, tizimda ro'yxatdan o'tgan yoki rasmiy telefon raqamingizdan foydalaning."
                 )
                 await TelegramService.send_telegram_message(chat_id, err_msg)
             return
