@@ -611,6 +611,8 @@
         setTimeout(() => toast.remove(), 300);
       }, 4000);
     }
+    const showNotification = showToast;
+    window.showNotification = showToast;
 
     if (!token) {
       window.location.href = '/login';
@@ -677,7 +679,7 @@
         showToast("Bildirishnomalar muvaffaqiyatli yoqildi!", "success");
         new Notification("Registrator ofisi axborot tizimi", {
           body: "Bildirishnomalar muvaffaqiyatli yoqildi. Murojaatingiz ko'rib chiqilganda sizga xabar beriladi.",
-          icon: "/favicon.ico"
+          icon: apiUrl('/static/img/logo.png')
         });
       }
     }
@@ -722,7 +724,7 @@
         initAppealDraftAutoSave();
       }
       if (tabId === 'queue') {
-        loadQueueServices();
+        loadServices();
         loadStudentAppointments();
       }
     }
@@ -909,6 +911,7 @@
         console.error("Xizmatlar xatosi:", e);
       }
     }
+    window.loadQueueServices = loadServices;
 
     async function handleFileUpload(inputEl) {
       const file = inputEl.files[0];
@@ -1784,19 +1787,19 @@
 
         if (!res.ok) {
           const err = await res.json();
-          showNotification(err.detail || "Xatolik yuz berdi", "error");
+          showToast(err.detail || "Xatolik yuz berdi", "error");
           btn.disabled = false;
           btn.innerHTML = 'Tasdiqlayman (Muammo to\'liq hal bo\'ldi)';
           return;
         }
 
-        showNotification("Murojaat tasdiqlandi va xodimga baho berildi. Rahmat!", "success");
+        showToast("Murojaat tasdiqlandi va xodimga baho berildi. Rahmat!", "success");
         const wallModal = document.getElementById('feedback-wall-modal');
         if (wallModal) wallModal.classList.add('hidden');
         pendingFwAppeal = null;
         loadStudentAppeals();
       } catch (e) {
-        showNotification("Tarmoq xatosi", "error");
+        showToast("Tarmoq xatosi", "error");
         btn.disabled = false;
         btn.innerHTML = 'Tasdiqlayman (Muammo to\'liq hal bo\'ldi)';
       }
@@ -2013,11 +2016,11 @@
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (res.ok) {
-          showNotification("E'lon bilan tanishganingiz tasdiqlandi", "success");
+          showToast("E'lon bilan tanishganingiz tasdiqlandi", "success");
           loadStudentAnnouncements();
         }
       } catch (e) {
-        showNotification("Xatolik yuz berdi", "error");
+        showToast("Xatolik yuz berdi", "error");
       }
     }
 
