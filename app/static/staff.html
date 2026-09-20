@@ -1560,28 +1560,28 @@
 
       <div id="first-login-alert" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
 
-      <form id="first-login-form" autocomplete="off" onsubmit="handleFirstLoginPasswordChange(event)" class="space-y-3">
+      <div id="first-login-box" class="space-y-3">
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Amaldagi (bir martalik) parol</label>
-          <input type="password" id="fl-current-password" autocomplete="current-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+          <input type="password" id="fl-current-password" onkeydown="if(event.key==='Enter') handleFirstLoginPasswordChange(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi login (ixtiyoriy)</label>
-          <input type="text" id="fl-new-username" autocomplete="username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Bo'sh qoldirilsa joriy login saqlanadi">
+          <input type="text" id="fl-new-username" onkeydown="if(event.key==='Enter') handleFirstLoginPasswordChange(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Bo'sh qoldirilsa joriy login saqlanadi">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi maxfiy parol (kamida 6 belgi)</label>
-          <input type="password" id="fl-new-password" autocomplete="new-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+          <input type="password" id="fl-new-password" onkeydown="if(event.key==='Enter') handleFirstLoginPasswordChange(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi parolni tasdiqlang</label>
-          <input type="password" id="fl-confirm-password" autocomplete="new-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+          <input type="password" id="fl-confirm-password" onkeydown="if(event.key==='Enter') handleFirstLoginPasswordChange(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
         </div>
 
-        <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer shadow-lg shadow-emerald-600/20">
+        <button type="button" onclick="handleFirstLoginPasswordChange(event)" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer shadow-lg shadow-emerald-600/20">
           Parolni saqlash va tizimga o'tish
         </button>
-      </form>
+      </div>
     </div>
   </div>
 
@@ -1602,33 +1602,33 @@
 
       <div id="self-cred-alert" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
 
-      <form id="self-profile-form" autocomplete="off" onsubmit="handleSelfCredentialUpdate(event)" class="space-y-3">
+      <div id="self-profile-box" class="space-y-3">
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Amaldagi maxfiy parol</label>
-          <input type="password" id="self-current-password" autocomplete="current-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" required>
+          <input type="password" id="self-current-password" onkeydown="if(event.key==='Enter') handleSelfCredentialUpdate(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" required>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi foydalanuvchi logini (ixtiyoriy)</label>
-          <input type="text" id="self-new-username" autocomplete="username" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Joriy login o'rniga yangisi">
+          <input type="text" id="self-new-username" onkeydown="if(event.key==='Enter') handleSelfCredentialUpdate(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Joriy login o'rniga yangisi">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi parol (kamida 6 belgi)</label>
-          <input type="password" id="self-new-password" autocomplete="new-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="O'zgartirish kerak bo'lsa kiriting">
+          <input type="password" id="self-new-password" onkeydown="if(event.key==='Enter') handleSelfCredentialUpdate(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="O'zgartirish kerak bo'lsa kiriting">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi parolni takrorlang</label>
-          <input type="password" id="self-confirm-password" autocomplete="new-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Yangi parolni takrorlang">
+          <input type="password" id="self-confirm-password" onkeydown="if(event.key==='Enter') handleSelfCredentialUpdate(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Yangi parolni takrorlang">
         </div>
 
         <div class="flex gap-2 pt-2">
-          <button type="submit" class="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition cursor-pointer">
+          <button type="button" onclick="handleSelfCredentialUpdate(event)" class="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition cursor-pointer">
             O'zgarishlarni saqlash
           </button>
           <button type="button" onclick="closeCredentialsModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer">
             Bekor qilish
           </button>
         </div>
-      </form>
+      </div>
     </div>
   </div>
 
