@@ -389,13 +389,13 @@ class AppealService:
         for app in appeals:
             app.status = AppealStatus.AUTO_CLOSED
             app.closed_at = now
-            # Award points to staff for auto-closed tickets with default rating
+            # Xodim mehnati uchun kpi_points beriladi, biroq talaba baholamaganligi sababli sun'iy 5 baho qo'shilmaydi (rating=None)
             if app.assigned_staff_id:
                 await KPIService.record_completed_service(
                     db=db,
                     employee_id=app.assigned_staff_id,
                     kpi_points=app.earned_kpi_points,
-                    rating=5,
+                    rating=None,
                     is_appointment=False
                 )
             count += 1

@@ -52,14 +52,20 @@ async def get_current_user(
     query = (
         select(User)
         .options(selectinload(User.department), selectinload(User.assigned_services))
-        .where(User.id == user_id, User.is_active == True)
+        .where(User.id == user_id)
     )
     result = await db.execute(query)
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Foydalanuvchi topilmadi yoki bloklangan.",
+            detail="Foydalanuvchi topilmadi.",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Foydalanuvchi hisobi faol emas yoki ma'muriyat tomonidan bloklangan.",
             headers={"WWW-Authenticate": "Bearer"}
         )
 

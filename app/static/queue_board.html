@@ -525,6 +525,18 @@
       bannerEl.addEventListener('click', unlockAudio);
     }
 
+    // Global listener: Ekranning istalgan joyiga bosilganda Web Audio API avtomatik unlock bo'ladi
+    ['click', 'touchstart', 'keydown'].forEach(evt => {
+      document.addEventListener(evt, function onFirstInteraction() {
+        initAudioContext();
+        const banner = document.getElementById('audio-unlock-banner');
+        if (banner) {
+          banner.style.opacity = '0';
+          setTimeout(() => banner.remove(), 300);
+        }
+      }, { once: true });
+    });
+
     // 7. FULLSCREEN TOGGLE
     function toggleFullScreen() {
       if (!document.fullscreenElement) {

@@ -219,10 +219,18 @@ async def run_telegram_bot_poller():
                             await handle_telegram_update(update)
                         except Exception as ex:
                             logger.error(f"Telegram update qayta ishlashda xatolik: {ex}")
+                elif resp.status_code == 409:
+                    logger.warning("Telegram bot poller 409 Conflict (boshqa instansiya yoki jarayon getUpdates bajarmoqda). 15 soniya kutilmoqda...")
+                    await asyncio.sleep(15)
+                elif resp.status_code == 429:
+                    retry_after = int(resp.headers.get("Retry-After", 10))
+                    logger.warning(f"Telegram API 429 Too Many Requests. {retry_after} soniya kutilmoqda...")
+                    await asyncio.sleep(retry_after)
                 elif resp.status_code == 401:
                     logger.warning("Telegram bot tokeni noto'g'ri (401 Unauthorized). Tekshirib ko'ring.")
                     await asyncio.sleep(30)
                 else:
+                    logger.warning(f"Telegram polling kutilmagan status: {resp.status_code}")
                     await asyncio.sleep(5)
         except asyncio.CancelledError:
             logger.info("Telegram bot poller to'xtatildi.")

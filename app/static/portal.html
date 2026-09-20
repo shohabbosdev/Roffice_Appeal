@@ -1049,18 +1049,20 @@
         <div id="tab-talaba" class="tab-pane active">
           <div class="profile-banner">
             <div class="profile-info">
-              <h3 id="student-name">QODIROV ZOXIDJON TOHIR O‘G‘LI</h3>
+              <h3 id="student-name">Yuklanmoqda...</h3>
               <div class="profile-meta">
-                <span class="tag">HEMIS: <strong id="student-id">401251200032</strong></span>
-                <span class="tag">Fakultet: <strong id="student-fac">Magistratura</strong></span>
-                <span class="tag">Guruh: <strong id="student-grp">M07-25</strong></span>
-                <span class="tag">Mutaxassislik: <strong id="student-spec">Dasturiy injiniring</strong></span>
-                <span class="tag tag-highlight" id="student-eduform">Ta'lim shakli: Kunduzgi</span>
+                <span class="tag">HEMIS: <strong id="student-id">-</strong></span>
+                <span class="tag">Fakultet: <strong id="student-fac">-</strong></span>
+                <span class="tag">Guruh: <strong id="student-grp">-</strong></span>
+                <span class="tag">Mutaxassislik: <strong id="student-spec">-</strong></span>
+                <span class="tag tag-highlight" id="student-eduform">Ta'lim shakli: -</span>
               </div>
             </div>
             <div style="display: flex; gap: 8px;">
-              <button class="btn btn-outline btn-sm" onclick="switchDemoUser('kunduzgi')">Zoxidjon (kunduzgi)</button>
-              <button class="btn btn-outline btn-sm" onclick="switchDemoUser('sirtqi')">Azamat (sirtqi)</button>
+              <a href="/student" class="btn btn-outline btn-sm" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none;">
+                <span>Talaba kabineti</span>
+                <span>↗</span>
+              </a>
             </div>
           </div>
 
@@ -1906,32 +1908,7 @@
       }
     }
 
-    // Switch demo user
-    async function switchDemoUser(type) {
-      let loginData = {};
-      if (type === 'kunduzgi') {
-        loginData = { hemis_login: "401251200032", password: "(Zetmax0011)" };
-      } else {
-        loginData = { hemis_login: "student_azamat", password: "StudentPass123!" };
-      }
 
-      try {
-        const resp = await fetch('/api/v1/auth/hemis-login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(loginData)
-        });
-        const data = await resp.json();
-        if (resp.ok) {
-          currentToken = data.access_token;
-          await fetchUserProfile();
-          loadStudentAppeals();
-          loadStudentAppointments();
-        }
-      } catch (e) {
-        console.error("Login xatoligi:", e);
-      }
-    }
 
     async function fetchUserProfile() {
       const resp = await fetch('/api/v1/auth/me', {

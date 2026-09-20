@@ -347,16 +347,23 @@ class QueueService:
                 detail=f"Sizda ushbu sana uchun mazkur xizmat bo'yicha allaqachon faol navbat taloni mavjud (#{student_active.ticket_code}, vaqti: {student_active.time_slot})."
             )
 
-        # 6. Double-booking tekshiruvi (boshqa talaba band qilmaganmi)
+        # 6. Double-booking tekshiruvi (poyga holati - Race condition himoyasi)
         stmt = select(Appointment).where(
             Appointment.appointment_date == appointment_date,
             Appointment.service_id == service_id,
             Appointment.time_slot == time_slot,
-            Appointment.status.in_([AppointmentStatus.BOOKED, AppointmentStatus.CHECKED_IN])
+            Appointment.status.in_([AppointmentStatus.BOOKED, AppointmentStatus.CHECKED_IN, AppointmentStatus.IN_SERVICE])
         )
+        try:
+            bind = db.get_bind()
+            if bind and getattr(bind, "dialect", None) and bind.dialect.name == "postgresql":
+                stmt = stmt.with_for_update()
+        except Exception:
+            pass
+
         existing = (await db.execute(stmt)).scalars().first()
         if existing:
-            raise HTTPException(status_code=409, detail="Ushbu vaqt oralig'i allaqachon band qilingan.")
+            raise HTTPException(status_code=409, detail="Ushbu vaqt oralig'i allaqachon band qilingan (boshqa talaba tomonidan).")
 
         # Xizmat va darcha ma'lumotlarini olish
         service = await db.get(Service, service_id)

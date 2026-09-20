@@ -37,6 +37,7 @@ services:
       - TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME}
     volumes:
       - ./uploads:/app/uploads
+      - ./backups:/app/backups
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 15s
