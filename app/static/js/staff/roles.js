@@ -574,3 +574,15 @@ async function handleSaveStaffPermissions(e) {
     showToast("Server xatosi.", "error");
   }
 }
+
+// Avtomatik faollashtirish (agar URL hash #roles bo'lsa)
+if (window.location.hash === '#roles' || window.location.hash === 'roles') {
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(() => loadRolesAndCatalog(), 50);
+    });
+  } else {
+    setTimeout(() => loadRolesAndCatalog(), 50);
+  }
+}
+
