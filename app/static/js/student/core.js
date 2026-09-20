@@ -72,7 +72,7 @@ window.alert = function(msg) {
 };
 
 if (!token) {
-  window.location.href = '/login';
+  window.location.href = pageUrl('/login');
 }
 
 function handleLogout(reason = null) {
