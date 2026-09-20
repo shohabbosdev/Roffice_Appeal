@@ -193,16 +193,6 @@
             <span>Xodimlar tarkibi</span>
           </button>
 
-          <button onclick="switchStaffTab('roles')"
-            class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
-            data-tab="roles" id="nav-roles-btn">
-            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round"
-                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-            </svg>
-            <span>Rollar va Huquqlar</span>
-          </button>
-
           <button onclick="switchStaffTab('kpi')"
             class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
             data-tab="kpi" id="nav-kpi-btn">
@@ -879,22 +869,22 @@
           </div>
         </div>
 
-        <!-- TAB 5: XODIMLAR TARKIBI (ADMIN / BOSHLIQ) -->
+        <!-- TAB 5: XODIMLAR TARKIBI VA ROLLAR BOSHQARUVI (ADMIN / BOSHLIQ) -->
         <div id="tab-users" class="tab-pane hidden space-y-6">
           <!-- Users Tabs Switcher -->
           <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
-            <button onclick="switchStaffTab('users')"
+            <button id="subtab-users-staff-btn" onclick="switchUsersSubTab('staff')"
               class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold transition cursor-pointer shadow-md">
               Xodimlar tarkibi
             </button>
-            <button onclick="switchStaffTab('roles')"
+            <button id="subtab-users-roles-btn" onclick="switchUsersSubTab('roles')"
               class="px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white text-xs font-medium transition cursor-pointer border border-slate-800 hover:border-slate-700">
               Rollar va Huquqlar Matritsasi
             </button>
           </div>
 
-          <!-- XODIMLAR TARKIBI KONTENTI -->
-          <div class="space-y-6">
+          <!-- SUB-TAB 1: XODIMLAR TARKIBI KONTENTI -->
+          <div id="users-subpane-staff" class="space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h3 class="text-lg font-bold text-white tracking-tight">Xodimlarni boshqarish va rollar biriktirish</h3>
@@ -1075,22 +1065,9 @@
             </div>
           </div>
         </div>
-      </div>
 
-        <!-- TAB: ROLLAR VA HUQUQLAR MATRITSASI (PBAC) -->
-        <div id="tab-roles" class="tab-pane hidden space-y-6">
-          <!-- Switcher -->
-          <div class="flex items-center gap-2 border-b border-slate-800 pb-3">
-            <button onclick="switchStaffTab('users')"
-              class="px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white text-xs font-medium transition cursor-pointer border border-slate-800 hover:border-slate-700">
-              Xodimlar tarkibi
-            </button>
-            <button onclick="switchStaffTab('roles')"
-              class="px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold transition cursor-pointer shadow-md">
-              Rollar va Huquqlar Matritsasi
-            </button>
-          </div>
-
+        <!-- SUB-TAB 2: ROLLAR VA GRANULYAR HUQUQLAR MATRITSASI (PBAC) -->
+        <div id="users-subpane-roles" class="hidden space-y-6">
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-slate-900/90 border border-slate-800 rounded-2xl p-4">
             <div>
               <h3 class="text-lg font-bold text-white tracking-tight">Rollar va Granulyar Huquqlar Matritsasi (PBAC)</h3>
@@ -1113,6 +1090,7 @@
             <p class="text-xs text-slate-500 col-span-full">Rollar yuklanmoqda...</p>
           </div>
         </div>
+      </div>
 
         <!-- TAB 6: KPI REYTINGI -->
         <div id="tab-kpi" class="tab-pane hidden space-y-6">
@@ -3238,11 +3216,11 @@
       </div>
 
       <!-- Staff Ish Stoli Modulli JavaScript Tizimi -->
-      <script src="static/js/staff/core.js?v=2.2.6"></script>
+      <script src="static/js/staff/core.js?v=2.2.7"></script>
       <script src="static/js/staff/services.js?v=2.2.1"></script>
       <script src="static/js/staff/queue.js?v=2.2.1"></script>
       <script src="static/js/staff/users.js?v=2.2.6"></script>
-      <script src="static/js/staff/roles.js?v=2.3.2"></script>
+      <script src="static/js/staff/roles.js?v=2.3.3"></script>
       <script src="static/js/staff/appeals.js?v=2.2.1"></script>
       <script src="static/js/staff/policy.js?v=2.2.1"></script>
       <script src="static/js/staff/kpi.js?v=2.2.1"></script>

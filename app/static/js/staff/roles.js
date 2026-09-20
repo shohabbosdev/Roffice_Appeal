@@ -12,6 +12,45 @@ function getStaffToken() {
   return localStorage.getItem('roffice_token') || '';
 }
 
+// Xodimlar tarkibi va Rollar matritsasi o'rtasida sub-tab almashish
+function switchUsersSubTab(subTab) {
+  const staffPane = document.getElementById('users-subpane-staff');
+  const rolesPane = document.getElementById('users-subpane-roles');
+  const staffBtn = document.getElementById('subtab-users-staff-btn');
+  const rolesBtn = document.getElementById('subtab-users-roles-btn');
+
+  if (subTab === 'roles') {
+    if (staffPane) staffPane.classList.add('hidden');
+    if (rolesPane) rolesPane.classList.remove('hidden');
+    if (staffBtn) {
+      staffBtn.className = 'px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white text-xs font-medium transition cursor-pointer border border-slate-800 hover:border-slate-700';
+    }
+    if (rolesBtn) {
+      rolesBtn.className = 'px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold transition cursor-pointer shadow-md';
+    }
+    const heading = document.getElementById('page-heading');
+    if (heading) heading.innerText = "Rollar va Granulyar Huquqlar Matritsasi (PBAC)";
+    window.location.hash = '#roles';
+    localStorage.setItem('roffice_staff_tab', 'roles');
+    loadRolesAndCatalog();
+  } else {
+    if (rolesPane) rolesPane.classList.add('hidden');
+    if (staffPane) staffPane.classList.remove('hidden');
+    if (rolesBtn) {
+      rolesBtn.className = 'px-4 py-2 rounded-xl bg-slate-900 text-slate-400 hover:text-white text-xs font-medium transition cursor-pointer border border-slate-800 hover:border-slate-700';
+    }
+    if (staffBtn) {
+      staffBtn.className = 'px-4 py-2 rounded-xl bg-blue-600 text-white text-xs font-semibold transition cursor-pointer shadow-md';
+    }
+    const heading = document.getElementById('page-heading');
+    if (heading) heading.innerText = "Xodimlarni boshqarish va rollar biriktirish";
+    window.location.hash = '#users';
+    localStorage.setItem('roffice_staff_tab', 'users');
+    if (typeof loadStaffUsers === 'function') loadStaffUsers();
+  }
+}
+window.switchUsersSubTab = switchUsersSubTab;
+
 // Ruxsatlar katalogini va rollarni yuklash
 async function loadRolesAndCatalog() {
   const container = document.getElementById('roles-cards-container');
@@ -579,10 +618,10 @@ async function handleSaveStaffPermissions(e) {
 if (window.location.hash === '#roles' || window.location.hash === 'roles') {
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      setTimeout(() => loadRolesAndCatalog(), 50);
+      setTimeout(() => switchUsersSubTab('roles'), 50);
     });
   } else {
-    setTimeout(() => loadRolesAndCatalog(), 50);
+    setTimeout(() => switchUsersSubTab('roles'), 50);
   }
 }
 

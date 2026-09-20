@@ -255,13 +255,16 @@ let token = localStorage.getItem('roffice_token');
         return;
       }
 
+      const isRolesRequested = (tabId === 'roles');
+      const targetTabId = isRolesRequested ? 'users' : tabId;
+
       document.querySelectorAll('.nav-item').forEach(b => {
         b.className = 'nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer';
         const svg = b.querySelector('svg');
         if (svg) svg.className = 'w-4 h-4 text-slate-400';
       });
 
-      const activeBtn = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+      const activeBtn = document.querySelector(`.nav-item[data-tab="${targetTabId}"]`);
       if (activeBtn) {
         activeBtn.className = 'nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-white bg-emerald-600 shadow-sm transition cursor-pointer';
         const svg = activeBtn.querySelector('svg');
@@ -269,7 +272,7 @@ let token = localStorage.getItem('roffice_token');
       }
 
       document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
-      const activePane = document.getElementById('tab-' + tabId);
+      const activePane = document.getElementById('tab-' + targetTabId);
       if (activePane) activePane.classList.remove('hidden');
 
       const titles = {
@@ -296,23 +299,34 @@ let token = localStorage.getItem('roffice_token');
 
       closeSidebar();
 
-      if (tabId === 'appeals') loadStaffAppeals();
-      if (tabId === 'services') loadAllServicesAndDepts();
-      if (tabId === 'queue') loadQueueAppointments();
-      if (tabId === 'policy') loadEducationPolicy();
-      if (tabId === 'users') loadStaffUsers();
-      if (tabId === 'roles') {
-        if (typeof loadRolesAndCatalog === 'function') loadRolesAndCatalog();
+      if (targetTabId === 'appeals') loadStaffAppeals();
+      if (targetTabId === 'services') loadAllServicesAndDepts();
+      if (targetTabId === 'queue') loadQueueAppointments();
+      if (targetTabId === 'policy') loadEducationPolicy();
+      if (targetTabId === 'users') {
+        if (isRolesRequested) {
+          if (typeof switchUsersSubTab === 'function') {
+            switchUsersSubTab('roles');
+          } else {
+            setTimeout(() => { if (typeof switchUsersSubTab === 'function') switchUsersSubTab('roles'); }, 100);
+          }
+        } else {
+          if (typeof switchUsersSubTab === 'function') {
+            switchUsersSubTab('staff');
+          } else {
+            loadStaffUsers();
+          }
+        }
       }
-      if (tabId === 'kpi') loadKPIOverview();
-      if (tabId === 'calendar') loadHolidays();
-      if (tabId === 'analytics') loadExecutiveAnalytics();
-      if (tabId === 'audit') loadAuditLogs();
-      if (tabId === 'system') {
+      if (targetTabId === 'kpi') loadKPIOverview();
+      if (targetTabId === 'calendar') loadHolidays();
+      if (targetTabId === 'analytics') loadExecutiveAnalytics();
+      if (targetTabId === 'audit') loadAuditLogs();
+      if (targetTabId === 'system') {
         loadSystemMetrics();
         loadBackupsList();
       }
-      if (tabId === 'announcements') loadStaffAnnouncements();
+      if (targetTabId === 'announcements') loadStaffAnnouncements();
     }
 
     window.addEventListener('hashchange', () => {
