@@ -399,12 +399,13 @@ async def update_staff(
     generated_pwd = None
     must_change = None
 
-    # Agar admin xodimga yangi parol belgilasa
+    # Agar admin xodimga yangi parol belgilasa yoki yangi OTP generatsiya qilsa:
+    # Xavfsizlik talabi bo'yicha xodim ilk kirganida o'z shaxsiy parolini o'rnatishi shart!
     if data.new_password and len(data.new_password.strip()) >= 6:
         user.hashed_password = hash_password(data.new_password.strip())
-        user.must_change_password = False
+        user.must_change_password = True
         generated_pwd = data.new_password.strip()
-        must_change = False
+        must_change = True
     elif data.reset_password:
         chars = string.ascii_letters + string.digits
         new_otp = "".join(secrets.choice(chars) for _ in range(8))
