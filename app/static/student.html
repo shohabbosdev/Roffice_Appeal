@@ -326,6 +326,27 @@
               Murojaatlar yuklanmoqda...
             </div>
           </div>
+
+          <!-- Student Appeals Pagination Controls -->
+          <div id="student-appeals-pagination-bar"
+            class="hidden flex-col sm:flex-row items-center justify-between gap-3 p-3 bg-slate-900/80 border border-slate-800 rounded-2xl text-xs text-slate-400">
+            <div class="flex items-center gap-2">
+              <span>Ko'rsatilmoqda: <strong id="student-appeals-page-info" class="text-white">0-0 / 0</strong></span>
+              <span class="text-slate-600">|</span>
+              <label class="flex items-center gap-1.5 text-[11px]">
+                <span>Har sahifada:</span>
+                <select id="student-appeals-per-page-select" onchange="changeStudentAppealsPerPage(this.value)"
+                  class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer">
+                  <option value="5">5 ta</option>
+                  <option value="10" selected>10 ta</option>
+                  <option value="20">20 ta</option>
+                </select>
+              </label>
+            </div>
+            <div class="flex items-center gap-1.5" id="student-appeals-pagination-buttons">
+              <!-- Dynamic Page Buttons -->
+            </div>
+          </div>
         </div>
 
         <!-- TAB: E'LONLAR MARKAZI -->

@@ -1,5 +1,8 @@
 let allStudentAppeals = [];
 let currentStudentStatusFilter = 'all';
+let studentAppealsCurrentPage = 1;
+let studentAppealsPerPage = 10;
+let currentFilteredStudentAppeals = [];
 
 function setStudentAppealsStatusFilter(status) {
   currentStudentStatusFilter = status;
@@ -11,10 +14,13 @@ function setStudentAppealsStatusFilter(status) {
       tab.className = 'student-status-tab px-3 py-1 rounded-lg bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800 transition cursor-pointer whitespace-nowrap';
     }
   });
-  applyStudentAppealsFilter();
+  applyStudentAppealsFilter(true);
 }
 
-function applyStudentAppealsFilter() {
+function applyStudentAppealsFilter(resetPage = true) {
+  if (resetPage) {
+    studentAppealsCurrentPage = 1;
+  }
   const searchInput = document.getElementById('student-appeal-search');
   const query = (searchInput ? searchInput.value : '').toLowerCase().trim();
   const countEl = document.getElementById('student-appeals-filtered-count');
@@ -44,20 +50,87 @@ function applyStudentAppealsFilter() {
   }
 
   if (countEl) countEl.innerText = filtered.length;
-  renderStudentAppealsList(filtered);
+  currentFilteredStudentAppeals = filtered;
+  renderStudentAppealsList();
 }
 
-function renderStudentAppealsList(data) {
+function renderStudentAppealsList() {
   const list = document.getElementById('student-appeals-list');
+  const paginationBar = document.getElementById('student-appeals-pagination-bar');
+  const pageInfo = document.getElementById('student-appeals-page-info');
+  const paginationButtons = document.getElementById('student-appeals-pagination-buttons');
+
   if (!list) return;
 
-  if (!data || data.length === 0) {
+  const total = currentFilteredStudentAppeals.length;
+
+  if (!currentFilteredStudentAppeals || total === 0) {
+    if (paginationBar) {
+      paginationBar.classList.remove('flex');
+      paginationBar.classList.add('hidden');
+    }
     list.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 border border-slate-800/80 rounded-2xl bg-slate-900/40">Mos keluvchi murojaatlar topilmadi.</div>';
     return;
   }
 
+  const totalPages = Math.ceil(total / studentAppealsPerPage) || 1;
+  if (studentAppealsCurrentPage > totalPages) studentAppealsCurrentPage = totalPages;
+  if (studentAppealsCurrentPage < 1) studentAppealsCurrentPage = 1;
+
+  const startIdx = (studentAppealsCurrentPage - 1) * studentAppealsPerPage;
+  const endIdx = Math.min(startIdx + studentAppealsPerPage, total);
+  const pageItems = currentFilteredStudentAppeals.slice(startIdx, endIdx);
+
+  // Pagination bar render
+  if (paginationBar) {
+    paginationBar.classList.remove('hidden');
+    paginationBar.classList.add('flex');
+
+    if (pageInfo) {
+      pageInfo.textContent = `${startIdx + 1}-${endIdx} / ${total}`;
+    }
+
+    if (paginationButtons) {
+      let btnsHtml = '';
+      btnsHtml += `
+        <button 
+          type="button" 
+          onclick="changeStudentAppealsPage(${studentAppealsCurrentPage - 1})" 
+          ${studentAppealsCurrentPage <= 1 ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-600 text-xs cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer transition"'}
+        >
+          ◀
+        </button>
+      `;
+
+      for (let p = 1; p <= totalPages; p++) {
+        const isActive = p === studentAppealsCurrentPage;
+        btnsHtml += `
+          <button 
+            type="button" 
+            onclick="changeStudentAppealsPage(${p})" 
+            class="w-7 h-7 flex items-center justify-center rounded-lg text-xs font-semibold transition cursor-pointer ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white hover:border-slate-700'}"
+          >
+            ${p}
+          </button>
+        `;
+      }
+
+      btnsHtml += `
+        <button 
+          type="button" 
+          onclick="changeStudentAppealsPage(${studentAppealsCurrentPage + 1})" 
+          ${studentAppealsCurrentPage >= totalPages ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-600 text-xs cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer transition"'}
+        >
+          ▶
+        </button>
+      `;
+
+      paginationButtons.innerHTML = btnsHtml;
+    }
+  }
+
   list.innerHTML = '';
-  data.forEach(app => {
+  pageItems.forEach(app => {
     let statusBadge = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
     let statusLabel = "Ko'rib chiqilmoqda";
     
@@ -172,6 +245,23 @@ function renderStudentAppealsList(data) {
       </div>
     `;
   });
+}
+
+function changeStudentAppealsPage(page) {
+  const totalPages = Math.ceil(currentFilteredStudentAppeals.length / studentAppealsPerPage) || 1;
+  if (page < 1 || page > totalPages) return;
+  studentAppealsCurrentPage = page;
+  renderStudentAppealsList();
+  const listEl = document.getElementById('student-appeals-list');
+  if (listEl) {
+    listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function changeStudentAppealsPerPage(val) {
+  studentAppealsPerPage = parseInt(val) || 10;
+  studentAppealsCurrentPage = 1;
+  renderStudentAppealsList();
 }
 
 async function loadStudentAppeals() {

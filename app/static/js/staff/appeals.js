@@ -1,3 +1,7 @@
+let appealsCurrentPage = 1;
+let appealsPerPage = 10;
+let currentFilteredAppeals = [];
+
 async function loadStaffAppeals() {
       const container = document.getElementById('staff-appeals-list');
       container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500">Murojaatlar yuklanmoqda...</div>';
@@ -185,12 +189,14 @@ async function loadStaffAppeals() {
     }
 
     function handleAppealsFilter() {
-      applyAppealsFilter();
+      applyAppealsFilter(true);
     }
 
-    function applyAppealsFilter() {
-      const container = document.getElementById('staff-appeals-list');
-      const countBadge = document.getElementById('filtered-count-badge');
+    function applyAppealsFilter(resetPage = true) {
+      if (resetPage) {
+        appealsCurrentPage = 1;
+      }
+
       const searchQ = (document.getElementById('appeals-search')?.value || '').trim().toLowerCase();
       const statusQ = document.getElementById('appeals-filter-status')?.value || '';
       const serviceQ = document.getElementById('appeals-filter-service')?.value || '';
@@ -222,19 +228,143 @@ async function loadStaffAppeals() {
         return true;
       });
 
+      currentFilteredAppeals = filtered;
+      renderAppealsCurrentPage();
+    }
+
+    function renderAppealsCurrentPage() {
+      const container = document.getElementById('staff-appeals-list');
+      const countBadge = document.getElementById('filtered-count-badge');
+      const paginationBar = document.getElementById('appeals-pagination-bar');
+      const pageInfo = document.getElementById('appeals-page-info');
+      const paginationButtons = document.getElementById('appeals-pagination-buttons');
+
+      const total = currentFilteredAppeals.length;
+
       if (countBadge) {
-        countBadge.textContent = `${filtered.length} ta ko'rsatilmoqda (Jami: ${allStaffAppeals.length})`;
+        countBadge.textContent = `${total} ta topildi (Jami: ${allStaffAppeals.length})`;
       }
 
-      if (filtered.length === 0) {
+      if (total === 0) {
+        if (paginationBar) {
+          paginationBar.classList.remove('flex');
+          paginationBar.classList.add('hidden');
+        }
         container.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 border border-slate-800/80 rounded-2xl bg-slate-900/40">Mos keluvchi murojaat topilmadi.</div>';
         return;
       }
 
+      const totalPages = Math.ceil(total / appealsPerPage) || 1;
+      if (appealsCurrentPage > totalPages) appealsCurrentPage = totalPages;
+      if (appealsCurrentPage < 1) appealsCurrentPage = 1;
+
+      const startIdx = (appealsCurrentPage - 1) * appealsPerPage;
+      const endIdx = Math.min(startIdx + appealsPerPage, total);
+      const pageItems = currentFilteredAppeals.slice(startIdx, endIdx);
+
+      // Pagination boshqaruv elementlarini chizish
+      if (paginationBar) {
+        paginationBar.classList.remove('hidden');
+        paginationBar.classList.add('flex');
+
+        if (pageInfo) {
+          pageInfo.textContent = `${startIdx + 1}-${endIdx} / ${total}`;
+        }
+
+        if (paginationButtons) {
+          let btnsHtml = '';
+
+          // Oldingi sahifa tugmasi
+          btnsHtml += `
+            <button 
+              type="button" 
+              onclick="changeAppealsPage(${appealsCurrentPage - 1})" 
+              ${appealsCurrentPage <= 1 ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-600 text-xs cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer transition"'}
+            >
+              ◀ Oldingi
+            </button>
+          `;
+
+          if (totalPages <= 7) {
+            for (let p = 1; p <= totalPages; p++) {
+              const isActive = p === appealsCurrentPage;
+              btnsHtml += `
+                <button 
+                  type="button" 
+                  onclick="changeAppealsPage(${p})" 
+                  class="w-7 h-7 flex items-center justify-center rounded-lg text-xs font-semibold transition cursor-pointer ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white hover:border-slate-700'}"
+                >
+                  ${p}
+                </button>
+              `;
+            }
+          } else {
+            btnsHtml += `
+              <button 
+                type="button" 
+                onclick="changeAppealsPage(1)" 
+                class="w-7 h-7 flex items-center justify-center rounded-lg text-xs font-semibold transition cursor-pointer ${appealsCurrentPage === 1 ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white hover:border-slate-700'}"
+              >
+                1
+              </button>
+            `;
+
+            let startPage = Math.max(2, appealsCurrentPage - 1);
+            let endPage = Math.min(totalPages - 1, appealsCurrentPage + 1);
+
+            if (startPage > 2) {
+              btnsHtml += `<span class="text-slate-600 text-xs px-1">...</span>`;
+            }
+
+            for (let p = startPage; p <= endPage; p++) {
+              const isActive = p === appealsCurrentPage;
+              btnsHtml += `
+                <button 
+                  type="button" 
+                  onclick="changeAppealsPage(${p})" 
+                  class="w-7 h-7 flex items-center justify-center rounded-lg text-xs font-semibold transition cursor-pointer ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white hover:border-slate-700'}"
+                >
+                  ${p}
+                </button>
+              `;
+            }
+
+            if (endPage < totalPages - 1) {
+              btnsHtml += `<span class="text-slate-600 text-xs px-1">...</span>`;
+            }
+
+            btnsHtml += `
+              <button 
+                type="button" 
+                onclick="changeAppealsPage(${totalPages})" 
+                class="w-7 h-7 flex items-center justify-center rounded-lg text-xs font-semibold transition cursor-pointer ${appealsCurrentPage === totalPages ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white hover:border-slate-700'}"
+              >
+                ${totalPages}
+              </button>
+            `;
+          }
+
+          // Keyingi sahifa tugmasi
+          btnsHtml += `
+            <button 
+              type="button" 
+              onclick="changeAppealsPage(${appealsCurrentPage + 1})" 
+              ${appealsCurrentPage >= totalPages ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-600 text-xs cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer transition"'}
+            >
+              Keyingi ▶
+            </button>
+          `;
+
+          paginationButtons.innerHTML = btnsHtml;
+        }
+      }
+
+      // Sahifaga tegishli arizalarni render qilish
+      const now = new Date();
       const isAdminOrHead = ['admin', 'office_head', 'vice_rector'].includes(userRole);
 
       let html = '';
-      filtered.forEach(app => {
+      pageItems.forEach(app => {
         const meta = STATUS_META[app.status] || { label: app.status, cls: 'bg-slate-500/10 text-slate-400 border-slate-500/20' };
         const deadline = app.sla_deadline_at ? new Date(app.sla_deadline_at) : null;
         const isClosed = ['resolved', 'completed', 'auto_closed', 'cancelled', 'rejected'].includes(app.status);
@@ -415,6 +545,23 @@ async function loadStaffAppeals() {
         `;
       });
       container.innerHTML = html;
+    }
+
+    function changeAppealsPage(page) {
+      const totalPages = Math.ceil(currentFilteredAppeals.length / appealsPerPage) || 1;
+      if (page < 1 || page > totalPages) return;
+      appealsCurrentPage = page;
+      renderAppealsCurrentPage();
+      const listEl = document.getElementById('tab-appeals');
+      if (listEl) {
+        listEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function changeAppealsPerPage(val) {
+      appealsPerPage = parseInt(val) || 10;
+      appealsCurrentPage = 1;
+      renderAppealsCurrentPage();
     }
 
     // Export to Excel (CSV with UTF-8 BOM)
