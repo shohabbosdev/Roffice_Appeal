@@ -86,6 +86,11 @@ let token = localStorage.getItem('roffice_token');
       }
     }
 
+    // Brauzer standart alert ini Tailwind toast ga almashtirish
+    window.alert = function(msg) {
+      showToast(String(msg), 'info');
+    };
+
     function showToast(message, type = 'info') {
       const container = document.getElementById('app-toast-container');
       if (!container) return;

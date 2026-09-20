@@ -274,7 +274,15 @@ let currentAnalyticsAnnId = null;
     }
 
     async function deleteAnnouncement(annId) {
-      if (!confirm("Haqiqatan ham ushbu e'lonni bekor qilmoqchimisiz?")) return;
+      const confirmed = await openAppConfirm({
+        title: "E'lonni bekor qilish",
+        message: "Haqiqatan ham ushbu e'lonni bekor qilmoqchimisiz? Bekor qilingach, u barcha talabalar kabinetidan olinadi.",
+        confirmText: "Ha, bekor qilinsin",
+        cancelText: "Ortga",
+        isDanger: true
+      });
+      if (!confirmed) return;
+
       const token = localStorage.getItem('roffice_token');
       if (!token) return;
 

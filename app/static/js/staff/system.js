@@ -183,9 +183,14 @@ async function loadSystemMetrics() {
     }
 
     async function triggerManualBackup() {
-      if (!confirm("Haqiqatan ham hozir tizim ma'lumotlar bazasi va yuklangan hujjatlarning to'liq zaxira nusxasini (Backup) yaratmoqchimisiz?")) {
-        return;
-      }
+      const confirmed = await openAppConfirm({
+        title: "Tizim zaxira nusxasi",
+        message: "Haqiqatan ham hozir tizim ma'lumotlar bazasi va yuklangan hujjatlarning to'liq zaxira nusxasini (Backup) yaratmoqchimisiz?",
+        confirmText: "Ha, zaxira yaratilsin",
+        cancelText: "Bekor qilish",
+        isDanger: false
+      });
+      if (!confirmed) return;
 
       const token = localStorage.getItem('roffice_token');
       const btn = document.getElementById('btn-trigger-backup');

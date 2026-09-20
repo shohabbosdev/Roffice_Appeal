@@ -664,6 +664,9 @@
     }
     const showNotification = showToast;
     window.showNotification = showToast;
+    window.alert = function(msg) {
+      showToast(String(msg), 'info');
+    };
 
     if (!token) {
       window.location.href = '/login';
@@ -1143,7 +1146,15 @@
     }
 
     async function cancelStudentAppeal(appealId) {
-      if (!confirm("Haqiqatan ham ushbu murojaatni bekor qilmoqchimisiz?")) return;
+      const confirmed = await openAppConfirm({
+        title: "Murojaatni bekor qilish",
+        message: "Haqiqatan ham ushbu murojaatni bekor qilmoqchimisiz? Ushbu amalni ortga qaytarib bo'lmaydi.",
+        confirmText: "Ha, bekor qilinsin",
+        cancelText: "Ortga",
+        isDanger: true
+      });
+      if (!confirmed) return;
+
       try {
         const resp = await fetch(apiUrl(`/api/v1/appeals/${appealId}/cancel`), {
           method: 'POST',
@@ -1154,14 +1165,14 @@
           body: JSON.stringify({ reason: "Talaba tomonidan bekor qilindi" })
         });
         if (resp.ok) {
-          alert("Murojaat muvaffaqiyatli bekor qilindi.");
+          showToast("Murojaat muvaffaqiyatli bekor qilindi.", "success");
           loadStudentAppeals();
         } else {
           const data = await resp.json();
-          alert(data.detail || "Murojaatni bekor qilishda xatolik yuz berdi.");
+          showToast(data.detail || "Murojaatni bekor qilishda xatolik yuz berdi.", "error");
         }
       } catch (err) {
-        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
 
