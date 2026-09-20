@@ -35,6 +35,10 @@ services:
       - ADMIN_FULLNAME=${ADMIN_FULLNAME:-Tizim Ma'muri}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME}
+      - SECRET_KEY=${SECRET_KEY:-roffice_super_secret_jwt_key_2026_univer_jizzax_73}
+      - JBNUU_VALIDATE_PHONE_URL=${JBNUU_VALIDATE_PHONE_URL:-https://student.jbnuu.uz/rest/v1/data/validate-phone}
+      - JBNUU_API_TOKEN=${JBNUU_API_TOKEN}
+      - ADMIN_TELEGRAM_ID=${ADMIN_TELEGRAM_ID:-8515413686}
     volumes:
       - ./uploads:/app/uploads
       - ./backups:/app/backups

@@ -10,10 +10,10 @@ htmlcov
 .gitignore
 .env
 tests
-*.docx
-*.jpg
-*.png
-*.html
-*.ps1
+/*.docx
+/*.jpg
+/*.png
+/*.html
+/*.ps1
 data
 roffice.db

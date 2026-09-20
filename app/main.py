@@ -84,6 +84,11 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+from app.core.rate_limiter import IPRateLimiterMiddleware
+
+# Rate Limiting & Anti-Abuse Protection
+app.add_middleware(IPRateLimiterMiddleware)
+
 # CORS Configuration
 app.add_middleware(
     CORSMiddleware,
@@ -97,6 +102,8 @@ app.add_middleware(
         "http://localhost:8001",
         "http://127.0.0.1:8001",
         "http://localhost:3000",
+        "https://jbnuu.uz",
+        "https://www.jbnuu.uz",
         "https://student.jbnuu.uz"
     ],
     allow_credentials=True,

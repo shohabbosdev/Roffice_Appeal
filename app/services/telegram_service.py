@@ -83,6 +83,48 @@ class TelegramService:
             return False
 
     @classmethod
+    async def send_telegram_document(
+        cls,
+        chat_id: int,
+        file_path: str,
+        caption: Optional[str] = None,
+        parse_mode: str = "HTML"
+    ) -> bool:
+        """Telegram Bot API orqali fayl/hujjat jo'natish."""
+        if not settings.TELEGRAM_BOT_TOKEN or settings.TELEGRAM_BOT_TOKEN == "YOUR_BOT_TOKEN_HERE":
+            return False
+
+        url = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}/sendDocument"
+
+        try:
+            import os
+            if not os.path.exists(file_path):
+                logger.error(f"Telegramga yuboriladigan fayl topilmadi: {file_path}")
+                return False
+
+            filename = os.path.basename(file_path)
+            with open(file_path, "rb") as f:
+                file_content = f.read()
+
+            files = {"document": (filename, file_content)}
+            data = {"chat_id": chat_id}
+            if caption:
+                data["caption"] = caption
+                data["parse_mode"] = parse_mode
+
+            async with httpx.AsyncClient(timeout=120.0) as client:
+                resp = await client.post(url, data=data, files=files)
+                if resp.status_code == 200:
+                    logger.info(f"Telegram hujjat muvaffaqiyatli jo'natildi -> chat_id: {chat_id}")
+                    return True
+                else:
+                    logger.warning(f"Telegram sendDocument xatosi ({resp.status_code}): {resp.text}")
+                    return False
+        except Exception as e:
+            logger.error(f"Telegram sendDocument so'rovida xatolik: {e}")
+            return False
+
+    @classmethod
     async def notify_appeal_created(cls, chat_id: Optional[int], appeal_ticket: str, subject: str, service_title: str, deadline: Optional[datetime] = None):
         """Yangi murojaat yaratilganda talabaga xabar yuborish."""
         if not chat_id:

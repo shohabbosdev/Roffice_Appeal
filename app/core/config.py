@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Registrator ofisi murojaatlar va navbat axborot tizimi"
-    VERSION: str = "1.0.0"
+    VERSION: str = "2.2.0"
     API_V1_STR: str = "/api/v1"
 
     # Security
@@ -35,12 +35,13 @@ class Settings(BaseSettings):
     DEFAULT_MONTHLY_KPI_TARGET: int = 150
 
     # Telegram Bot Sozlamalari
-    TELEGRAM_BOT_TOKEN: str = "8634241703:AAH8P_RpdusYRUs09qJqWBTzh1JBP73AVY0"
+    TELEGRAM_BOT_TOKEN: str = ""
     TELEGRAM_BOT_USERNAME: str = "dublyajsanatirobot"
+    ADMIN_TELEGRAM_ID: int = 8515413686
 
     # JBNUU HEMIS telefon raqamini tekshirish (Validate Phone) API
     JBNUU_VALIDATE_PHONE_URL: str = "https://student.jbnuu.uz/rest/v1/data/validate-phone"
-    JBNUU_API_TOKEN: str = "Qn8Jp7TVvpGdQUvWoqpBC1i0p7ukHKT0"
+    JBNUU_API_TOKEN: str = ""
 
     # Fayllarni yuklash (Uploads) sozlamalari
     UPLOAD_DIR: str = "uploads"

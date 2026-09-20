@@ -201,6 +201,13 @@ class Appeal(Base):
     assigned_staff = relationship("User", foreign_keys=[assigned_staff_id], back_populates="appeals_assigned")
     service = relationship("Service", back_populates="appeals", lazy="selectin")
 
+    __table_args__ = (
+        Index("ix_appeals_student_status", "student_id", "status"),
+        Index("ix_appeals_staff_status", "assigned_staff_id", "status"),
+        Index("ix_appeals_status_created", "status", "created_at"),
+        Index("ix_appeals_service_id", "service_id"),
+    )
+
 
 # 6. Appointment Model (Kelib hal etish / Navbat)
 class Appointment(Base):
@@ -231,6 +238,7 @@ class Appointment(Base):
     __table_args__ = (
         Index("ix_appointments_date_service_slot", "appointment_date", "service_id", "time_slot"),
         Index("ix_appointments_student_date", "student_id", "appointment_date", "service_id"),
+        Index("ix_appointments_date_status", "appointment_date", "status"),
     )
 
 

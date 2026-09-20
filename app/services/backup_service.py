@@ -296,16 +296,37 @@ class BackupService:
             "✅ <i>Ma'lumotlar bazasi va biriktirilgan fayllar to'liq saqlandi.</i>"
         )
         try:
-            # Adminlarni topish
+            # 1. Barcha xabardor qilinishi kerak bo'lgan Telegram ID larni to'plash
+            recipient_chat_ids = set()
+            if getattr(settings, "ADMIN_TELEGRAM_ID", None):
+                recipient_chat_ids.add(settings.ADMIN_TELEGRAM_ID)
+
+            # DB dagi adminlarni ham qo'shish
             admin_res = await db.execute(
                 select(User).where(User.role == "admin", User.telegram_chat_id.isnot(None))
             )
-            admins = admin_res.scalars().all()
-            for admin in admins:
+            for admin in admin_res.scalars().all():
                 if admin.telegram_chat_id:
-                    await TelegramService.send_telegram_message(
-                        chat_id=admin.telegram_chat_id,
-                        text=msg,
+                    recipient_chat_ids.add(admin.telegram_chat_id)
+
+            archive_path = BACKUP_DIR / archive_filename
+            can_send_file = archive_path.exists() and archive_path.stat().st_size <= 48 * 1024 * 1024
+
+            for chat_id in recipient_chat_ids:
+                # Matnli hisobot
+                await TelegramService.send_telegram_message(
+                    chat_id=chat_id,
+                    text=msg,
+                    parse_mode="HTML"
+                )
+
+                # Agar fayl Telegram limitidan (50 MB) oshmasa, to'g'ridan-to'g'ri hujjat ko'rinishida yuborish
+                if can_send_file:
+                    doc_caption = f"📦 Zaxira arxivi ({human_size})\nSana: {now.strftime('%d.%m.%Y %H:%M')}"
+                    await TelegramService.send_telegram_document(
+                        chat_id=chat_id,
+                        file_path=str(archive_path),
+                        caption=doc_caption,
                         parse_mode="HTML"
                     )
         except Exception as e:
