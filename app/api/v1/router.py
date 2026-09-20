@@ -11,6 +11,7 @@ from app.api.v1.telegram import router as telegram_router
 from app.api.v1.audit import router as audit_router
 from app.api.v1.system import router as system_router
 from app.api.v1.verify import router as verify_router
+from app.api.v1.announcements import router as announcements_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 
@@ -26,4 +27,6 @@ api_v1_router.include_router(telegram_router)
 api_v1_router.include_router(audit_router)
 api_v1_router.include_router(system_router)
 api_v1_router.include_router(verify_router)
+api_v1_router.include_router(announcements_router)
+
 

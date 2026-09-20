@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.core.database import get_db
-from app.models import Appointment, AppointmentStatus, User, UserRole
+from app.models import Appointment, AppointmentStatus, User, UserRole, Appeal, AppealStatus
 from app.schemas import AppointmentBook, AppointmentComplete, AppointmentOut
 import asyncio
 from app.services.queue_service import QueueService
@@ -48,6 +48,22 @@ async def book_appointment(
     db: AsyncSession = Depends(get_db)
 ):
     """Talaba o'ziga qulay 15 daqiqalik vaqtni tanlaydi va elektron talon oladi."""
+    # Majburiy tasdiqlash tekshiruvi: Agar oldingi ariza RESOLVED bo'lsa, navbat olish bloklanadi
+    pending_q = select(Appeal).where(
+        Appeal.student_id == current_user.id,
+        Appeal.status == AppealStatus.RESOLVED
+    )
+    pending_app = (await db.execute(pending_q)).scalars().first()
+    if pending_app:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Sizda xodim tomonidan ko'rib chiqilgan, ammo hali tasdiqlanmagan arizangiz mavjud "
+                f"({pending_app.ticket_number}). Yangi elektron navbat olishdan oldin, iltimos, "
+                "oldingi arizangiz natijasini tasdiqlang va xizmat sifatini baholang yoki e'tiroz bildiring."
+            )
+        )
+
     appointment = await QueueService.book_appointment(
         db=db,
         student_id=current_user.id,

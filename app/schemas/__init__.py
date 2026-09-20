@@ -402,3 +402,74 @@ class AuditLogOut(BaseModel):
         return self.user.role.value if (self.user and self.user.role) else None
 
 
+# E'lonlar va Bildirishnomalar Sxemalari
+from app.models import AnnouncementPriority
+
+
+class AnnouncementCreate(BaseModel):
+    title: str
+    content: str
+    priority: AnnouncementPriority = AnnouncementPriority.NORMAL
+    target_education_form: Optional[str] = None # None yoki "ALL" bo'lsa barchaga
+    target_faculty: Optional[str] = None
+    target_course: Optional[int] = None
+    requires_ack: bool = False
+    send_telegram: bool = False
+    expires_at: Optional[datetime] = None
+
+
+class AnnouncementOut(BaseModel):
+    id: int
+    title: str
+    content: str
+    priority: AnnouncementPriority
+    target_education_form: Optional[str] = None
+    target_faculty: Optional[str] = None
+    target_course: Optional[int] = None
+    author_id: int
+    is_active: bool
+    requires_ack: bool
+    send_telegram: bool
+    created_at: datetime
+    expires_at: Optional[datetime] = None
+    author: Optional[UserOut] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AnnouncementStudentView(BaseModel):
+    id: int
+    title: str
+    content: str
+    priority: AnnouncementPriority
+    requires_ack: bool
+    created_at: datetime
+    is_read: bool = False
+    read_at: Optional[datetime] = None
+    is_acknowledged: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UnreadStudentInfo(BaseModel):
+    id: int
+    full_name: str
+    hemis_student_id: Optional[str] = None
+    group_name: Optional[str] = None
+    faculty: Optional[str] = None
+    course: Optional[int] = None
+    education_form: Optional[str] = None
+    phone: Optional[str] = None
+
+
+class AnnouncementAnalyticsOut(BaseModel):
+    announcement: AnnouncementOut
+    total_target_students: int
+    read_count: int
+    read_percentage: float
+    acknowledged_count: int
+    acknowledged_percentage: float
+    unread_students: List[UnreadStudentInfo]
+
+
+

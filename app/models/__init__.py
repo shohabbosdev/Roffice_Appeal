@@ -270,3 +270,57 @@ class SystemSetting(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 
+# 10. Announcement Models (Ommaviy va Segmentatsiyalangan E'lonlar)
+class AnnouncementPriority(str, Enum):
+    NORMAL = "normal"          # Oddiy axborot
+    IMPORTANT = "important"    # Muhim ogohlantirish
+    URGENT = "urgent"          # Shoshilinch (Qat'iy tanishish shart)
+
+
+class Announcement(Base):
+    __tablename__ = "announcements"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    priority: Mapped[AnnouncementPriority] = mapped_column(SQLEnum(AnnouncementPriority), default=AnnouncementPriority.NORMAL, nullable=False)
+    
+    # Segmentatsiya filtrlari (None yoki "ALL" bo'lsa barcha talabalarga tegishli)
+    target_education_form: Mapped[Optional[str]] = mapped_column(String(50), nullable=True) # "Kunduzgi", "Sirtqi", "Kechki", "Masofaviy"
+    target_faculty: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    target_course: Mapped[Optional[int]] = mapped_column(Integer, nullable=True) # 1, 2, 3, 4
+    
+    author_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    requires_ack: Mapped[bool] = mapped_column(Boolean, default=False) # "Tanishdim" tugmasi talab etilishi
+    send_telegram: Mapped[bool] = mapped_column(Boolean, default=False)
+    
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    expires_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+
+    author = relationship("User", foreign_keys=[author_id], lazy="selectin")
+    reads = relationship("AnnouncementRead", back_populates="announcement", cascade="all, delete-orphan", lazy="selectin")
+
+
+class AnnouncementRead(Base):
+    __tablename__ = "announcement_reads"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    announcement_id: Mapped[int] = mapped_column(Integer, ForeignKey("announcements.id", ondelete="CASCADE"), nullable=False)
+    student_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    
+    read_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    ip_address: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    user_agent: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    is_acknowledged: Mapped[bool] = mapped_column(Boolean, default=False) # "Tanishdim" tugmasi bosilganligi
+
+    announcement = relationship("Announcement", back_populates="reads")
+    student = relationship("User", foreign_keys=[student_id], lazy="selectin")
+
+    __table_args__ = (
+        Index("ix_announcement_reads_ann_student", "announcement_id", "student_id", unique=True),
+        Index("ix_announcement_reads_student", "student_id"),
+    )
+
+
+

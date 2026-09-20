@@ -49,6 +49,25 @@ async def update_education_form_policy(
     return await PolicyService.update_education_form_policy(db, data.allowed_forms)
 
 
+@router.get("/pending-feedback", response_model=Optional[AppealOut], summary="Talabaning hal etilgan, ammo hali tasdiqlanmagan arizasini olish")
+async def get_pending_feedback_appeal(
+    current_user: User = Depends(require_role(UserRole.STUDENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Talaba tizimga kirganda unga majburiy baholash oynasini ochish uchun hal etilgan arizasini tekshiradi."""
+    query = (
+        select(Appeal)
+        .options(*_appeal_options())
+        .where(
+            Appeal.student_id == current_user.id,
+            Appeal.status == AppealStatus.RESOLVED
+        )
+        .order_by(Appeal.resolved_at.desc())
+    )
+    res = await db.execute(query)
+    return res.scalars().first()
+
+
 @router.post("", response_model=AppealOut, status_code=status.HTTP_201_CREATED, summary="Talaba tomonidan yangi murojaat yo'llash")
 async def create_appeal(
     data: AppealCreate,
@@ -56,7 +75,23 @@ async def create_appeal(
     db: AsyncSession = Depends(get_db)
 ):
     """Talaba o'z profilidan turib xizmat turi bo'yicha murojaat yaratadi."""
-    # Ta'lim shakli tekshiruvi: faol siyosat bo'yicha ruxsat etilgan ta'lim shakllarini tekshirish
+    # 1. Majburiy tasdiqlash tekshiruvi: Agar oldingi ariza RESOLVED bo'lsa, yangi ariza yuborish bloklanadi
+    pending_q = select(Appeal).where(
+        Appeal.student_id == current_user.id,
+        Appeal.status == AppealStatus.RESOLVED
+    )
+    pending_app = (await db.execute(pending_q)).scalars().first()
+    if pending_app:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Sizda xodim tomonidan ko'rib chiqilgan, ammo hali tasdiqlanmagan arizangiz mavjud "
+                f"({pending_app.ticket_number}). Yangi murojaat yo'llashdan oldin, iltimos, "
+                "oldingi arizangiz natijasini tasdiqlang va xizmat sifatini baholang yoki e'tiroz bildiring."
+            )
+        )
+
+    # 2. Ta'lim shakli tekshiruvi: faol siyosat bo'yicha ruxsat etilgan ta'lim shakllarini tekshirish
     allowed_forms = await PolicyService.get_allowed_education_forms(db)
     edu_form = (current_user.education_form or "").strip().lower()
     if not any(f in edu_form for f in allowed_forms):
