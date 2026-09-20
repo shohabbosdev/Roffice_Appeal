@@ -9,7 +9,7 @@ from app.models import Appeal, AppealStatus, User, UserRole, Service
 from app.schemas import (
     AppealCreate, AppealAssign, AppealReassign, AppealClarify,
     AppealProvideClarify, AppealResolve, AppealConfirm, AppealDispute,
-    AppealEscalateProrektor, ProrektorFinalDecision, AppealOut,
+    AppealEscalateProrektor, ProrektorFinalDecision, AppealCancel, AppealOut,
     EducationFormPolicyOut, EducationFormPolicyUpdate,
     AppealTrackInfoOut, AppealPublicTrackOut
 )
@@ -533,3 +533,21 @@ async def prorektor_decision(
         ))
 
     return reloaded_decision
+
+
+@router.post("/{appeal_id}/cancel", response_model=AppealOut, summary="Talaba tomonidan arizani bekor qilish (faqat Yangi holatda)")
+async def cancel_appeal(
+    appeal_id: int,
+    data: AppealCancel,
+    current_user: User = Depends(require_role(UserRole.STUDENT)),
+    db: AsyncSession = Depends(get_db)
+):
+    """Talaba o'zining ko'rib chiqishga olinmagan (YANGI) arizasini ixtiyoriy ravishda bekor qilishi mumkin."""
+    cancelled_appeal = await AppealService.cancel_appeal_by_student(
+        db=db,
+        appeal_id=appeal_id,
+        student_id=current_user.id,
+        reason=data.reason
+    )
+    result = await db.execute(select(Appeal).options(*_appeal_options()).where(Appeal.id == cancelled_appeal.id))
+    return result.scalar_one()

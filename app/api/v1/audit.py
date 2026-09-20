@@ -10,6 +10,15 @@ from app.services.audit_service import AuditService
 router = APIRouter(prefix="/audit-logs", tags=["Tizim xavfsizlik va audit jurnali"])
 
 
+@router.get("/weekly-summary", summary="Haftalik audit va xavfsizlik statistikasi xulosasi")
+async def get_weekly_audit_summary(
+    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.OFFICE_HEAD, UserRole.VICE_RECTOR)),
+    db: AsyncSession = Depends(get_db)
+):
+    """So'nggi 7 kunda ro'yxatga olingan harakatlar, faol foydalanuvchilar va hodisalar xulosasi."""
+    return await AuditService.get_weekly_audit_report(db=db)
+
+
 @router.get("", response_model=List[AuditLogOut], summary="Tizim harakatlar jurnali (faqat Rahbariyat va Admin uchun)")
 async def get_audit_logs(
     entity_type: Optional[str] = Query(None, description="Obyekt turi (appeal, appointment, service, auth, staff)"),

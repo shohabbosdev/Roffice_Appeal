@@ -16,6 +16,7 @@ from app.services.telegram_service import TelegramService
 
 from app.services.appeal_service import AppealService
 from app.services.queue_service import QueueService
+from app.services.backup_service import BackupService
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ REMINDER_THRESHOLD_HOURS = 2
 _reminded_set: set = set()
 # Bir navbatga necha marta eslatma yuborilishi mumkin (shu sessiyada)
 _reminded_appointments_set: set = set()
+_last_backup_cleanup: Optional[datetime] = None
 
 
 async def check_and_send_sla_reminders(db: Optional[AsyncSession] = None):
@@ -54,7 +56,15 @@ async def _process_sla_reminders(db: AsyncSession):
         if no_show_count > 0:
             logger.info(f"{no_show_count} ta o'tib ketgan navbat taloni NO_SHOW holatiga o'tkazildi.")
 
-        # 3. SLA muddati tugayotgan arizalarni eslatish
+        # 3. 30 kundan oshgan eski zaxira nusxalarini tozalash (har 6 soatda bir marta)
+        global _last_backup_cleanup
+        if _last_backup_cleanup is None or (now - _last_backup_cleanup) > timedelta(hours=6):
+            deleted_backups = BackupService.cleanup_old_backups(days=30)
+            _last_backup_cleanup = now
+            if deleted_backups > 0:
+                logger.info(f"Davriy tozalash: {deleted_backups} ta eski zaxira arxivi o'chirildi.")
+
+        # 4. SLA muddati tugayotgan arizalarni eslatish
         stmt = (
             select(Appeal)
             .options(selectinload(Appeal.service))

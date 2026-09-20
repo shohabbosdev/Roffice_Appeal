@@ -9,6 +9,12 @@
   <!-- Base Path Helper -->
   <script>
     (function () {
+      const _origWarn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+        _origWarn.apply(console, args);
+      };
+
       const isSub = window.location.pathname.startsWith('/roffice-appeal');
       window.APP_BASE = isSub ? '/roffice-appeal' : '';
       let b = document.querySelector('base');

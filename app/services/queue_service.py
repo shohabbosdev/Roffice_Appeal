@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timezone, timedelta, date, time
 from typing import List, Optional, Tuple, Dict, Any
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_, or_, func
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
@@ -347,6 +347,33 @@ class QueueService:
                 detail=f"Sizda ushbu sana uchun mazkur xizmat bo'yicha allaqachon faol navbat taloni mavjud (#{student_active.ticket_code}, vaqti: {student_active.time_slot})."
             )
 
+        # 5.1. No-Show tekshiruvi: so'nggi 7 kunda 3 marta kelmagan talabalarga vaqtinchalik 3 kunlik blokirovka
+        seven_days_ago = datetime.now(timezone.utc) - timedelta(days=7)
+        no_show_stmt = select(func.count(Appointment.id)).where(
+            Appointment.student_id == student_id,
+            Appointment.status == AppointmentStatus.NO_SHOW,
+            Appointment.created_at >= seven_days_ago
+        )
+        no_show_count = (await db.execute(no_show_stmt)).scalar() or 0
+        if no_show_count >= 3:
+            raise HTTPException(
+                status_code=403,
+                detail="Siz so'nggi 7 kun ichida 3 marta belgilangan navbatingizga kelmagansiz (No-Show). Intizomiy qoidalar bo'yicha navbat olish 3 kunga vaqtincha cheklangan. Xizmat olish uchun Registrator ofisi darchalariga bevosita kelib murojaat qilishingiz mumkin."
+            )
+
+        # 5.2. Kunlik global limit: bitta talaba bir kunda barcha xizmatlar bo'yicha jami ko'pi bilan 3 ta navbat taloni olishi mumkin
+        daily_count_stmt = select(func.count(Appointment.id)).where(
+            Appointment.student_id == student_id,
+            Appointment.appointment_date == appointment_date,
+            Appointment.status.in_([AppointmentStatus.BOOKED, AppointmentStatus.CHECKED_IN, AppointmentStatus.IN_SERVICE])
+        )
+        daily_total = (await db.execute(daily_count_stmt)).scalar() or 0
+        if daily_total >= 3:
+            raise HTTPException(
+                status_code=400,
+                detail="Kunlik navbat limiti tugadi. Bitta talaba bir kunda barcha xizmatlar bo'yicha ko'pi bilan 3 ta navbat taloni olishi mumkin."
+            )
+
         # 6. Double-booking tekshiruvi (poyga holati - Race condition himoyasi)
         stmt = select(Appointment).where(
             Appointment.appointment_date == appointment_date,
@@ -515,6 +542,23 @@ class QueueService:
 
         await db.commit()
         await db.refresh(appointment)
+
+        # Telegram va tizim xabarnomasi (navbati darchaga chaqirilganligi haqida)
+        try:
+            if appointment.student and appointment.student.telegram_chat_id:
+                from app.services.telegram_service import TelegramService
+                call_msg = (
+                    f"🔔 <b>Sizning navbatingiz keldi!</b>\n\n"
+                    f"Hurmatli <b>{appointment.student.full_name}</b>!\n"
+                    f"Sizning <b>#{appointment.ticket_code}</b> raqamli navbatingiz darchaga chaqirildi.\n\n"
+                    f"• <b>Darcha:</b> {appointment.window_number}\n"
+                    f"• <b>Xizmat:</b> {appointment.service.title if appointment.service else 'Registrator xizmati'}\n\n"
+                    f"<i>Iltimos, darhol belgilangan darchaga yaqinlashing.</i>"
+                )
+                await TelegramService.send_telegram_message(appointment.student.telegram_chat_id, call_msg)
+        except Exception:
+            pass
+
         return appointment
 
     @classmethod

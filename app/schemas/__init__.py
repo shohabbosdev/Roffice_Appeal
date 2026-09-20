@@ -234,6 +234,10 @@ class ProrektorFinalDecision(BaseModel):
     final_decision: str
 
 
+class AppealCancel(BaseModel):
+    reason: Optional[str] = None
+
+
 class AppealOut(BaseModel):
     id: int
     ticket_number: str

@@ -258,6 +258,26 @@ class BackupService:
         return deleted_count
 
     @classmethod
+    def cleanup_old_backups(cls, days: int = 30) -> int:
+        """Belgilangan kun (sukut bo'yicha 30 kun)dan oshgan eski zaxira nusxalarini diskdan tozalaydi."""
+        cls.ensure_backup_dir()
+        now_ts = datetime.now(timezone.utc).timestamp()
+        cutoff_seconds = days * 86400
+        deleted_count = 0
+
+        for file_path in BACKUP_DIR.glob("backup_roffice_*.tar.gz"):
+            if file_path.is_file():
+                age_seconds = now_ts - file_path.stat().st_mtime
+                if age_seconds > cutoff_seconds:
+                    try:
+                        file_path.unlink(missing_ok=True)
+                        deleted_count += 1
+                        logger.info(f"Eski zaxira fayli tozalandi (>{days} kun): {file_path.name}")
+                    except Exception as e:
+                        logger.error(f"Eski zaxirani tozalashda xatolik ({file_path.name}): {e}")
+        return deleted_count
+
+    @classmethod
     async def _notify_admins_on_backup(
         cls,
         archive_filename: str,

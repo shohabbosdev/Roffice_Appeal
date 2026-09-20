@@ -6,7 +6,7 @@ from app.core.database import AsyncSessionLocal, engine, Base
 from app.core.security import hash_password
 from app.models import (
     User, UserRole, Department, DepartmentType, Service, ResolutionMode,
-    EmployeeKPITarget, Holiday
+    EmployeeKPITarget, Holiday, Announcement, AnnouncementPriority
 )
 from app.core.config import settings
 
@@ -32,6 +32,40 @@ async def seed_database():
             )
         )).scalars().first()
 
+        async def _ensure_default_announcements(auth_id: int):
+            existing_ann = (await session.execute(select(Announcement))).scalars().first()
+            if not existing_ann:
+                ann1 = Announcement(
+                    title="2025/2026-o'quv yili semestr yakuniy nazoratlari jadvali e'lon qilindi",
+                    content="Hurmatli talabalar! Registrator ofisi tomonidan 2025/2026-o'quv yili bahorgi semestr yakuniy nazoratlari jadvali tasdiqlandi. Imtihonlar HEMIS tizimi orqali belgilangan auditoriyalarda o'tkaziladi. O'z vaqtida kelishingizni so'raymiz.",
+                    priority=AnnouncementPriority.IMPORTANT,
+                    target_education_form=None, # Barcha ta'lim shakllari
+                    author_id=auth_id,
+                    requires_ack=True,
+                    is_active=True
+                )
+                ann2 = Announcement(
+                    title="To'lov-shartnoma mablag'larini to'lash muddati bo'yicha eslatma",
+                    content="To'lov-shartnoma asosida tahsil olayotgan talabalar diqqatiga! Joriy o'quv yili uchun belgilangan to'lovlarni o'z vaqtida amalga oshirishingiz va to'lov kvitansiyalarini Registrator ofisi 2-darchasiga taqdim etishingiz yoki onlayn murojaat orqali yuborishingiz mumkin.",
+                    priority=AnnouncementPriority.NORMAL,
+                    target_education_form=None,
+                    author_id=auth_id,
+                    requires_ack=False,
+                    is_active=True
+                )
+                ann3 = Announcement(
+                    title="Kunduzgi ta'lim talabalari uchun akademik ma'lumotnomalar berish tartibi",
+                    content="Kunduzgi ta'lim shakli talabalari uchun o'qish joyidan ma'lumotnoma (spravka) va transkriptlar Registrator ofisining 1-darchasi orqali yoki yagona talabalar portali orqali QR-kodli elektron shaklda 24 soat ichida beriladi.",
+                    priority=AnnouncementPriority.NORMAL,
+                    target_education_form="Kunduzgi",
+                    author_id=auth_id,
+                    requires_ack=False,
+                    is_active=True
+                )
+                session.add_all([ann1, ann2, ann3])
+                await session.commit()
+                print("3 ta me'yoriy rasmiy e'lon muvaffaqiyatli kiritildi!")
+
         if existing_admin:
             if os.getenv("ADMIN_PASSWORD") or os.getenv("ADMIN_EMAIL"):
                 existing_admin.username = admin_username
@@ -43,6 +77,7 @@ async def seed_database():
                 print("Mavjud administrator ma'lumotlari muvaffaqiyatli yangilandi!")
             else:
                 print("Dastlabki ma'lumotlar allaqachon kiritilgan!")
+            await _ensure_default_announcements(existing_admin.id)
             return
 
         # 1. Registrator ofisi bo'limlari (Nizomga muvofiq)
@@ -410,6 +445,7 @@ async def seed_database():
             session.add(kpi_entry)
 
         await session.commit()
+        await _ensure_default_announcements(user_admin.id)
         print("Barcha ma'lumotlar muvaffaqiyatli saqlandi!")
         print(f"- Bo'limlar soni: {len(departments)}")
         print(f"- Xizmatlar soni: {len(services)}")

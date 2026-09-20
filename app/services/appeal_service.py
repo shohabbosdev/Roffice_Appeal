@@ -641,3 +641,38 @@ class AppealService:
             "server_time": now.isoformat()
         }
 
+    @classmethod
+    async def cancel_appeal_by_student(
+        cls, db: AsyncSession, appeal_id: int, student_id: int, reason: Optional[str] = None
+    ) -> Appeal:
+        """Talaba o'z arizasi hali xodim tomonidan ko'rib chiqishga olinmagan (NEW) paytda uni bekor qilishi."""
+        appeal = await db.get(Appeal, appeal_id)
+        if not appeal:
+            raise HTTPException(status_code=404, detail="Murojaat topilmadi.")
+
+        if appeal.student_id != student_id:
+            raise HTTPException(status_code=403, detail="Siz faqat o'zingiz yaratgan murojaatni bekor qila olasiz.")
+
+        if appeal.status != AppealStatus.NEW:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Ushbu murojaatni bekor qilib bo'lmaydi. U mas'ul xodim tomonidan ijroga qabul qilingan (holati: {appeal.status.value})."
+            )
+
+        appeal.status = AppealStatus.CANCELLED
+        clean_reason = reason or "Talaba tomonidan sabab ko'rsatilmadi"
+        appeal.resolution_text = f"[Talaba tomonidan bekor qilindi]: {clean_reason}"
+        appeal.dispute_reason = f"[Talaba tomonidan bekor qilindi]: {clean_reason}"
+
+        log = AuditLog(
+            user_id=student_id,
+            entity_type="appeal",
+            entity_id=appeal.id,
+            action="cancelled_by_student",
+            details=f"Talaba o'z arizasini bekor qildi. Sabab: {clean_reason}"
+        )
+        db.add(log)
+        await db.commit()
+        await db.refresh(appeal)
+        return appeal
+

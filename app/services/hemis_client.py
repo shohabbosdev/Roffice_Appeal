@@ -82,9 +82,22 @@ class HemisClient:
                 detail=f"HEMIS serveriga ulanishda xatolik: {str(exc)}"
             )
 
+    # Oddiy va xavfsiz TTL kesh (5 daqiqa)
+    _profile_cache: Dict[str, Any] = {}
+    CACHE_TTL_SECONDS = 300
+
     @classmethod
     async def get_me(cls, access_token: str) -> Dict[str, Any]:
-        """HEMIS talaba profil ma'lumotlarini olish."""
+        """HEMIS talaba profil ma'lumotlarini olish (TTL kesh bilan)."""
+        import time
+        now = time.time()
+
+        # Keshni tekshirish
+        if access_token in cls._profile_cache:
+            ts, cached_data = cls._profile_cache[access_token]
+            if now - ts < cls.CACHE_TTL_SECONDS:
+                return cached_data
+
         url = f"{settings.HEMIS_BASE_URL}/account/me"
         headers = {
             "accept": "application/json",
@@ -97,16 +110,29 @@ class HemisClient:
                 if response.status_code == 200:
                     data = response.json()
                     if data.get("success") and "data" in data:
-                        return data["data"]
+                        profile_data = data["data"]
+                        cls._profile_cache[access_token] = (now, profile_data)
+                        return profile_data
+
+                if response.status_code == 401:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="HEMIS sessiyasi tugagan yoki token yaroqsiz. Iltimos qaytadan login qiling."
+                    )
 
                 raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Talaba profili ma'lumotlarini olib bo'lmadi (Token yaroqsiz)."
+                    status_code=status.HTTP_502_BAD_GATEWAY,
+                    detail=f"HEMIS tizimi profil ma'lumotlarini taqdim eta olmadi (Status kodi: {response.status_code})."
                 )
+        except httpx.TimeoutException:
+            raise HTTPException(
+                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
+                detail="Universitet HEMIS tizimi vaqtincha javob bermayapti (Server Timeout). Iltimos, bir ozdan so'ng qayta urinib ko'ring."
+            )
         except httpx.RequestError as exc:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=f"HEMIS serveriga ulanishda xatolik: {str(exc)}"
+                detail=f"Universitet HEMIS tizimi bilan aloqa o'rnatib bo'lmadi: {str(exc)}"
             )
 
     @staticmethod

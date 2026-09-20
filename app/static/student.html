@@ -7,6 +7,12 @@
   
   <script>
     (function() {
+      const _origWarn = console.warn;
+      console.warn = function(...args) {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+        _origWarn.apply(console, args);
+      };
+
       const isSub = window.location.pathname.startsWith('/roffice-appeal');
       window.APP_BASE = isSub ? '/roffice-appeal' : '';
       let b = document.querySelector('base');
@@ -711,7 +717,10 @@
       closeSidebar();
 
       if (tabId === 'appeals') loadStudentAppeals();
-      if (tabId === 'create') checkStudentFormRestriction();
+      if (tabId === 'create') {
+        checkStudentFormRestriction();
+        initAppealDraftAutoSave();
+      }
       if (tabId === 'queue') {
         loadQueueServices();
         loadStudentAppointments();
@@ -982,6 +991,7 @@
           resBox.innerHTML = `Murojaat qabul qilindi. <strong>Talon raqami: #${res.ticket_number}</strong><br>SLA ijro muddati: ${new Date(res.sla_deadline_at).toLocaleString('uz')}`;
           document.getElementById('appeal-form').reset();
           clearUploadedFile();
+          localStorage.removeItem('student_appeal_draft');
           loadStudentAppeals();
         } else {
           resBox.className = 'p-3.5 rounded-xl text-xs font-medium border border-rose-500/30 bg-rose-500/10 text-rose-400 block';
@@ -991,6 +1001,61 @@
         resBox.className = 'p-3.5 rounded-xl text-xs font-medium border border-rose-500/30 bg-rose-500/10 text-rose-400 block';
         resBox.innerText = "Server bilan aloqa o'rnatib bo'lmadi.";
       }
+    }
+
+    async function cancelStudentAppeal(appealId) {
+      if (!confirm("Haqiqatan ham ushbu murojaatni bekor qilmoqchimisiz?")) return;
+      try {
+        const resp = await fetch(apiUrl(`/api/v1/appeals/${appealId}/cancel`), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify({ reason: "Talaba tomonidan bekor qilindi" })
+        });
+        if (resp.ok) {
+          alert("Murojaat muvaffaqiyatli bekor qilindi.");
+          loadStudentAppeals();
+        } else {
+          const data = await resp.json();
+          alert(data.detail || "Murojaatni bekor qilishda xatolik yuz berdi.");
+        }
+      } catch (err) {
+        alert("Server bilan aloqa o'rnatib bo'lmadi.");
+      }
+    }
+
+    function initAppealDraftAutoSave() {
+      const subjEl = document.getElementById('appeal-subject');
+      const msgEl = document.getElementById('appeal-message');
+      const svcEl = document.getElementById('service-select');
+      if (!subjEl || !msgEl) return;
+
+      // Qoralamani tiklash
+      try {
+        const saved = localStorage.getItem('student_appeal_draft');
+        if (saved) {
+          const data = JSON.parse(saved);
+          if (data.subject) subjEl.value = data.subject;
+          if (data.message) msgEl.value = data.message;
+          if (data.serviceId && svcEl) svcEl.value = data.serviceId;
+        }
+      } catch (e) {}
+
+      // Avto-saqlash
+      function saveDraft() {
+        const payload = {
+          subject: subjEl.value,
+          message: msgEl.value,
+          serviceId: svcEl ? svcEl.value : ''
+        };
+        localStorage.setItem('student_appeal_draft', JSON.stringify(payload));
+      }
+
+      subjEl.addEventListener('input', saveDraft);
+      msgEl.addEventListener('input', saveDraft);
+      if (svcEl) svcEl.addEventListener('change', saveDraft);
     }
 
     let allStudentAppeals = [];
@@ -1137,10 +1202,19 @@
             ${ratingStarsHtml}
 
             <div class="flex items-center justify-between flex-wrap gap-2 pt-2.5 border-t border-slate-800/80">
-              <button type="button" onclick="openAppealTracker(${app.id})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-medium transition cursor-pointer">
-                <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-                <span>📍 Bosqichlar va kutish vaqti</span>
-              </button>
+              <div class="flex items-center gap-2 flex-wrap">
+                <button type="button" onclick="openAppealTracker(${app.id})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-medium transition cursor-pointer">
+                  <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  <span>📍 Bosqichlar va kutish vaqti</span>
+                </button>
+
+                ${app.status === 'new' ? `
+                  <button type="button" onclick="cancelStudentAppeal(${app.id})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-medium transition cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    <span>Bekor qilish</span>
+                  </button>
+                ` : ''}
+              </div>
 
               ${app.status === 'resolved' ? `
                 <div class="flex items-center gap-2">

@@ -84,3 +84,61 @@ class AuditService:
         query = query.limit(limit).offset(offset)
         result = await db.execute(query)
         return list(result.scalars().all())
+
+    @staticmethod
+    async def get_weekly_audit_report(db: AsyncSession) -> dict:
+        """So'nggi 7 kunlik tizim harakatlari va xavfsizlik auditining umumiy tahlili."""
+        from datetime import timedelta
+        from sqlalchemy import func
+
+        now = datetime.now(timezone.utc)
+        week_ago = now - timedelta(days=7)
+
+        # 1. Jami loglar
+        total_stmt = select(func.count(AuditLog.id)).where(AuditLog.created_at >= week_ago)
+        total_logs = (await db.execute(total_stmt)).scalar() or 0
+
+        # 2. Amallar bo'yicha guruhlash
+        action_stmt = (
+            select(AuditLog.action, func.count(AuditLog.id))
+            .where(AuditLog.created_at >= week_ago)
+            .group_by(AuditLog.action)
+            .order_by(func.count(AuditLog.id).desc())
+            .limit(10)
+        )
+        action_res = await db.execute(action_stmt)
+        actions_breakdown = {row[0]: row[1] for row in action_res.all()}
+
+        # 3. Ob'ekt turlari bo'yicha guruhlash
+        entity_stmt = (
+            select(AuditLog.entity_type, func.count(AuditLog.id))
+            .where(AuditLog.created_at >= week_ago)
+            .group_by(AuditLog.entity_type)
+            .order_by(func.count(AuditLog.id).desc())
+        )
+        entity_res = await db.execute(entity_stmt)
+        entities_breakdown = {row[0]: row[1] for row in entity_res.all()}
+
+        # 4. Eng faol foydalanuvchilar
+        user_stmt = (
+            select(AuditLog.user_id, func.count(AuditLog.id))
+            .where(AuditLog.created_at >= week_ago, AuditLog.user_id.isnot(None))
+            .group_by(AuditLog.user_id)
+            .order_by(func.count(AuditLog.id).desc())
+            .limit(5)
+        )
+        user_res = await db.execute(user_stmt)
+        top_users = [{"user_id": row[0], "actions_count": row[1]} for row in user_res.all()]
+
+        return {
+            "period": {
+                "start": week_ago.isoformat(),
+                "end": now.isoformat(),
+                "days": 7
+            },
+            "total_audit_records": total_logs,
+            "actions_breakdown": actions_breakdown,
+            "entities_breakdown": entities_breakdown,
+            "top_active_users": top_users,
+            "system_health": "OPTIMAL" if total_logs >= 0 else "NO_DATA"
+        }
