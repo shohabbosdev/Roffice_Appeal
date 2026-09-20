@@ -169,3 +169,38 @@ async def test_board_page_route(client: AsyncClient):
     assert resp.status_code == 200
     assert "html" in resp.headers.get("content-type", "").lower()
 
+
+@pytest.mark.asyncio
+async def test_audit_logs_pagination_and_x_total_count(client: AsyncClient, test_db: AsyncSession, seed_test_data: dict):
+    """Audit jurnali pagination (limit, offset) va X-Total-Count sarlavhasi to'g'ri ishlashini tekshirish."""
+    head = seed_test_data["head"]
+
+    # 1. Login qilib token olish
+    login_resp = await client.post(
+        "/api/v1/auth/login",
+        json={"username": "test_head", "password": "Pass123!"}
+    )
+    assert login_resp.status_code == 200
+    token = login_resp.json()["access_token"]
+
+    # 2. Limit 2 va offset 0 bilan audit loglarini so'rash
+    resp_page1 = await client.get(
+        "/api/v1/audit-logs?limit=2&offset=0",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert resp_page1.status_code == 200
+    assert "X-Total-Count" in resp_page1.headers
+    total_count = int(resp_page1.headers["X-Total-Count"])
+    assert total_count >= 1
+    page1_data = resp_page1.json()
+    assert len(page1_data) <= 2
+
+    # 3. Offset 1 bilan keyingi sahifa surilishini tekshirish
+    resp_page2 = await client.get(
+        "/api/v1/audit-logs?limit=1&offset=1",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+    assert resp_page2.status_code == 200
+    assert int(resp_page2.headers["X-Total-Count"]) == total_count
+
+

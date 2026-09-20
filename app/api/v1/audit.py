@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models import User, UserRole
@@ -21,6 +21,7 @@ async def get_weekly_audit_summary(
 
 @router.get("", response_model=List[AuditLogOut], summary="Tizim harakatlar jurnali (faqat Rahbariyat va Admin uchun)")
 async def get_audit_logs(
+    response: Response,
     entity_type: Optional[str] = Query(None, description="Obyekt turi (appeal, appointment, service, auth, staff)"),
     action: Optional[str] = Query(None, description="Amal turi (masalan, status_changed, assigned, login, prorektor_decision)"),
     search: Optional[str] = Query(None, description="Tafsilotlar bo'yicha qidiruv"),
@@ -33,6 +34,13 @@ async def get_audit_logs(
     Tizimdagi barcha muhim xavfsizlik va ma'muriy amallar tarixini qaytaradi.
     Faqat Registrator ofisi boshlig'i, Prorektor va Admin kira oladi.
     """
+    total_count = await AuditService.count_logs(
+        db=db,
+        entity_type=entity_type,
+        action=action,
+        search=search
+    )
+    response.headers["X-Total-Count"] = str(total_count)
     return await AuditService.get_logs(
         db=db,
         entity_type=entity_type,

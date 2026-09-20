@@ -1028,6 +1028,28 @@
                 </tbody>
               </table>
             </div>
+
+            <!-- Staff Pagination Controls -->
+            <div id="staff-pagination-bar"
+              class="hidden flex-col sm:flex-row items-center justify-between gap-3 p-4 border-t border-slate-800/80 text-xs text-slate-400">
+              <div class="flex items-center gap-2">
+                <span>Ko'rsatilmoqda: <strong id="staff-page-info" class="text-white">0-0 / 0</strong></span>
+                <span class="text-slate-600">|</span>
+                <label class="flex items-center gap-1.5 text-[11px]">
+                  <span>Har sahifada:</span>
+                  <select id="staff-per-page-select" onchange="changeStaffPerPage(this.value)"
+                    class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500 cursor-pointer">
+                    <option value="10" selected>10 ta</option>
+                    <option value="20">20 ta</option>
+                    <option value="50">50 ta</option>
+                  </select>
+                </label>
+              </div>
+              <div class="flex items-center gap-1.5 flex-wrap justify-center sm:justify-end"
+                id="staff-pagination-buttons">
+                <!-- Dinamik sahifa tugmalari -->
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1432,6 +1454,29 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+
+            <!-- Audit Pagination Controls -->
+            <div id="audit-pagination-bar"
+              class="hidden flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-800/80 text-xs text-slate-400">
+              <div class="flex items-center gap-2">
+                <span>Ko'rsatilmoqda: <strong id="audit-page-info" class="text-white">0-0 / 0</strong></span>
+                <span class="text-slate-600">|</span>
+                <label class="flex items-center gap-1.5 text-[11px]">
+                  <span>Har sahifada:</span>
+                  <select id="audit-per-page-select" onchange="changeAuditPerPage(this.value)"
+                    class="bg-slate-950 border border-slate-800 rounded-lg px-2 py-1 text-slate-200 focus:outline-none focus:border-emerald-500 cursor-pointer">
+                    <option value="15" selected>15 ta</option>
+                    <option value="30">30 ta</option>
+                    <option value="50">50 ta</option>
+                    <option value="100">100 ta</option>
+                  </select>
+                </label>
+              </div>
+              <div class="flex items-center gap-1.5 flex-wrap justify-center sm:justify-end"
+                id="audit-pagination-buttons">
+                <!-- Dinamik sahifa tugmalari -->
+              </div>
             </div>
           </div>
         </div>
@@ -3011,12 +3056,12 @@
       <script src="static/js/staff/core.js?v=2.2.1"></script>
       <script src="static/js/staff/services.js?v=2.2.1"></script>
       <script src="static/js/staff/queue.js?v=2.2.1"></script>
-      <script src="static/js/staff/users.js?v=2.2.1"></script>
+      <script src="static/js/staff/users.js?v=2.2.4"></script>
       <script src="static/js/staff/appeals.js?v=2.2.1"></script>
       <script src="static/js/staff/policy.js?v=2.2.1"></script>
       <script src="static/js/staff/kpi.js?v=2.2.1"></script>
       <script src="static/js/staff/calendar.js?v=2.2.1"></script>
       <script src="static/js/staff/analytics.js?v=2.2.3"></script>
-      <script src="static/js/staff/audit.js?v=2.2.3"></script>
+      <script src="static/js/staff/audit.js?v=2.2.4"></script>
       <script src="static/js/staff/system.js?v=2.2.2"></script>
       <script src="static/js/staff/announcements.js?v=2.2.1"></script>

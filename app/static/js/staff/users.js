@@ -95,6 +95,9 @@ async function loadDepartmentsDropdown() {
       document.getElementById('temp-password-modal').classList.add('hidden');
     }
 
+    let staffCurrentPage = 1;
+    let staffPerPage = 10;
+
     async function loadStaffUsers() {
       const tbody = document.getElementById('staff-users-table-body');
       if (!tbody) return;
@@ -105,72 +108,175 @@ async function loadDepartmentsDropdown() {
         });
         if (!resp.ok) {
           tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-rose-400">Xodimlarni ko'rish huquqi yetarli emas (faqat Administrator va Boshliq).</td></tr>`;
+          renderStaffPagination(0);
           return;
         }
         allStaffList = await resp.json();
-        if (!allStaffList || allStaffList.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Xodimlar mavjud emas.</td></tr>`;
-          return;
-        }
-
-        tbody.innerHTML = allStaffList.map(u => {
-          const dutiesSummary = u.assigned_duties ? u.assigned_duties.split('\n')[0] : "Biriktirilmagan";
-          const dept = allDepartmentsList.find(d => d.id === u.department_id);
-          const deptLabel = dept ? `${dept.name} (${dept.window_number || dept.code})` : 'Bo\'limsiz';
-          const assignedServices = u.assigned_services || [];
-          const servicesCount = assignedServices.length;
-
-          let servicesBadgesHtml = '';
-          if (servicesCount > 0) {
-            servicesBadgesHtml = `
-              <div class="mt-1 flex flex-wrap gap-1 items-center">
-                ${assignedServices.slice(0, 3).map(s => `<span class="px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/20 text-sky-300 text-[10px] font-mono" title="${s.title}">${s.code}</span>`).join('')}
-                ${servicesCount > 3 ? `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-mono">+${servicesCount - 3}</span>` : ''}
-              </div>
-            `;
-          } else {
-            servicesBadgesHtml = `<div class="mt-1 text-[10px] text-slate-500 italic">Barcha xizmatlar (bo'lim)</div>`;
-          }
-
-          return `
-            <tr class="hover:bg-slate-950/40 transition">
-              <td class="p-3.5 font-mono text-slate-400">${u.id}</td>
-              <td class="p-3.5">
-                <div class="font-semibold text-white">${u.full_name}</div>
-                <div class="text-[11px] text-slate-400">${u.email || u.phone || '-'} • <span class="text-blue-400 font-medium">${deptLabel}</span></div>
-                ${servicesBadgesHtml}
-              </td>
-              <td class="p-3.5 font-mono text-blue-400 font-medium">${u.username}</td>
-              <td class="p-3.5">
-                <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${roleBadgeColor[u.role] || 'border-slate-800'}">
-                  ${roleNameMap[u.role] || u.role}
-                </span>
-                ${u.must_change_password ? '<span class="ml-1 text-[10px] text-amber-400 font-medium">(Vaqtinchalik OTP)</span>' : ''}
-              </td>
-              <td class="p-3.5 text-slate-300 text-xs max-w-xs truncate" title="${u.assigned_duties || ''}">
-                ${dutiesSummary}
-              </td>
-              <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
-                <button onclick="openStaffServicesModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Xizmatlarni biriktirish">
-                  Xizmatlar (${servicesCount})
-                </button>
-                <button onclick="openEditStaffModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-medium transition cursor-pointer">
-                  Tahrirlash
-                </button>
-                <button onclick="openKpiAwardModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
-                  KPI & Vazifa
-                </button>
-                <button onclick="deleteStaffMember(${u.id})" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
-                  O'chirish
-                </button>
-              </td>
-            </tr>
-          `;
-        }).join('');
+        renderStaffUsersTable();
       } catch (err) {
         tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-rose-400">Server bilan aloqa o'rnatib bo'lmadi.</td></tr>`;
+        renderStaffPagination(0);
       }
     }
+
+    function renderStaffUsersTable() {
+      const tbody = document.getElementById('staff-users-table-body');
+      if (!tbody) return;
+
+      if (!allStaffList || allStaffList.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-500">Xodimlar mavjud emas.</td></tr>`;
+        renderStaffPagination(0);
+        return;
+      }
+
+      const total = allStaffList.length;
+      const totalPages = Math.ceil(total / staffPerPage) || 1;
+      if (staffCurrentPage > totalPages) staffCurrentPage = totalPages;
+      if (staffCurrentPage < 1) staffCurrentPage = 1;
+
+      const startIdx = (staffCurrentPage - 1) * staffPerPage;
+      const endIdx = Math.min(startIdx + staffPerPage, total);
+      const pageItems = allStaffList.slice(startIdx, endIdx);
+
+      tbody.innerHTML = pageItems.map(u => {
+        const dutiesSummary = u.assigned_duties ? u.assigned_duties.split('\n')[0] : "Biriktirilmagan";
+        const dept = allDepartmentsList.find(d => d.id === u.department_id);
+        const deptLabel = dept ? `${dept.name} (${dept.window_number || dept.code})` : 'Bo\'limsiz';
+        const assignedServices = u.assigned_services || [];
+        const servicesCount = assignedServices.length;
+
+        let servicesBadgesHtml = '';
+        if (servicesCount > 0) {
+          servicesBadgesHtml = `
+            <div class="mt-1 flex flex-wrap gap-1 items-center">
+              ${assignedServices.slice(0, 3).map(s => `<span class="px-1.5 py-0.5 rounded bg-sky-500/10 border border-sky-500/20 text-sky-300 text-[10px] font-mono" title="${s.title}">${s.code}</span>`).join('')}
+              ${servicesCount > 3 ? `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 text-[10px] font-mono">+${servicesCount - 3}</span>` : ''}
+            </div>
+          `;
+        } else {
+          servicesBadgesHtml = `<div class="mt-1 text-[10px] text-slate-500 italic">Barcha xizmatlar (bo'lim)</div>`;
+        }
+
+        return `
+          <tr class="hover:bg-slate-950/40 transition">
+            <td class="p-3.5 font-mono text-slate-400">${u.id}</td>
+            <td class="p-3.5">
+              <div class="font-semibold text-white">${u.full_name}</div>
+              <div class="text-[11px] text-slate-400">${u.email || u.phone || '-'} • <span class="text-blue-400 font-medium">${deptLabel}</span></div>
+              ${servicesBadgesHtml}
+            </td>
+            <td class="p-3.5 font-mono text-blue-400 font-medium">${u.username}</td>
+            <td class="p-3.5">
+              <span class="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-medium border ${roleBadgeColor[u.role] || 'border-slate-800'}">
+                ${roleNameMap[u.role] || u.role}
+              </span>
+              ${u.must_change_password ? '<span class="ml-1 text-[10px] text-amber-400 font-medium">(Vaqtinchalik OTP)</span>' : ''}
+            </td>
+            <td class="p-3.5 text-slate-300 text-xs max-w-xs truncate" title="${u.assigned_duties || ''}">
+              ${dutiesSummary}
+            </td>
+            <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
+              <button onclick="openStaffServicesModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Xizmatlarni biriktirish">
+                Xizmatlar (${servicesCount})
+              </button>
+              <button onclick="openEditStaffModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                Tahrirlash
+              </button>
+              <button onclick="openKpiAwardModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                KPI & Vazifa
+              </button>
+              <button onclick="deleteStaffMember(${u.id})" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+                O'chirish
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      renderStaffPagination(total);
+    }
+
+    function changeStaffPage(newPage) {
+      if (newPage < 1) return;
+      const total = allStaffList ? allStaffList.length : 0;
+      const totalPages = Math.ceil(total / staffPerPage) || 1;
+      if (newPage > totalPages) return;
+      staffCurrentPage = newPage;
+      renderStaffUsersTable();
+    }
+
+    function changeStaffPerPage(val) {
+      staffPerPage = parseInt(val, 10) || 10;
+      staffCurrentPage = 1;
+      renderStaffUsersTable();
+    }
+
+    function renderStaffPagination(total) {
+      const paginationBar = document.getElementById('staff-pagination-bar');
+      const pageInfo = document.getElementById('staff-page-info');
+      const paginationButtons = document.getElementById('staff-pagination-buttons');
+
+      if (!paginationBar) return;
+
+      if (!total || total === 0) {
+        paginationBar.classList.remove('flex');
+        paginationBar.classList.add('hidden');
+        return;
+      }
+
+      paginationBar.classList.remove('hidden');
+      paginationBar.classList.add('flex');
+
+      const totalPages = Math.ceil(total / staffPerPage) || 1;
+      const startIdx = (staffCurrentPage - 1) * staffPerPage;
+      const endIdx = Math.min(startIdx + staffPerPage, total);
+
+      if (pageInfo) {
+        pageInfo.textContent = `${startIdx + 1}-${endIdx} / ${total}`;
+      }
+
+      if (paginationButtons) {
+        let btnsHtml = '';
+
+        btnsHtml += `
+          <button 
+            type="button" 
+            onclick="changeStaffPage(${staffCurrentPage - 1})" 
+            ${staffCurrentPage <= 1 ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-600 text-xs cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer transition"'}
+          >
+            ◀ Oldingi
+          </button>
+        `;
+
+        for (let p = 1; p <= totalPages; p++) {
+          const isActive = p === staffCurrentPage;
+          btnsHtml += `
+            <button 
+              type="button" 
+              onclick="changeStaffPage(${p})" 
+              class="w-7 h-7 flex items-center justify-center rounded-lg text-xs font-semibold transition cursor-pointer ${isActive ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30' : 'border border-slate-800 bg-slate-950 text-slate-400 hover:text-white hover:border-slate-700'}"
+            >
+              ${p}
+            </button>
+          `;
+        }
+
+        btnsHtml += `
+          <button 
+            type="button" 
+            onclick="changeStaffPage(${staffCurrentPage + 1})" 
+            ${staffCurrentPage >= totalPages ? 'disabled class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-600 text-xs cursor-not-allowed"' : 'class="px-2.5 py-1 rounded-lg border border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:border-slate-700 text-xs cursor-pointer transition"'}
+          >
+            Keyingi ▶
+          </button>
+        `;
+
+        paginationButtons.innerHTML = btnsHtml;
+      }
+    }
+
+    window.changeStaffPage = changeStaffPage;
+    window.changeStaffPerPage = changeStaffPerPage;
 
     // === XODIMGA XIZMATLARNI BIRIKTIRISH MODAL BOSHQARUVI ===
     let currentStaffAssigningServices = null;

@@ -50,6 +50,36 @@ class AuditService:
         return log_entry
 
     @staticmethod
+    async def count_logs(
+        db: AsyncSession,
+        entity_type: Optional[str] = None,
+        action: Optional[str] = None,
+        search: Optional[str] = None
+    ) -> int:
+        """Filtrlar bo'yicha audit jurnali yozuvlarining umumiy sonini hisoblaydi."""
+        from sqlalchemy import func
+        query = select(func.count(AuditLog.id))
+
+        if entity_type:
+            query = query.where(AuditLog.entity_type == entity_type)
+
+        if action:
+            query = query.where(AuditLog.action == action)
+
+        if search:
+            search_pattern = f"%{search}%"
+            query = query.where(
+                or_(
+                    AuditLog.details.ilike(search_pattern),
+                    AuditLog.action.ilike(search_pattern),
+                    AuditLog.entity_type.ilike(search_pattern)
+                )
+            )
+
+        result = await db.execute(query)
+        return result.scalar() or 0
+
+    @staticmethod
     async def get_logs(
         db: AsyncSession,
         entity_type: Optional[str] = None,
