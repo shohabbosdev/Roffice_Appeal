@@ -24,6 +24,7 @@ Mirzo Ulug'bek nomidagi O'zbekiston Milliy universiteti Jizzax filialining Regis
    - [4.10. Rasmiy QR-kodli Elektron Ma'lumotnomalar va Ochiq Verifikatsiya (Public Verification)](#410-rasmiy-qr-kodli-elektron-malumotnomalar-va-ochiq-verifikatsiya-public-verification)
    - [4.11. Majburiy Fikr Devori (Blocking Feedback Wall)](#411-majburiy-fikr-devori-blocking-feedback-wall)
    - [4.12. Segmentatsiyalangan E'lonlar Markazi va O'qilganlik Auditi (Targeted Announcements)](#412-segmentatsiyalangan-elonlar-markazi-va-oqilganlik-auditi-targeted-announcements)
+   - [4.13. Murojaatning Vizual Treki (Progress Stepper) va Dinamik Taxminiy Kutish Vaqti](#413-murojaatning-vizual-treki-progress-stepper-va-dinamik-taxminiy-kutish-vaqti)
 5. [Biznes Mantiq, Formula va Algoritmlar](#5-biznes-mantiq-formula-va-algoritmlar)
    - [SLA Ish Vaqti Hisoblash](#sla-ish-vaqti-hisoblash)
    - [Xodimlar KPI Samaradorlik Formulasi](#xodimlar-kpi-samaradorlik-formulasi)
@@ -271,6 +272,13 @@ Registrator ofisi rahbariyati tomonidan talabalarga ommaviy xabar va topshiriqla
 2. **Huquqiy O'qilganlik Fiksatsiyasi (`AnnouncementRead`):** Talaba shaxsiy kabinetida e'lon bilan tanishib "Tanishdim" tugmasini bosganda uning IP manzili, aniq vaqti va brauzer ma'lumotlari qayd etiladi.
 3. **Jonli Analitika va CSV Eksport:** Xodimlar boshqaruv panelida har bir e'lon bo'yicha qamrov foizi ko'rinadi va e'lon bilan tanishmagan talabalar ro'yxatini bir marta bosish orqali CSV formatida yuklab olish mumkin.
 4. **Yengil Xabarnoma Siyosati:** Telegram faqat signalizatsiya va portalga kirish havolasi uchun xizmat qiladi; og'ir PDF fayllar bot orqali tarqatilmaydi.
+
+### 4.13. Murojaatning Vizual Treki (Progress Stepper) va Dinamik Taxminiy Kutish Vaqti
+
+Murojaat topshirgan talabalarga jarayonning har bir daqiqasini shaffof ko'rsatish va kutish xavotirini yo'qotish mexanizmi:
+1. **5 Bosqichli Vizual Stepper:** Qabul qilindi (`NEW`) $\rightarrow$ Mas'ul xodim ko'rmoqda (`IN_PROGRESS`) $\rightarrow$ Maxsus nazorat (`DISPUTED / ESCALATED`, agar nizo bo'lsa) $\rightarrow$ Natija va rasmiy QR-hujjat tayyorlandi (`RESOLVED`) $\rightarrow$ Talaba tasdiqladi va yopildi (`COMPLETED`).
+2. **Dinamik Taxminiy Kutish Vaqti:** Mas'ul xodimning joriy arizalar navbati (`queue_ahead_count`), normativ SLA muddati va rasmiy ish vaqti (09:00 - 17:00) tahlili asosida talabaga aniq kutilayotgan tayyor bo'lish vaqti va bajarilish foizi (0-100%) ko'rsatiladi.
+3. **Ommaviy Trek Qidiruvi:** Fuqarolar yoki talabalar umumiy portalda (`portal.html`) tizimga kirmasdan, faqat chipta kodi orqali holatni tekshirishi mumkin. Shaxsiy ma'lumotlar maxfiyligi (PII protection) to'liq kafolatlangan (talaba ismi `S*** F***` ko'rinishida yashiriladi).
 
 ---
 
