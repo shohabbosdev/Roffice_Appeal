@@ -150,6 +150,103 @@ let token = localStorage.getItem('roffice_token');
         }
       }
     }
+    window.toggleNewStaffPasswordInput = toggleNewStaffPasswordInput;
+
+    /**
+     * Universal Excel (.xls) Formatter and Exporter
+     * Creates professional, styled spreadsheets with colors, headers, and borders.
+     */
+    function exportToExcelXls(filename, sheetName, title, metaLines, headers, rows) {
+      const colSpan = (headers && headers.length) ? headers.length : 6;
+      let html = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+          <meta charset="utf-8">
+          <!--[if gte mso 9]>
+          <xml>
+            <x:ExcelWorkbook>
+              <x:ExcelWorksheets>
+                <x:ExcelWorksheet>
+                  <x:Name>${sheetName || 'Hisobot'}</x:Name>
+                  <x:WorksheetOptions>
+                    <x:DisplayGridlines/>
+                  </x:WorksheetOptions>
+                </x:ExcelWorksheet>
+              </x:ExcelWorksheets>
+            </x:ExcelWorkbook>
+          </xml>
+          <![endif]-->
+          <style>
+            body { font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; }
+            .main-title { background-color: #1e3a8a; color: #ffffff; font-size: 13pt; font-weight: bold; text-align: center; height: 38px; vertical-align: middle; border: 1px solid #1e3a8a; }
+            .sub-title { background-color: #f8fafc; color: #334155; font-size: 9.5pt; height: 24px; vertical-align: middle; padding: 4px 8px; border-bottom: 1px solid #e2e8f0; }
+            .th-cell { background-color: #2563eb; color: #ffffff; font-size: 10pt; font-weight: bold; text-align: center; vertical-align: middle; border: 1px solid #1d4ed8; height: 30px; padding: 4px 8px; }
+            .td-cell { font-size: 9.5pt; vertical-align: middle; border: 1px solid #cbd5e1; padding: 5px 8px; mso-number-format: "\\@"; }
+            .td-badge-completed { background-color: #dcfce7; color: #15803d; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px 8px; font-size: 9.5pt; }
+            .td-badge-progress { background-color: #fef3c7; color: #b45309; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px 8px; font-size: 9.5pt; }
+            .td-badge-danger { background-color: #fee2e2; color: #b91c1c; font-weight: bold; text-align: center; border: 1px solid #cbd5e1; padding: 5px 8px; font-size: 9.5pt; }
+            .zebra-even { background-color: #ffffff; }
+            .zebra-odd { background-color: #f8fafc; }
+          </style>
+        </head>
+        <body>
+          <table>
+      `;
+
+      if (title) {
+        html += `<tr><td colspan="${colSpan}" class="main-title">${title}</td></tr>`;
+      }
+      if (metaLines && metaLines.length) {
+        metaLines.forEach(m => {
+          html += `<tr><td colspan="${colSpan}" class="sub-title">${m}</td></tr>`;
+        });
+        html += `<tr><td colspan="${colSpan}" style="height: 10px;"></td></tr>`;
+      }
+      if (headers && headers.length) {
+        html += `<tr>`;
+        headers.forEach(h => {
+          html += `<th class="th-cell">${h}</th>`;
+        });
+        html += `</tr>`;
+      }
+      if (rows && rows.length) {
+        rows.forEach((r, idx) => {
+          const zebra = (idx % 2 === 0) ? 'zebra-even' : 'zebra-odd';
+          html += `<tr>`;
+          r.forEach(cell => {
+            let val = (cell === null || cell === undefined) ? '' : String(cell);
+            let cls = `td-cell ${zebra}`;
+            if (val.includes('Yakunlandi') || val.includes('Tasdiqlandi') || val.includes('100%')) {
+              cls = `td-badge-completed`;
+            } else if (val.includes('Ijroda') || val.includes('Biriktirilgan') || val.includes('Yangi')) {
+              cls = `td-badge-progress`;
+            } else if (val.includes('Rad etildi') || val.includes("E'tiroz") || val.includes("Muddati o'tgan")) {
+              cls = `td-badge-danger`;
+            }
+            val = val.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            html += `<td class="${cls}">${val}</td>`;
+          });
+          html += `</tr>`;
+        });
+      }
+
+      html += `
+          </table>
+        </body>
+        </html>
+      `;
+
+      const blob = new Blob(['\uFEFF', html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename.endsWith('.xls') ? filename : `${filename}.xls`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+    window.exportToExcelXls = exportToExcelXls;
 
     // 1. Core Tab Router with URL Hash and LocalStorage Persistence
     function switchStaffTab(tabId, updateHash = true) {

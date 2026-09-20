@@ -392,16 +392,31 @@ async function loadDepartmentsDropdown() {
       // Tasodifiy almashtirish
       pwd = pwd.split('').sort(() => 0.5 - Math.random()).join('');
       
+      if (targetInputId === 'new-staff-custom-password') {
+        const customRadio = document.querySelector('input[name="new_staff_pwd_mode"][value="custom"]');
+        if (customRadio) customRadio.checked = true;
+        const wrap = document.getElementById('new-staff-custom-pwd-wrap');
+        if (wrap) wrap.classList.remove('hidden');
+      } else if (targetInputId === 'edit-staff-new-password') {
+        const resetOtp = document.getElementById('edit-staff-reset-otp');
+        if (resetOtp) resetOtp.checked = false;
+      }
+
       if (targetInputId) {
         const input = document.getElementById(targetInputId);
         if (input) {
           input.value = pwd;
+          input.setAttribute('value', pwd);
+          input.dispatchEvent(new Event('input', { bubbles: true }));
+          input.dispatchEvent(new Event('change', { bubbles: true }));
           input.focus();
+          input.select();
         }
       }
-      showToast("Yangi xavfsiz parol generatsiya qilindi!", "info");
+      showToast("Yangi xavfsiz parol generatsiya qilindi: " + pwd, "info");
       return pwd;
     }
+    window.generateRandomPassword = generateRandomPassword;
 
     async function handleUpdateStaff(e) {
       e.preventDefault();
@@ -468,7 +483,7 @@ async function loadDepartmentsDropdown() {
       const name = u ? u.full_name : "Xodim";
       const ok = await openAppConfirm({
         title: "Xodimni o'chirish",
-        message: `Haqiqatan ham "${name}" xodimini tizimdan o'chirmoqchimisiz? Ushbu xodim tizimga kira olmaydi.`,
+        message: `Haqiqatan ham "${name}" xodimini tizimdan o'chirmoqchimisiz?\n\nAgar xodimga bog'langan murojaatlar bo'lmasa, u butkul o'chiriladi. Aks holda nofaol holatga o'tkaziladi.`,
         confirmText: "O'chirish",
         cancelText: "Bekor qilish",
         isDanger: true
@@ -476,21 +491,22 @@ async function loadDepartmentsDropdown() {
       if (!ok) return;
 
       try {
-        const resp = await fetch(`/api/v1/users/${userId}`, {
+        const resp = await fetch(`/api/v1/users/staff/${userId}`, {
           method: 'DELETE',
           headers: { 'Authorization': `Bearer ${token}` }
         });
+        const res = await resp.json();
         if (resp.ok) {
-          showToast("Xodim muvaffaqiyatli faolsizlashtirildi.", "success");
+          showToast(res.message || "Xodim muvaffaqiyatli o'chirildi.", "success");
           loadStaffUsers();
         } else {
-          const err = await resp.json();
-          showToast(err.detail || "Xodimni o'chirishda xatolik yuz berdi.", "error");
+          showToast(res.detail || "Xodimni o'chirishda xatolik yuz berdi.", "error");
         }
       } catch (e) {
         showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
       }
     }
+    window.deleteStaffMember = deleteStaffMember;
 
     // 8. KPI AWARD MODAL
     function openKpiAwardModal(empId) {

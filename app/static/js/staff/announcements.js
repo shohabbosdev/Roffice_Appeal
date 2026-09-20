@@ -270,8 +270,10 @@ let currentAnalyticsAnnId = null;
     function exportUnreadStudentsCsv() {
       if (!currentAnalyticsAnnId) return;
       const token = localStorage.getItem('roffice_token');
-      window.location.href = apiUrl(`/api/v1/announcements/${currentAnalyticsAnnId}/unread-export?token=${encodeURIComponent(token || '')}`);
+      window.location.href = apiUrl(`/api/v1/announcements/${currentAnalyticsAnnId}/unread-export?format=xls&token=${encodeURIComponent(token || '')}`);
     }
+    window.exportUnreadStudentsExcel = exportUnreadStudentsCsv;
+    window.exportUnreadStudentsCsv = exportUnreadStudentsCsv;
 
     async function deleteAnnouncement(annId) {
       const confirmed = await openAppConfirm({

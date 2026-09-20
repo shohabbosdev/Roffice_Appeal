@@ -96,44 +96,94 @@ async def get_announcement_analytics(
     return analytics
 
 
-@router.get("/{announcement_id}/unread-export", summary="O'qimagan talabalar ro'yxatini CSV formatida yuklab olish")
+@router.get("/{announcement_id}/unread-export", summary="O'qimagan talabalar ro'yxatini Excel (.xls) yoki CSV formatida yuklab olish")
 async def export_unread_students_csv(
     announcement_id: int,
+    format: str = Query("xls", description="Fayl formati: 'xls' yoki 'csv'"),
     current_user: User = Depends(require_role(UserRole.FRONT_STAFF, UserRole.BACK_STAFF, UserRole.OFFICE_HEAD, UserRole.ADMIN, UserRole.VICE_RECTOR)),
     db: AsyncSession = Depends(get_db)
 ):
-    """O'qimagan talabalarni dekanat yoki tyutorlar uchun CSV fayl shaklida uzatadi."""
+    """O'qimagan talabalarni dekanat yoki tyutorlar uchun formatlangan Excel (.xls) yoki CSV fayl shaklida uzatadi."""
     analytics = await AnnouncementService.get_announcement_analytics(db, announcement_id)
     if not analytics:
         raise HTTPException(status_code=404, detail="E'lon topilmadi.")
 
     unread_list = analytics["unread_students"]
+    ann_title = analytics.get("title", f"E'lon #{announcement_id}")
 
-    output = io.StringIO()
-    writer = csv.writer(output)
-    writer.writerow([
-        "T/r", "Talaba F.I.SH.", "HEMIS ID", "Guruhi", "Fakulteti",
-        "Bosqich", "Ta'lim shakli", "Telefon raqami"
-    ])
-
-    for i, st in enumerate(unread_list, 1):
+    if format == "csv":
+        output = io.StringIO()
+        writer = csv.writer(output)
         writer.writerow([
-            i,
-            st["full_name"],
-            st["hemis_student_id"],
-            st["group_name"],
-            st["faculty"],
-            f"{st['course']}-bosqich",
-            st["education_form"],
-            st["phone"]
+            "T/r", "Talaba F.I.SH.", "HEMIS ID", "Guruhi", "Fakulteti",
+            "Bosqich", "Ta'lim shakli", "Telefon raqami"
         ])
+        for i, st in enumerate(unread_list, 1):
+            writer.writerow([
+                i, st["full_name"], st["hemis_student_id"], st["group_name"],
+                st["faculty"], f"{st['course']}-bosqich", st["education_form"], st["phone"]
+            ])
+        csv_data = "\ufeff" + output.getvalue()
+        filename = f"oqimagan_talabalar_elon_{announcement_id}.csv"
+        return Response(
+            content=csv_data,
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"}
+        )
 
-    csv_data = "\ufeff" + output.getvalue() # UTF-8 BOM Excel uchun
-    filename = f"oqimagan_talabalar_elon_{announcement_id}.csv"
+    # Formatlangan Excel (.xls) HTML/XML Spreadsheet
+    rows_html = ""
+    for i, st in enumerate(unread_list, 1):
+        zebra = "#ffffff" if i % 2 == 0 else "#f8fafc"
+        rows_html += f"""
+        <tr style="background-color: {zebra};">
+            <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: center; font-size: 10pt;">{i}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-weight: bold; font-size: 10pt;">{st['full_name']}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 10px; mso-number-format: '\\@'; font-size: 10pt;">{st['hemis_student_id']}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: center; font-size: 10pt;">{st['group_name']}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 10px; font-size: 10pt;">{st['faculty']}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: center; font-size: 10pt;">{st['course']}-bosqich</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 10px; text-align: center; font-size: 10pt;">{st['education_form']}</td>
+            <td style="border: 1px solid #cbd5e1; padding: 6px 10px; mso-number-format: '\\@'; font-size: 10pt;">{st['phone'] or '—'}</td>
+        </tr>
+        """
 
+    xls_content = f"""\ufeff<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{ font-family: 'Calibri', 'Segoe UI', Arial, sans-serif; }}
+            .title-hdr {{ background-color: #1e3a8a; color: #ffffff; font-size: 13pt; font-weight: bold; text-align: center; height: 38px; }}
+            .meta-hdr {{ background-color: #f8fafc; color: #334155; font-size: 9.5pt; height: 24px; padding: 4px 8px; }}
+            .th-hdr {{ background-color: #2563eb; color: #ffffff; font-size: 10pt; font-weight: bold; text-align: center; border: 1px solid #1d4ed8; height: 30px; }}
+        </style>
+    </head>
+    <body>
+        <table>
+            <tr><td colspan="8" class="title-hdr">JIZZAX DAVLAT PEDAGOGIKA UNIVERSITETI - REGISTRATOR OFISI</td></tr>
+            <tr><td colspan="8" class="meta-hdr">E'lon mavzusi: {ann_title}</td></tr>
+            <tr><td colspan="8" class="meta-hdr">Hujjat turi: E'lon bilan tanishmagan talabalar ro'yxati (Jami: {len(unread_list)} nafar)</td></tr>
+            <tr><td colspan="8" style="height: 10px;"></td></tr>
+            <tr>
+                <th class="th-hdr" style="width: 40px;">T/r</th>
+                <th class="th-hdr" style="width: 250px;">Talaba F.I.SH.</th>
+                <th class="th-hdr" style="width: 120px;">HEMIS ID</th>
+                <th class="th-hdr" style="width: 100px;">Guruhi</th>
+                <th class="th-hdr" style="width: 200px;">Fakulteti</th>
+                <th class="th-hdr" style="width: 90px;">Bosqich</th>
+                <th class="th-hdr" style="width: 110px;">Ta'lim shakli</th>
+                <th class="th-hdr" style="width: 140px;">Telefon raqami</th>
+            </tr>
+            {rows_html}
+        </table>
+    </body>
+    </html>
+    """
+
+    filename = f"oqimagan_talabalar_elon_{announcement_id}.xls"
     return Response(
-        content=csv_data,
-        media_type="text/csv",
+        content=xls_content,
+        media_type="application/vnd.ms-excel",
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
 

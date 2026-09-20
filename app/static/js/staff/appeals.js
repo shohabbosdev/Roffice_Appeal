@@ -564,7 +564,7 @@ async function loadStaffAppeals() {
       renderAppealsCurrentPage();
     }
 
-    // Export to Excel (CSV with UTF-8 BOM)
+    // Export to Excel (.xls with formatting and styles)
     function exportAppealsToExcel() {
       if (!allStaffAppeals || allStaffAppeals.length === 0) {
         showToast("Eksport qilish uchun murojaatlar mavjud emas.", "warning");
@@ -587,30 +587,37 @@ async function loadStaffAppeals() {
       ];
 
       const rows = allStaffAppeals.map(a => [
-        `"${(a.ticket_number || '').replace(/"/g, '""')}"`,
-        `"${(a.subject || '').replace(/"/g, '""')}"`,
-        `"${(a.service?.title || '').replace(/"/g, '""')}"`,
-        `"${(a.student?.full_name || '').replace(/"/g, '""')}"`,
-        `"${(a.student?.username || '').replace(/"/g, '""')}"`,
-        `"${(a.student?.education_form || '').replace(/"/g, '""')}"`,
-        `"${(STATUS_META[a.status]?.label || a.status).replace(/"/g, '""')}"`,
-        `"${a.created_at ? new Date(a.created_at).toLocaleString('uz-UZ') : ''}"`,
-        `"${a.sla_deadline_at ? new Date(a.sla_deadline_at).toLocaleString('uz-UZ') : ''}"`,
-        `"${(a.assigned_staff?.full_name || 'Biriktirilmagan').replace(/"/g, '""')}"`,
-        `"${(a.resolution_text || '').replace(/"/g, '""')}"`,
-        `"${a.rating ? a.rating + ' yulduz' : ''}"`
+        a.ticket_number || '—',
+        a.subject || '—',
+        a.service?.title || '—',
+        a.student?.full_name || '—',
+        a.student?.username || '—',
+        a.student?.education_form || '—',
+        STATUS_META[a.status]?.label || a.status,
+        a.created_at ? new Date(a.created_at).toLocaleString('uz-UZ') : '—',
+        a.sla_deadline_at ? new Date(a.sla_deadline_at).toLocaleString('uz-UZ') : '—',
+        a.assigned_staff?.full_name || 'Biriktirilmagan',
+        a.resolution_text || '—',
+        a.rating ? a.rating + ' yulduz' : 'Baholanmagan'
       ]);
 
-      const csvContent = "\uFEFF" + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `Registrator_Ofisi_Murojaatlar_${new Date().toISOString().slice(0, 10)}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const now = new Date().toLocaleDateString('uz-UZ');
+      const filename = `Registrator_Ofisi_Murojaatlar_${new Date().toISOString().slice(0, 10)}.xls`;
+      
+      exportToExcelXls(
+        filename,
+        "Murojaatlar",
+        "JIZZAX DAVLAT PEDAGOGIKA UNIVERSITETI - REGISTRATOR OFISI MUROJAATLAR REYESTRI",
+        [
+          `Hujjat turi: Rasmiy murojaatlar va ijro monitoringi jurnali`,
+          `Shakllantirilgan sana: ${now} | Jami yuklangan murojaatlar soni: ${rows.length} ta`
+        ],
+        headers,
+        rows
+      );
+      showToast("Murojaatlar formati saqlangan Excel (.xls) fayliga yuklab olindi!", "success");
     }
+    window.exportAppealsToExcel = exportAppealsToExcel;
 
     // Reassign Modal Logic
     async function openReassignModal(appealId) {

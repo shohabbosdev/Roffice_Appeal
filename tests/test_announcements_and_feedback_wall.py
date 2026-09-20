@@ -153,10 +153,14 @@ async def test_targeted_announcements_flow(client: AsyncClient, test_db: AsyncSe
     assert ana_data["acknowledged_count"] >= 1
     assert ana_data["read_percentage"] > 0
 
-    # 6. O'qimagan talabalar ro'yxatini CSV yuklab olish
-    resp_export = await client.get(f"/api/v1/announcements/{ann_id}/unread-export", headers=head_headers)
+    # 6. O'qimagan talabalar ro'yxatini Excel (.xls) va CSV formatlarida yuklab olish
+    resp_export = await client.get(f"/api/v1/announcements/{ann_id}/unread-export?format=xls", headers=head_headers)
     assert resp_export.status_code == 200
-    assert "text/csv" in resp_export.headers.get("content-type", "")
+    assert "excel" in resp_export.headers.get("content-type", "")
+
+    resp_export_csv = await client.get(f"/api/v1/announcements/{ann_id}/unread-export?format=csv", headers=head_headers)
+    assert resp_export_csv.status_code == 200
+    assert "text/csv" in resp_export_csv.headers.get("content-type", "")
 
     # 7. E'lonni bekor qilish / o'chirish
     resp_del = await client.delete(f"/api/v1/announcements/{ann_id}", headers=head_headers)

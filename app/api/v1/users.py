@@ -1,14 +1,14 @@
 import secrets
 import string
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func, delete, update
 from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
-from app.models import User, UserRole, Service
+from app.models import User, UserRole, Service, Appeal, Appointment, EmployeeKPITarget
 from app.schemas import (
     UserOut, UserRoleUpdate, StaffCreate, StaffCreateResponse,
     StaffUpdate, StaffUpdateResponse, UpdateCredentialsRequest, ServiceOut, StaffServiceAssignRequest
@@ -170,6 +170,7 @@ async def get_my_profile(current_user: User = Depends(get_current_user)):
 
 @router.get("/staff", response_model=List[UserOut], summary="Barcha xodimlar va ularning joriy rollari ro'yxati")
 async def get_staff_list(
+    include_inactive: bool = Query(False, description="Nofaol xodimlarni ham qo'shib qaytarish"),
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.OFFICE_HEAD, UserRole.VICE_RECTOR)),
     db: AsyncSession = Depends(get_db)
 ):
@@ -178,8 +179,11 @@ async def get_staff_list(
         select(User)
         .options(selectinload(User.department), selectinload(User.assigned_services))
         .where(User.role != UserRole.STUDENT)
-        .order_by(User.id.asc())
     )
+    if not include_inactive:
+        query = query.where(User.is_active == True)
+        
+    query = query.order_by(User.id.asc())
     result = await db.execute(query)
     return result.scalars().all()
 
@@ -439,6 +443,7 @@ async def update_user_role(
 @router.delete("/{user_id}", summary="Xodimni tizimdan o'chirish / nofaol qilish")
 async def delete_staff(
     user_id: int,
+    hard: bool = Query(False, description="Bazadan butkul majburiy o'chirib tashlash"),
     current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.OFFICE_HEAD)),
     db: AsyncSession = Depends(get_db)
 ):
@@ -450,9 +455,50 @@ async def delete_staff(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Xodim topilmadi.")
 
+    appeals_count = (await db.execute(
+        select(func.count(Appeal.id)).where(Appeal.assigned_staff_id == user_id)
+    )).scalar() or 0
+
+    appointments_count = (await db.execute(
+        select(func.count(Appointment.id)).where(Appointment.staff_id == user_id)
+    )).scalar() or 0
+
+    # 1. Agar xodimga hech qanday ariza va qabul bog'lanmagan bo'lsa, butkul o'chiriladi
+    if appeals_count == 0 and appointments_count == 0:
+        await db.execute(delete(EmployeeKPITarget).where(EmployeeKPITarget.employee_id == user_id))
+        user.assigned_services = []
+        await db.delete(user)
+        await db.commit()
+        return {
+            "status": "deleted",
+            "message": f"Xodim ({user.full_name}) tizimdan butkul o'chirib tashlandi."
+        }
+
+    # 2. Agar majburiy butkul o'chirish so'ralgan bo'lsa
+    if hard:
+        await db.execute(
+            update(Appeal).where(Appeal.assigned_staff_id == user_id).values(assigned_staff_id=None)
+        )
+        await db.execute(
+            update(Appointment).where(Appointment.staff_id == user_id).values(staff_id=None)
+        )
+        await db.execute(delete(EmployeeKPITarget).where(EmployeeKPITarget.employee_id == user_id))
+        user.assigned_services = []
+        await db.delete(user)
+        await db.commit()
+        return {
+            "status": "deleted",
+            "message": f"Xodim ({user.full_name}) va unga biriktirilgan aloqalar tizimdan butkul o'chirib tashlandi."
+        }
+
+    # 3. Aks holda ma'lumotlar yaxlitligi uchun nofaol holatga o'tkaziladi
     user.is_active = False
+    user.assigned_services = []
     await db.commit()
-    return {"message": f"Xodim ({user.full_name}) muvaffaqiyatli nofaol qilindi."}
+    return {
+        "status": "deactivated",
+        "message": f"Xodimga bog'langan {appeals_count} ta murojaat mavjudligi sababli u nofaol holatga o'tkazildi va ro'yxatdan olib tashlandi."
+    }
 
 
 @router.put("/me/credentials", summary="Har bir xodim o'z login va parolini mustaqil o'zgartirishi")

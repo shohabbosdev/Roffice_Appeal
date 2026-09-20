@@ -194,3 +194,14 @@ async def test_staff_update_endpoint_and_password_reset():
         })
         assert tmp_login.status_code == 200
         assert tmp_login.json()["must_change_password"] is True
+
+        # 3. Admin deletes the temporary staff member (hard delete since no appeals attached)
+        del_res = await ac.delete(f"/api/v1/users/staff/{staff_id}", headers=admin_headers)
+        assert del_res.status_code == 200
+        assert del_res.json()["status"] == "deleted"
+
+        # 4. Confirm deleted staff member is no longer in staff list
+        list_res = await ac.get("/api/v1/users/staff", headers=admin_headers)
+        assert list_res.status_code == 200
+        staff_ids = [u["id"] for u in list_res.json()]
+        assert staff_id not in staff_ids

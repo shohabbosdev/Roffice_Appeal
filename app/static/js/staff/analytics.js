@@ -271,55 +271,68 @@ async function loadExecutiveAnalytics() {
       const periodLabel = periodSelect ? periodSelect.options[periodSelect.selectedIndex].text : 'Barcha davr';
       const nowStr = new Date().toLocaleString('uz-UZ');
 
-      let csv = "\uFEFF"; // UTF-8 BOM Excel kirill va lotin harflarini to'g'ri ko'rsatishi uchun
-      csv += `"REGISTRATOR OFISI - RAHBARIYAT TAHLILIY HISOBOTI"\n`;
-      csv += `"Hisobot davri:","${periodLabel}"\n`;
-      csv += `"Shakllantirilgan sana:","${nowStr}"\n\n`;
+      const headers = ["Bo'lim / Ko'rsatkich", "Parametr / Nomi", "Miqdor / Qiymat", "Ulush / Foiz", "Izoh / Holat"];
+      const rows = [];
 
-      // 1. Asosiy ko'rsatkichlar
-      csv += `"1. ASOSIY INTEGRAL KO'RSATKICHLAR"\n`;
-      csv += `"Ko'rsatkich","Qiymat"\n`;
-      csv += `"Jami murojaatlar soni","${data.summary.total_appeals || 0}"\n`;
-      csv += `"Bajarilgan murojaatlar","${data.summary.completed_appeals || 0}"\n`;
-      csv += `"Jarayondagi murojaatlar","${data.summary.in_progress_appeals || 0}"\n`;
-      csv += `"Rad etilgan murojaatlar","${data.summary.rejected_appeals || 0}"\n`;
-      csv += `"Nizoli / Rahbariyatga oshirilgan","${data.summary.disputed_appeals || 0}"\n`;
-      csv += `"SLA ijro intizomi (%)","${data.summary.sla_compliance_percent || 100}%"\n`;
-      csv += `"O'rtacha ijro vaqti (soat)","${data.summary.avg_resolution_hours || 0}"\n`;
-      csv += `"Talabalar mamnuniyat reytingi","${Number(data.summary.avg_student_rating || 5).toFixed(1)} / 5.0"\n`;
-      csv += `"Jami shaxsiy qabul navbatlari","${data.summary.total_appointments || 0}"\n\n`;
+      // 1. Asosiy integral ko'rsatkichlar
+      rows.push(["1. INTEGRAL KO'RSATKICH", "Jami murojaatlar soni", data.summary.total_appeals || 0, "100%", "Barcha kelib tushgan"]);
+      rows.push(["1. INTEGRAL KO'RSATKICH", "Bajarilgan murojaatlar", data.summary.completed_appeals || 0, `${Math.round(((data.summary.completed_appeals || 0) / (data.summary.total_appeals || 1)) * 100)}%`, "Ijobiy yakunlangan"]);
+      rows.push(["1. INTEGRAL KO'RSATKICH", "Jarayondagi murojaatlar", data.summary.in_progress_appeals || 0, "-", "Hozirda ijroda"]);
+      rows.push(["1. INTEGRAL KO'RSATKICH", "Rad etilgan murojaatlar", data.summary.rejected_appeals || 0, "-", "Asoslantirilgan rad"]);
+      rows.push(["1. INTEGRAL KO'RSATKICH", "Nizoli / Rahbariyatga oshirilgan", data.summary.disputed_appeals || 0, "-", "Nazoratda"]);
+      rows.push(["1. INTEGRAL KO'RSATKICH", "SLA ijro intizomi", `${data.summary.sla_compliance_percent || 100}%`, "-", "O'z vaqtida bajarilgan"]);
+      rows.push(["1. INTEGRAL KO'RSATKICH", "O'rtacha ijro vaqti", `${data.summary.avg_resolution_hours || 0} soat`, "-", "Normativ 24-72 soat"]);
+      rows.push(["1. INTEGRAL KO'RSATKICH", "Talabalar mamnuniyat reytingi", `${Number(data.summary.avg_student_rating || 5).toFixed(1)} / 5.0`, "-", "Maksimal 5.0"]);
+      rows.push(["1. INTEGRAL KO'RSATKICH", "Shaxsiy qabul navbatlari", data.summary.total_appointments || 0, "-", "Darcha va qabul"]);
+
+      // Bo'sh ajratuvchi qator
+      rows.push(["---", "---", "---", "---", "---"]);
 
       // 2. Fakultetlar kesimida
-      csv += `"2. FAKULTETLAR KESIMIDA TAHLIL"\n`;
-      csv += `"Fakultet","Jami murojaat","Bajarilgan","Nizoli","O'rtacha baho","Bajarilish foizi"\n`;
       (data.by_faculty || []).forEach(f => {
         const pct = f.total > 0 ? Math.round((f.completed / f.total) * 100) : 0;
-        const facName = (f.faculty || 'Boshqa / Belgilanmagan').replace(/"/g, '""');
-        csv += `"${facName}","${f.total || 0}","${f.completed || 0}","${f.disputed || 0}","${f.avg_rating || 5.0}","${pct}%"\n`;
+        rows.push([
+          "2. FAKULTETLAR TAHLILI",
+          f.faculty || "Boshqa / Belgilanmagan",
+          `Jami: ${f.total || 0} ta`,
+          `Bajarilish: ${pct}%`,
+          `Baho: ${f.avg_rating || 5.0} | Nizoli: ${f.disputed || 0}`
+        ]);
       });
-      csv += `\n`;
+
+      // Bo'sh ajratuvchi qator
+      rows.push(["---", "---", "---", "---", "---"]);
 
       // 3. Top xizmatlar
-      csv += `"3. TOP-5 TALABGIR XIZMATLAR"\n`;
-      csv += `"Xizmat kodi","Xizmat nomi","Murojaatlar soni","Ulushi (%)"\n`;
-      (data.top_services || []).forEach(s => {
-        const sTitle = (s.title || 'Xizmat').replace(/"/g, '""');
-        csv += `"${s.code || ''}","${sTitle}","${s.count || 0}","${s.percentage || 0}%"\n`;
+      (data.top_services || []).forEach((s, idx) => {
+        rows.push([
+          "3. TALABGIR XIZMAT",
+          `#${idx + 1} ${s.title || 'Xizmat'} (${s.code || ''})`,
+          `${s.count || 0} ta murojaat`,
+          `${s.percentage || 0}%`,
+          "Talabgorlik indeksi"
+        ]);
       });
 
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
       const safeDate = new Date().toISOString().slice(0, 10);
-      link.setAttribute("download", `Registrator_Ofisi_Tahliliy_Hisobot_${safeDate}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const filename = `Registrator_Ofisi_Tahliliy_Hisobot_${safeDate}.xls`;
 
-      showToast("Tahliliy hisobot Excel (CSV) fayli muvaffaqiyatli yuklab olindi!", "success");
+      exportToExcelXls(
+        filename,
+        "Tahliliy Hisobot",
+        "JIZZAX DAVLAT PEDAGOGIKA UNIVERSITETI - REGISTRATOR OFISI RAHBARIYAT TAHLILIY HISOBOTI",
+        [
+          `Hisobot davri: ${periodLabel}`,
+          `Shakllantirilgan sana va vaqt: ${nowStr}`
+        ],
+        headers,
+        rows
+      );
+
+      showToast("Tahliliy hisobot formatlangan Excel (.xls) fayliga muvaffaqiyatli yuklab olindi!", "success");
     }
+    window.exportAnalyticsExcel = exportAnalyticsCsv;
+    window.exportAnalyticsCsv = exportAnalyticsCsv;
 
     // 15. Centralized Audit Logs Management System
     let auditLogsData = [];

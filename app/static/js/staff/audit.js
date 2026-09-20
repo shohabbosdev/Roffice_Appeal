@@ -158,47 +158,50 @@ async function loadAuditLogs() {
         return;
       }
 
-      let csv = "\uFEFF"; // UTF-8 BOM
-      csv += `"ID","Sana va vaqt","Foydalanuvchi","Rol","Amal (Action)","Obyekt turi","Obyekt ID","IP manzil","Tafsilotlar"\n`;
-
-      auditLogsData.forEach(l => {
-        let dateStr = l.created_at || '';
+      const headers = ["Log ID", "Sana va vaqt", "Foydalanuvchi", "Tizimdagi roli", "Amal (Action)", "Obyekt turi", "Obyekt ID", "IP manzil", "Amal tafsilotlari"];
+      const rows = auditLogsData.map(l => {
+        let dateStr = l.created_at || '—';
         try {
           const d = new Date(l.created_at);
-          dateStr = d.toISOString().replace('T', ' ').slice(0, 19);
+          dateStr = d.toLocaleString('uz-UZ');
         } catch (e) { }
 
-        let changesStr = '';
+        let changesStr = '—';
         if (l.changes) {
           changesStr = typeof l.changes === 'string' ? l.changes : JSON.stringify(l.changes);
         }
 
-        const row = [
-          l.id || '',
+        return [
+          `#${l.id || ''}`,
           dateStr,
-          (l.user_full_name || '').replace(/"/g, '""'),
-          (l.user_role || '').replace(/"/g, '""'),
-          (l.action || '').replace(/"/g, '""'),
-          (l.entity_type || '').replace(/"/g, '""'),
-          l.entity_id || '',
-          (l.ip_address || '').replace(/"/g, '""'),
-          changesStr.replace(/"/g, '""')
+          l.user_full_name || 'Tizim / Anonim',
+          l.user_role || '—',
+          l.action || '—',
+          l.entity_type || '—',
+          l.entity_id || '—',
+          l.ip_address || '—',
+          changesStr
         ];
-        csv += `"${row.join('","')}"\n`;
       });
 
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.setAttribute("href", url);
       const safeDate = new Date().toISOString().slice(0, 10);
-      link.setAttribute("download", `Registrator_Ofisi_Audit_Jurnali_${safeDate}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      const filename = `Registrator_Ofisi_Audit_Jurnali_${safeDate}.xls`;
 
-      showToast("Audit jurnali CSV formatida muvaffaqiyatli yuklab olindi!", "success");
+      exportToExcelXls(
+        filename,
+        "Audit Jurnali",
+        "JIZZAX DAVLAT PEDAGOGIKA UNIVERSITETI - AXBOROT XAVFSIZLIGI VA AUDIT JURNALI",
+        [
+          `Hujjat turi: Tizim xavfsizlik harakatlari va tranzaksiyalar auditi`,
+          `Shakllantirilgan sana: ${new Date().toLocaleString('uz-UZ')} | Jami yozuvlar: ${rows.length} ta`
+        ],
+        headers,
+        rows
+      );
+
+      showToast("Audit jurnali formatlangan Excel (.xls) fayliga muvaffaqiyatli yuklab olindi!", "success");
     }
+    window.exportAuditLogsToExcel = exportAuditLogsToCsv;
+    window.exportAuditLogsToCsv = exportAuditLogsToCsv;
 
     // ================= 16. SYSTEM MONITORING & BACKUPS =================
