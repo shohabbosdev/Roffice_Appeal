@@ -1604,6 +1604,88 @@
               </table>
             </div>
           </div>
+
+          <!-- Admin-Only: Telegram Bot & HEMIS Integratsiya Sozlamalari -->
+          <div id="admin-integration-settings-card" class="hidden bg-slate-900/80 rounded-2xl border border-indigo-500/30 p-5 sm:p-6 shadow-xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400 font-bold text-lg">
+                  🤖
+                </div>
+                <div>
+                  <h4 class="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                    Telegram Bot va HEMIS Integratsiya Sozlamalari
+                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase">Faqat Asosiy Administrator</span>
+                  </h4>
+                  <p class="text-xs text-slate-400 mt-0.5">Ushbu sozlamalar to'g'ridan-to'g'ri ma'lumotlar bazasida xavfsiz shifrlangan holda saqlanadi.</p>
+                </div>
+              </div>
+              <span id="tg-bot-status-badge" class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 self-start sm:self-auto">
+                Bot: Faol
+              </span>
+            </div>
+
+            <form id="integration-settings-form" onsubmit="handleSaveIntegrationSettings(event)" class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Telegram Bot Username -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    Telegram Bot Username
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-3 top-2.5 text-xs text-slate-500">@</span>
+                    <input type="text" id="cfg-tg-bot-username" required
+                      class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-7 pr-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                      placeholder="rofficejbnuubot">
+                  </div>
+                  <span class="text-[10px] text-slate-500 mt-1 block">Foydalanuvchilar qidirib topishi va ulanishi uchun bot username</span>
+                </div>
+
+                <!-- Admin Telegram Chat ID -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    Asosiy Administrator Telegram Chat ID
+                  </label>
+                  <input type="number" id="cfg-admin-tg-id" required
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                    placeholder="8515413686">
+                  <span class="text-[10px] text-slate-500 mt-1 block">Tizim nosozliklari, zaxira nusxalari va favqulodda xabarlar shu ID ga yuboriladi</span>
+                </div>
+
+                <!-- Telegram Bot Token -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    Telegram Bot Token (BotFather)
+                  </label>
+                  <input type="password" id="cfg-tg-bot-token"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                    placeholder="O'zgartirish uchun yangi tokenni kiriting">
+                  <span id="cfg-tg-bot-token-hint" class="text-[10px] text-emerald-400 mt-1 block">Bazada shifrlangan holda o'rnatilgan</span>
+                </div>
+
+                <!-- JBNUU HEMIS API Token -->
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">
+                    JBNUU HEMIS API Token
+                  </label>
+                  <input type="password" id="cfg-jbnuu-api-token"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-indigo-500"
+                    placeholder="O'zgartirish uchun yangi HEMIS tokenni kiriting">
+                  <span id="cfg-jbnuu-token-hint" class="text-[10px] text-emerald-400 mt-1 block">Bazada shifrlangan holda o'rnatilgan</span>
+                </div>
+              </div>
+
+              <div class="flex justify-end pt-2">
+                <button type="submit" id="btn-save-integration-settings"
+                  class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs transition cursor-pointer shadow-md shadow-indigo-600/20 flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Integratsiya sozlamalarini saqlash</span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
 
         <!-- ================= TAB: ANNOUNCEMENTS CENTER ================= -->
@@ -2925,6 +3007,6 @@
       <script src="static/js/staff/calendar.js?v=2.2.1"></script>
       <script src="static/js/staff/analytics.js?v=2.2.1"></script>
       <script src="static/js/staff/audit.js?v=2.2.1"></script>
-      <script src="static/js/staff/system.js?v=2.2.1"></script>
+      <script src="static/js/staff/system.js?v=2.2.2"></script>
       <script src="static/js/staff/announcements.js?v=2.2.1"></script>
       <!-- End of Document (HTML5 compliant implicit body/html closure) -->

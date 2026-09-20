@@ -8,11 +8,12 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from app.core.config import settings
-from app.core.database import engine, Base
+from app.core.database import engine, Base, AsyncSessionLocal
 from app.api.v1.router import api_v1_router
 from app.services.telegram_bot import run_telegram_bot_poller
 from app.services.sla_reminder import run_sla_reminder_loop
 from app.services.backup_service import BackupService, run_backup_scheduler_loop
+from app.services.integration_service import IntegrationService
 
 
 @asynccontextmanager
@@ -59,6 +60,13 @@ async def lifespan(app: FastAPI):
             """))
         except Exception:
             pass
+
+    # Initialize integration settings defaults (Telegram Bot & Admin ID) in DB
+    try:
+        async with AsyncSessionLocal() as db:
+            await IntegrationService.init_defaults(db)
+    except Exception:
+        pass
 
     # Start background tasks
     bot_task = asyncio.create_task(run_telegram_bot_poller())

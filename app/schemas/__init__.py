@@ -541,4 +541,21 @@ class AnnouncementAnalyticsOut(BaseModel):
     unread_students: List[UnreadStudentInfo]
 
 
+# Integration & System Settings Schemas
+class IntegrationSettingsOut(BaseModel):
+    telegram_bot_username: str
+    telegram_bot_token_masked: str
+    is_telegram_bot_configured: bool
+    admin_telegram_id: int
+    jbnuu_api_token_masked: str
+    is_jbnuu_token_configured: bool
+
+
+class IntegrationSettingsUpdate(BaseModel):
+    telegram_bot_username: Optional[str] = None
+    telegram_bot_token: Optional[str] = None
+    admin_telegram_id: Optional[int] = None
+    jbnuu_api_token: Optional[str] = None
+
+
 

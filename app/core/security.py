@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import os
 import jwt
 from datetime import datetime, timedelta, timezone
@@ -70,3 +71,73 @@ def verify_telegram_bind_token(token_str: str) -> Optional[int]:
         return int(payload.get("sub"))
     except Exception:
         return None
+
+
+def encrypt_secret(plaintext: str) -> str:
+    """
+    Simmetrik shifrlash: Standart kutubxona (PBKDF2 + Keystream + HMAC-SHA256).
+    Maxfiy tokenlarni bazada ochiq matn holda qoldirmaslik uchun xavfsiz shifrlaydi.
+    Format: enc$v1${salt_hex}${mac_hex}${cipher_hex}
+    """
+    if not plaintext:
+        return ""
+    salt = os.urandom(16)
+    derived_key = hashlib.pbkdf2_hmac("sha256", settings.SECRET_KEY.encode("utf-8"), salt, 10000)
+    data = plaintext.encode("utf-8")
+    
+    # Keystream generator
+    keystream = bytearray()
+    counter = 0
+    while len(keystream) < len(data):
+        block = hashlib.sha256(derived_key + counter.to_bytes(4, "big")).digest()
+        keystream.extend(block)
+        counter += 1
+    
+    ciphertext = bytes(a ^ b for a, b in zip(data, keystream[:len(data)]))
+    mac = hmac.new(derived_key, ciphertext, hashlib.sha256).digest()
+    return f"enc$v1${salt.hex()}${mac.hex()}${ciphertext.hex()}"
+
+
+def decrypt_secret(ciphertext_bundle: str) -> str:
+    """
+    Shifrlangan tokenni ochish va tekshirish.
+    Agar bundle shifrlanmagan bo'lsa (eski qiymat), uni to'g'ridan-to'g'ri qaytaradi.
+    """
+    if not ciphertext_bundle:
+        return ""
+    if not ciphertext_bundle.startswith("enc$v1$"):
+        return ciphertext_bundle
+
+    try:
+        parts = ciphertext_bundle.split("$")
+        if len(parts) != 5:
+            return ""
+        salt = bytes.fromhex(parts[2])
+        mac = bytes.fromhex(parts[3])
+        ciphertext = bytes.fromhex(parts[4])
+
+        derived_key = hashlib.pbkdf2_hmac("sha256", settings.SECRET_KEY.encode("utf-8"), salt, 10000)
+        expected_mac = hmac.new(derived_key, ciphertext, hashlib.sha256).digest()
+        if not hmac.compare_digest(mac, expected_mac):
+            return ""
+
+        keystream = bytearray()
+        counter = 0
+        while len(keystream) < len(ciphertext):
+            block = hashlib.sha256(derived_key + counter.to_bytes(4, "big")).digest()
+            keystream.extend(block)
+            counter += 1
+
+        plaintext_bytes = bytes(a ^ b for a, b in zip(ciphertext, keystream[:len(ciphertext)]))
+        return plaintext_bytes.decode("utf-8")
+    except Exception:
+        return ""
+
+
+def mask_secret(secret: str, prefix_len: int = 6, suffix_len: int = 4) -> str:
+    """Tokenni UI uchun xavfsiz maskalash (masalan: 857197...3Yk)."""
+    if not secret:
+        return ""
+    if len(secret) <= (prefix_len + suffix_len):
+        return "********"
+    return f"{secret[:prefix_len]}...{secret[-suffix_len:]}"

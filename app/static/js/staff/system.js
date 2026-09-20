@@ -107,7 +107,11 @@ async function loadSystemMetrics() {
           setTxt('sys-db-resolved-appeals', db.resolved_appeals);
           setTxt('sys-db-appointments', db.total_appointments);
           setTxt('sys-db-users', db.total_users);
-          setTxt('sys-db-audits', db.total_audit_logs);
+        }
+
+        // Admin bo'lsa integratsiya sozlamalarini ham yangilash
+        if (typeof loadIntegrationSettings === 'function') {
+          loadIntegrationSettings();
         }
 
       } catch (err) {
@@ -259,4 +263,119 @@ async function loadSystemMetrics() {
       }
     }
 
-    // 18. E'lonlar va Xabarnomalar Markazi Funksiyalari
+    // ================= 17. ADMIN-ONLY INTEGRATION SETTINGS =================
+    async function loadIntegrationSettings() {
+      const token = localStorage.getItem('roffice_token');
+      const role = localStorage.getItem('roffice_role');
+      const card = document.getElementById('admin-integration-settings-card');
+      if (!card) return;
+
+      // Faqat va faqat ADMIN roli uchun!
+      if (!token || role !== 'admin') {
+        card.classList.add('hidden');
+        return;
+      }
+
+      card.classList.remove('hidden');
+
+      try {
+        const res = await fetch(apiUrl('/api/v1/system/integrations'), {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const usrInp = document.getElementById('cfg-tg-bot-username');
+        if (usrInp) usrInp.value = data.telegram_bot_username || '';
+
+        const admInp = document.getElementById('cfg-admin-tg-id');
+        if (admInp) admInp.value = data.admin_telegram_id || '';
+
+        const tgHint = document.getElementById('cfg-tg-bot-token-hint');
+        if (tgHint) {
+          if (data.is_telegram_bot_configured) {
+            tgHint.innerText = `Bazada shifrlangan holda saqlangan (${data.telegram_bot_token_masked})`;
+            tgHint.className = 'text-[10px] text-emerald-400 mt-1 block';
+          } else {
+            tgHint.innerText = "Hali bot tokeni kiritilmagan";
+            tgHint.className = 'text-[10px] text-amber-400 mt-1 block';
+          }
+        }
+
+        const jbnuuHint = document.getElementById('cfg-jbnuu-token-hint');
+        if (jbnuuHint) {
+          if (data.is_jbnuu_token_configured) {
+            jbnuuHint.innerText = `Bazada shifrlangan holda saqlangan (${data.jbnuu_api_token_masked})`;
+            jbnuuHint.className = 'text-[10px] text-emerald-400 mt-1 block';
+          } else {
+            jbnuuHint.innerText = "Hali HEMIS tokeni kiritilmagan";
+            jbnuuHint.className = 'text-[10px] text-amber-400 mt-1 block';
+          }
+        }
+      } catch (e) {
+        console.error("loadIntegrationSettings xatosi:", e);
+      }
+    }
+    window.loadIntegrationSettings = loadIntegrationSettings;
+
+    async function handleSaveIntegrationSettings(e) {
+      e.preventDefault();
+      const token = localStorage.getItem('roffice_token');
+      if (!token) return;
+
+      const btn = document.getElementById('btn-save-integration-settings');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>Saqlanmoqda...</span>';
+      }
+
+      const username = document.getElementById('cfg-tg-bot-username')?.value.trim();
+      const adminId = parseInt(document.getElementById('cfg-admin-tg-id')?.value.trim());
+      const botToken = document.getElementById('cfg-tg-bot-token')?.value.trim();
+      const jbnuuToken = document.getElementById('cfg-jbnuu-api-token')?.value.trim();
+
+      const payload = {
+        telegram_bot_username: username || null,
+        admin_telegram_id: isNaN(adminId) ? null : adminId
+      };
+      if (botToken) {
+        payload.telegram_bot_token = botToken;
+      }
+      if (jbnuuToken) {
+        payload.jbnuu_api_token = jbnuuToken;
+      }
+
+      try {
+        const res = await fetch(apiUrl('/api/v1/system/integrations'), {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+          showToast("Telegram Bot va HEMIS integratsiya sozlamalari bazada xavfsiz shifrlab saqlandi!", "success");
+          if (document.getElementById('cfg-tg-bot-token')) document.getElementById('cfg-tg-bot-token').value = '';
+          if (document.getElementById('cfg-jbnuu-api-token')) document.getElementById('cfg-jbnuu-api-token').value = '';
+          loadIntegrationSettings();
+        } else {
+          const err = await res.json();
+          showToast(err.detail || "Sozlamalarni saqlashda xatolik yuz berdi.", "error");
+        }
+      } catch (err) {
+        showToast("Server bilan aloqa uzildi.", "error");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = `
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Integratsiya sozlamalarini saqlash</span>
+          `;
+        }
+      }
+    }
+    window.handleSaveIntegrationSettings = handleSaveIntegrationSettings;
