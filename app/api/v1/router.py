@@ -13,6 +13,7 @@ from app.api.v1.system import router as system_router
 from app.api.v1.system_settings import router as system_settings_router
 from app.api.v1.verify import router as verify_router
 from app.api.v1.announcements import router as announcements_router
+from app.api.v1.roles import router as roles_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 
@@ -30,5 +31,6 @@ api_v1_router.include_router(system_router)
 api_v1_router.include_router(system_settings_router)
 api_v1_router.include_router(verify_router)
 api_v1_router.include_router(announcements_router)
+api_v1_router.include_router(roles_router)
 
 

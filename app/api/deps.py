@@ -111,3 +111,25 @@ async def get_optional_current_user(
     )
     result = await db.execute(query)
     return result.scalar_one_or_none()
+
+
+def require_permission(*permissions: str) -> Callable:
+    """Dependency factory to enforce granular permissions (PBAC)."""
+    async def permission_checker(
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+    ) -> User:
+        from app.services.role_service import RoleService
+        effective = await RoleService.get_effective_permissions(current_user, db)
+        if "*" in effective:
+            return current_user
+
+        has_perm = any(p in effective for p in permissions)
+        if not has_perm:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Ushbu amalni bajarish uchun sizda yetarli ruxsat yo'q. Talab etilgan ruxsat: {list(permissions)}"
+            )
+        return current_user
+
+    return permission_checker

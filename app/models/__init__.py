@@ -78,6 +78,21 @@ class Department(Base):
     services = relationship("Service", back_populates="department")
 
 
+# 1.5 CustomRole Model (Dinamik Rollar va Huquqlar Matritsasi)
+class CustomRole(Base):
+    __tablename__ = "roles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    code: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False) # e.g. "office_head", "yurist"
+    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    permissions: Mapped[List[str]] = mapped_column(JSON, default=list, nullable=False) # ["appeals:view_all", ...]
+    is_system: Mapped[bool] = mapped_column(Boolean, default=False)
+    is_immutable: Mapped[bool] = mapped_column(Boolean, default=False) # True only for admin
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
 # 2. User Model
 class User(Base):
     __tablename__ = "users"
@@ -89,6 +104,7 @@ class User(Base):
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
     role: Mapped[UserRole] = mapped_column(SQLEnum(UserRole), default=UserRole.STUDENT, nullable=False)
+    custom_permissions: Mapped[Optional[List[str]]] = mapped_column(JSON, default=list, nullable=True)
     
     # Department / Staff assignment
     department_id: Mapped[Optional[int]] = mapped_column(Integer, ForeignKey("departments.id"), nullable=True)

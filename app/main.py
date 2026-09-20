@@ -60,11 +60,23 @@ async def lifespan(app: FastAPI):
             """))
         except Exception:
             pass
+        try:
+            await conn.execute(text("ALTER TABLE users ADD COLUMN custom_permissions JSON DEFAULT '[]'"))
+        except Exception:
+            pass
 
     # Initialize integration settings defaults (Telegram Bot & Admin ID) in DB
     try:
         async with AsyncSessionLocal() as db:
             await IntegrationService.init_defaults(db)
+    except Exception:
+        pass
+
+    # Initialize default roles and permissions in DB
+    try:
+        async with AsyncSessionLocal() as db:
+            from app.services.role_service import RoleService
+            await RoleService.seed_default_roles(db)
     except Exception:
         pass
 

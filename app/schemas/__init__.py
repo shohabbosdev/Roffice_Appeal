@@ -36,6 +36,7 @@ class TokenResponse(BaseModel):
     must_change_password: bool = False
     hemis_token: Optional[str] = None
     hemis_refresh_token: Optional[str] = None
+    permissions: List[str] = []
 
 
 # Department & Service Schemas (Pre-defined for UserOut)
@@ -88,6 +89,8 @@ class UserOut(BaseModel):
     telegram_chat_id: Optional[int] = None
     telegram_username: Optional[str] = None
     telegram_connected_at: Optional[datetime] = None
+    custom_permissions: Optional[List[str]] = []
+    effective_permissions: Optional[List[str]] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -424,6 +427,7 @@ class HemisTokenResponse(BaseModel):
     expires_in_minutes: int
     hemis_token: Optional[str] = None
     hemis_refresh_token: Optional[str] = None
+    permissions: List[str] = []
 
 
 class HemisRefreshRequest(BaseModel):
@@ -556,6 +560,46 @@ class IntegrationSettingsUpdate(BaseModel):
     telegram_bot_token: Optional[str] = None
     admin_telegram_id: Optional[int] = None
     jbnuu_api_token: Optional[str] = None
+
+
+# Dynamic Role & Permission Schemas
+class PermissionItemOut(BaseModel):
+    code: str
+    name: str
+    description: str
+    category: str
+
+
+class RoleOut(BaseModel):
+    id: int
+    code: str
+    name: str
+    description: Optional[str] = None
+    permissions: List[str] = []
+    is_system: bool = False
+    is_immutable: bool = False
+    user_count: int = 0
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class RoleCreate(BaseModel):
+    code: str
+    name: str
+    description: Optional[str] = None
+    permissions: List[str] = []
+
+
+class RoleUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    permissions: Optional[List[str]] = None
+
+
+class StaffPermissionsOverride(BaseModel):
+    custom_permissions: List[str] = []
 
 
 

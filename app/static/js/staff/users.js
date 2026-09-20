@@ -184,6 +184,9 @@ async function loadDepartmentsDropdown() {
                 <button onclick="openStaffServicesModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Xizmatlarni biriktirish">
                   Xizmatlar (${servicesCount})
                 </button>
+                <button onclick="openStaffPermissionsModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Individual huquqlar ustamasi">
+                  Huquqlar
+                </button>
                 <button onclick="openEditStaffModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-medium transition cursor-pointer">
                   Tahrirlash
                 </button>

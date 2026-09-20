@@ -14,6 +14,7 @@ from app.schemas import (
 from app.services.hemis_client import HemisClient
 from app.services.audit_service import AuditService
 from app.services.captcha_service import CaptchaService
+from app.services.role_service import RoleService
 from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Autentifikatsiya"])
@@ -76,6 +77,7 @@ async def login(credentials: UserLogin, request: Request, db: AsyncSession = Dep
             details=f"Tizimga muvaffaqiyatli kirdi: {user.full_name} ({user.role.value})"
         )
         await db.commit()
+        perms = await RoleService.get_effective_permissions(user, db)
         return TokenResponse(
             access_token=token,
             token_type="bearer",
@@ -85,7 +87,8 @@ async def login(credentials: UserLogin, request: Request, db: AsyncSession = Dep
             expires_in_minutes=expire_minutes,
             must_change_password=getattr(user, "must_change_password", False),
             hemis_token=user.hemis_refresh_token or "local-session-token",
-            hemis_refresh_token=user.hemis_refresh_token
+            hemis_refresh_token=user.hemis_refresh_token,
+            permissions=perms
         )
 
     # 2. Agar mahalliy xodim bo'lmasa, real HEMIS orqali talabani tekshirish
@@ -145,6 +148,7 @@ async def login(credentials: UserLogin, request: Request, db: AsyncSession = Dep
             data={"sub": str(user_to_respond.id), "role": user_to_respond.role.value},
             expires_delta=timedelta(minutes=expire_minutes)
         )
+        perms = await RoleService.get_effective_permissions(user_to_respond, db)
         return TokenResponse(
             access_token=token,
             token_type="bearer",
@@ -153,7 +157,8 @@ async def login(credentials: UserLogin, request: Request, db: AsyncSession = Dep
             full_name=user_to_respond.full_name,
             expires_in_minutes=expire_minutes,
             hemis_token=access_token_remote,
-            hemis_refresh_token=refresh_token_remote
+            hemis_refresh_token=refresh_token_remote,
+            permissions=perms
         )
     except Exception:
         raise HTTPException(
@@ -274,6 +279,7 @@ async def hemis_login(credentials: HemisStudentLogin, request: Request, db: Asyn
         expires_delta=timedelta(minutes=expire_minutes)
     )
 
+    perms = await RoleService.get_effective_permissions(user, db)
     return HemisTokenResponse(
         access_token=token,
         token_type="bearer",
@@ -282,7 +288,8 @@ async def hemis_login(credentials: HemisStudentLogin, request: Request, db: Asyn
         full_name=user.full_name,
         expires_in_minutes=expire_minutes,
         hemis_token=access_token_remote,
-        hemis_refresh_token=refresh_token_remote
+        hemis_refresh_token=refresh_token_remote,
+        permissions=perms
     )
 
 
@@ -295,9 +302,16 @@ async def hemis_refresh(data: HemisRefreshRequest):
 
 
 @router.get("/me", response_model=UserOut, summary="Joriy foydalanuvchi profili")
-async def get_me(current_user: User = Depends(get_current_user)):
-    """Avtorizatsiyadan o'tgan foydalanuvchining shaxsiy ma'lumotlari."""
-    return current_user
+async def get_me(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Avtorizatsiyadan o'tgan foydalanuvchining shaxsiy ma'lumotlari va huquqlari."""
+    effective = await RoleService.get_effective_permissions(current_user, db)
+    user_out = UserOut.model_validate(current_user)
+    user_out.effective_permissions = effective
+    user_out.custom_permissions = current_user.custom_permissions or []
+    return user_out
 
 
 @router.get("/telegram-info", response_model=TelegramConnectInfo, summary="Telegram bot bog'lanish holati va havolasi")
