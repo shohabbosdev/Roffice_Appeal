@@ -23,9 +23,9 @@ router = APIRouter(prefix="/system", tags=["Tizim va Monitoring"])
 async def get_system_metrics(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_role(UserRole.ADMIN, UserRole.OFFICE_HEAD))
+    current_user: User = Depends(require_role(UserRole.ADMIN))
 ) -> Dict[str, Any]:
-    """Tizim monitoringi ko'rsatkichlari (Admin va Bo'lim boshlig'i uchun)."""
+    """Tizim monitoringi ko'rsatkichlari (Faqat Administrator uchun)."""
     start_time = getattr(request.app.state, "start_time", None)
     return await SystemMetricsService.get_full_system_status(db, start_time=start_time)
 

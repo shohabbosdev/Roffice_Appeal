@@ -2,6 +2,7 @@ import uuid
 import pytest
 from httpx import AsyncClient, ASGITransport
 from app.main import app
+from tests.conftest import create_token_for_user
 
 
 @pytest.mark.asyncio
@@ -205,3 +206,57 @@ async def test_staff_update_endpoint_and_password_reset():
         assert list_res.status_code == 200
         staff_ids = [u["id"] for u in list_res.json()]
         assert staff_id not in staff_ids
+
+
+@pytest.mark.asyncio
+async def test_admin_user_and_role_protection(client: AsyncClient, test_db: AsyncSession, seed_test_data):
+    """Administrator hisobini va rolini tahrirlash, o'chirish yoki berish taqiqlanganligini tekshirish."""
+    admin = seed_test_data["admin"]
+    head = seed_test_data["head"]
+    staff = seed_test_data["staff"]
+
+    admin_token = create_token_for_user(admin.id, admin.role)
+    head_token = create_token_for_user(head.id, head.role)
+
+    # 1. Admin hisobini o'chirishga urinish -> 403 Forbidden
+    del_res = await client.delete(
+        f"/api/v1/users/staff/{admin.id}",
+        headers={"Authorization": f"Bearer {head_token}"}
+    )
+    assert del_res.status_code == 403
+
+    # 2. Admin hisobini tahrirlashga urinish (PUT /staff/{admin.id}) -> 403 Forbidden
+    edit_res = await client.put(
+        f"/api/v1/users/staff/{admin.id}",
+        headers={"Authorization": f"Bearer {head_token}"},
+        json={"full_name": "Hacked Admin"}
+    )
+    assert edit_res.status_code == 403
+
+    # 3. Admin rolini o'zgartirishga urinish (PATCH /{admin.id}/role) -> 403 Forbidden
+    role_res = await client.patch(
+        f"/api/v1/users/{admin.id}/role",
+        headers={"Authorization": f"Bearer {head_token}"},
+        json={"role": "back_staff"}
+    )
+    assert role_res.status_code == 403
+
+    # 4. Boshqa xodimga Admin rolini berishga urinish -> 403 Forbidden
+    give_admin_res = await client.patch(
+        f"/api/v1/users/{staff.id}/role",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={"role": "admin"}
+    )
+    assert give_admin_res.status_code == 403
+
+    # 5. Yangi xodimni Admin roli bilan yaratishga urinish -> 403 Forbidden
+    create_admin_res = await client.post(
+        "/api/v1/users/staff",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json={
+            "username": "fake_admin_test",
+            "full_name": "Fake Admin",
+            "role": "admin"
+        }
+    )
+    assert create_admin_res.status_code == 403

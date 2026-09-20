@@ -250,6 +250,11 @@ let token = localStorage.getItem('roffice_token');
 
     // 1. Core Tab Router with URL Hash and LocalStorage Persistence
     function switchStaffTab(tabId, updateHash = true) {
+      if (tabId === 'system' && userRole !== 'admin') {
+        showToast("Tizim va zaxiralar bo'limi faqat Administrator uchun ochiq!", "warning");
+        return;
+      }
+
       document.querySelectorAll('.nav-item').forEach(b => {
         b.className = 'nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer';
         const svg = b.querySelector('svg');
@@ -664,8 +669,8 @@ let token = localStorage.getItem('roffice_token');
         if (usersBtn) usersBtn.style.display = 'flex';
         if (analyticsBtn) analyticsBtn.style.display = 'flex';
         if (auditBtn) auditBtn.style.display = 'flex';
-        if (systemBtn) systemBtn.style.display = 'flex';
-        if (backupBtn) backupBtn.style.display = 'none'; // Boshliq faqat ko'radi, zaxira olmaydi
+        if (systemBtn) systemBtn.style.display = 'none'; // Tizim va zaxiralar faqat Admin uchun
+        if (backupBtn) backupBtn.style.display = 'none';
         if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
         if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
       } else {

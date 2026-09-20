@@ -21,9 +21,15 @@ async def test_system_metrics_endpoint(client: AsyncClient, test_db: AsyncSessio
     resp = await client.get("/api/v1/system/metrics", headers={"Authorization": f"Bearer {student_token}"})
     assert resp.status_code == 403
 
-    # 3. Office Head -> 200
+    # 3. Office Head (unauthorized role, system is admin only) -> 403
     head_token = create_token_for_user(head.id, head.role)
     resp = await client.get("/api/v1/system/metrics", headers={"Authorization": f"Bearer {head_token}"})
+    assert resp.status_code == 403
+
+    # 4. Administrator -> 200 OK
+    admin = seed_test_data["admin"]
+    admin_token = create_token_for_user(admin.id, admin.role)
+    resp = await client.get("/api/v1/system/metrics", headers={"Authorization": f"Bearer {admin_token}"})
     assert resp.status_code == 200
     data = resp.json()
 

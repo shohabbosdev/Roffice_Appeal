@@ -111,8 +111,14 @@ async def seed_test_data(test_db: AsyncSession):
         full_name="Sherzod Prorektor",
         role=UserRole.VICE_RECTOR
     )
+    admin = User(
+        username="admin",
+        hashed_password=hash_password("AdminPass123!"),
+        full_name="Tizim Ma'muri",
+        role=UserRole.ADMIN
+    )
 
-    test_db.add_all([student, staff, staff2, head, prorektor])
+    test_db.add_all([student, staff, staff2, head, prorektor, admin])
     await test_db.flush()
 
     # Staff KPI target
@@ -137,7 +143,8 @@ async def seed_test_data(test_db: AsyncSession):
         "staff": staff,
         "staff2": staff2,
         "head": head,
-        "prorektor": prorektor
+        "prorektor": prorektor,
+        "admin": admin
     }
 
 

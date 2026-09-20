@@ -176,18 +176,24 @@ async function loadDepartmentsDropdown() {
               ${dutiesSummary}
             </td>
             <td class="p-3.5 text-right space-x-1 whitespace-nowrap">
-              <button onclick="openStaffServicesModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Xizmatlarni biriktirish">
-                Xizmatlar (${servicesCount})
-              </button>
-              <button onclick="openEditStaffModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-medium transition cursor-pointer">
-                Tahrirlash
-              </button>
-              <button onclick="openKpiAwardModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
-                KPI & Vazifa
-              </button>
-              <button onclick="deleteStaffMember(${u.id})" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
-                O'chirish
-              </button>
+              ${(u.role === 'admin' || u.username === 'admin') ? `
+                <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold select-none shadow-sm" title="Bosh Administrator hisobi o'zgarmas va himoyalangan">
+                  <span>🛡️</span> <span>Tizim Admini (Himoyalangan)</span>
+                </span>
+              ` : `
+                <button onclick="openStaffServicesModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Xizmatlarni biriktirish">
+                  Xizmatlar (${servicesCount})
+                </button>
+                <button onclick="openEditStaffModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                  Tahrirlash
+                </button>
+                <button onclick="openKpiAwardModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                  KPI & Vazifa
+                </button>
+                <button onclick="deleteStaffMember(${u.id})" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+                  O'chirish
+                </button>
+              `}
             </td>
           </tr>
         `;
@@ -462,6 +468,11 @@ async function loadDepartmentsDropdown() {
       const u = allStaffList.find(item => item.id === userId);
       if (!u) return;
 
+      if (u.role === 'admin' || u.username === 'admin') {
+        showToast("Administrator hisobini tahrirlash qat'iyan taqiqlanadi.", "warning");
+        return;
+      }
+
       document.getElementById('edit-staff-id').value = u.id;
       document.getElementById('edit-staff-name').value = u.full_name;
       document.getElementById('edit-staff-username').value = u.username;
@@ -586,6 +597,10 @@ async function loadDepartmentsDropdown() {
 
     async function deleteStaffMember(userId) {
       const u = (allStaffList || []).find(item => item.id === userId);
+      if (u && (u.role === 'admin' || u.username === 'admin')) {
+        showToast("Administrator hisobini tizimdan o'chirish qat'iyan taqiqlanadi!", "error");
+        return;
+      }
       const name = u ? u.full_name : "Xodim";
       const ok = await openAppConfirm({
         title: "Xodimni o'chirish",

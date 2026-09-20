@@ -273,6 +273,12 @@ async def create_staff(
     Xodim uchun avtomatik ravishda 8 belgili bir martalik parol (OTP) generatsiya qilinadi.
     Xodim birinchi marta tizimga kirganida ushbu parolni yangi shaxsiy paroliga almashtirishi shart.
     """
+    if data.role == UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator rolidagi yangi foydalanuvchi yaratish taqiqlanadi. Tizimda faqat yagona bosh administrator mavjud."
+        )
+
     existing = await db.execute(select(User).where(User.username == data.username))
     if existing.scalar_one_or_none():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ushbu login band.")
@@ -346,6 +352,18 @@ async def update_staff(
     user = (await db.execute(query)).scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Xodim topilmadi.")
+
+    if user.role == UserRole.ADMIN or user.username == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator hisobi va parametrlarini tahrirlash qat'iyan taqiqlanadi."
+        )
+
+    if data.role == UserRole.ADMIN and user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Boshqa xodimlarga Administrator rolini berish taqiqlanadi."
+        )
 
     if data.full_name is not None:
         user.full_name = data.full_name
@@ -423,6 +441,18 @@ async def update_user_role(
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foydalanuvchi topilmadi.")
 
+    if user.role == UserRole.ADMIN or user.username == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator rolini o'zgartirish qat'iyan taqiqlanadi."
+        )
+
+    if data.role == UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator rolini boshqa foydalanuvchiga berish taqiqlanadi."
+        )
+
     user.role = data.role
     await db.commit()
     await db.refresh(user)
@@ -454,6 +484,12 @@ async def delete_staff(
     user = await db.get(User, user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Xodim topilmadi.")
+
+    if user.role == UserRole.ADMIN or user.username == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Administrator foydalanuvchisini tizimdan o'chirish qat'iyan taqiqlanadi."
+        )
 
     appeals_count = (await db.execute(
         select(func.count(Appeal.id)).where(Appeal.assigned_staff_id == user_id)
