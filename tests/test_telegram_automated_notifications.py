@@ -7,6 +7,7 @@ from app.models import UserRole, Appeal, AppealStatus, Appointment, AppointmentS
 from datetime import datetime, timezone, timedelta
 from app.services.telegram_service import TelegramService
 from app.services.sla_reminder import check_and_send_sla_reminders
+from app.services.queue_service import QueueService
 
 
 @pytest.mark.asyncio
@@ -89,7 +90,7 @@ async def test_queue_30min_reminder_background_job(test_db: AsyncSession, seed_t
     student.telegram_chat_id = 777111222
     await test_db.commit()
 
-    now = datetime.now(timezone.utc)
+    now = QueueService.get_now().replace(tzinfo=None)
     today_str = now.strftime("%Y-%m-%d")
 
     # Appointment scheduled 25 minutes from now (falls in 15-45 min window)

@@ -3020,7 +3020,11 @@
       if (tabId === 'kpi') loadKPIOverview();
       if (tabId === 'calendar') loadHolidays();
       if (tabId === 'analytics') loadExecutiveAnalytics();
-      if (tabId === 'system') loadSystemMetrics();
+      if (tabId === 'audit') loadAuditLogs();
+      if (tabId === 'system') {
+        loadSystemMetrics();
+        loadBackupsList();
+      }
       if (tabId === 'announcements') loadStaffAnnouncements();
     }
 
@@ -3326,66 +3330,6 @@
       const b = document.getElementById('telegram-reminder-banner');
       if (b) b.classList.add('hidden');
     }
-
-    function switchStaffTab(tabId, updateHash = true) {
-      const tabs = ['appeals', 'services', 'policy', 'queue', 'users', 'kpi', 'calendar', 'analytics', 'audit', 'system'];
-      tabs.forEach(t => {
-        const pane = document.getElementById('tab-' + t);
-        const btn = document.getElementById('nav-' + t + '-btn');
-        if (pane) {
-          if (t === tabId) pane.classList.remove('hidden');
-          else pane.classList.add('hidden');
-        }
-        if (btn) {
-          if (t === tabId) {
-            btn.className = "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold bg-blue-600/15 text-blue-400 border border-blue-500/30 transition cursor-pointer";
-          } else {
-            btn.className = "flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition cursor-pointer";
-          }
-        }
-      });
-
-      const titles = {
-        'appeals': "Murojaatlar monitoringi",
-        'services': "Xizmatlar va bo'limlar boshqaruvi",
-        'policy': "Ta'lim shakli cheklovlari",
-        'queue': "Darcha qabuli (elektron navbat)",
-        'users': "Xodimlarni boshqarish va rollar biriktirish",
-        'kpi': "Xodimlar KPI reytingi",
-        'calendar': "Bayramlar taqvimi",
-        'analytics': "Rahbariyat tahliliy infografikasi",
-        'audit': "Tizim harakatlar va audit jurnali",
-        'system': "Tizim salomatligi va zaxiralar monitoringi"
-      };
-      const heading = document.getElementById('page-heading');
-      if (heading && titles[tabId]) heading.innerText = titles[tabId];
-
-      if (updateHash) {
-        window.location.hash = '#' + tabId;
-        localStorage.setItem('roffice_staff_tab', tabId);
-      }
-
-      closeSidebar();
-
-      if (tabId === 'appeals') loadStaffAppeals();
-      if (tabId === 'services') loadAllServicesAndDepts();
-      if (tabId === 'queue') loadQueueAppointments();
-      if (tabId === 'policy') loadEducationPolicy();
-      if (tabId === 'users') loadStaffUsers();
-      if (tabId === 'kpi') loadKPIOverview();
-      if (tabId === 'calendar') loadHolidays();
-      if (tabId === 'analytics') loadExecutiveAnalytics();
-      if (tabId === 'audit') loadAuditLogs();
-      if (tabId === 'system') {
-        loadSystemMetrics();
-        loadBackupsList();
-      }
-    }
-
-    window.addEventListener('hashchange', () => {
-      const h = window.location.hash.replace('#', '');
-      if (h) switchStaffTab(h, false);
-    });
 
     function applyRolePermissions(role) {
       const policyBtn = document.getElementById('nav-policy-btn');
