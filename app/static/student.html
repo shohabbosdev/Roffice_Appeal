@@ -148,6 +148,20 @@
           </button>
 
           <button
+            onclick="switchStudentTab('announcements')"
+            class="nav-item w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            data-tab="announcements"
+          >
+            <div class="flex items-center gap-3">
+              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+              </svg>
+              <span>E'lonlar markazi</span>
+            </div>
+            <span id="student-announcements-sidebar-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30 hidden">0</span>
+          </button>
+
+          <button
             onclick="switchStudentTab('profile')"
             class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
             data-tab="profile"
@@ -245,11 +259,10 @@
           </div>
         </div>
 
-        <!-- REGISTRATOR OFISI E'LONLARI VA OGOHLANTIRISHLARI -->
-        <div id="student-announcements-container" class="space-y-3 hidden mb-4"></div>
-
         <!-- TAB 1: MENING MUROJAATLARIM -->
         <div id="tab-appeals" class="tab-pane block space-y-5">
+          <!-- Faol yangi e'lonlar haqida tezkor ogohlantirish strip (faqat yangi e'lon bo'lsa) -->
+          <div id="student-urgent-announcement-strip" class="hidden"></div>
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h3 class="text-lg font-bold text-white tracking-tight">Yuborilgan murojaatlar tarixi</h3>
@@ -313,6 +326,21 @@
               Murojaatlar yuklanmoqda...
             </div>
           </div>
+        </div>
+
+        <!-- TAB: E'LONLAR MARKAZI -->
+        <div id="tab-announcements" class="tab-pane hidden space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-800">
+            <div>
+              <h3 class="text-lg font-bold text-white tracking-tight">Registrator ofisi rasmiy e'lonlari</h3>
+              <p class="text-xs text-slate-400">Filial, fakultet va ta'lim shakli bo'yicha e'lonlar hamda tasdiqlash nazorati</p>
+            </div>
+            <button onclick="loadStudentAnnouncements()" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-800 hover:border-slate-700 bg-slate-900 text-xs font-medium text-slate-300 hover:text-white transition cursor-pointer self-start sm:self-auto">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Yangilash</span>
+            </button>
+          </div>
+          <div id="student-announcements-container" class="space-y-3"></div>
         </div>
 
         <!-- TAB 2: YANGI MUROJAAT YO'LLASH -->
@@ -704,6 +732,7 @@
 
       const titles = {
         'appeals': "Mening murojaatlarim",
+        'announcements': "E'lonlar markazi",
         'create': "Yangi murojaat yo'llash",
         'queue': "Kelib hal etish (navbat)",
         'profile': "Talaba profili"
@@ -719,6 +748,7 @@
       closeSidebar();
 
       if (tabId === 'appeals') loadStudentAppeals();
+      if (tabId === 'announcements') loadStudentAnnouncements();
       if (tabId === 'create') {
         checkStudentFormRestriction();
         initAppealDraftAutoSave();
@@ -1968,6 +1998,43 @@
 
       const activeList = cachedStudentAnnouncements.filter(a => !a.is_read || !a.is_acknowledged);
       const archivedList = cachedStudentAnnouncements.filter(a => a.is_read && a.is_acknowledged);
+
+      // Update sidebar badge
+      const sidebarBadge = document.getElementById('student-announcements-sidebar-badge');
+      if (sidebarBadge) {
+        if (activeList.length > 0) {
+          sidebarBadge.innerText = activeList.length;
+          sidebarBadge.classList.remove('hidden');
+        } else {
+          sidebarBadge.classList.add('hidden');
+        }
+      }
+
+      // Update home page (tab-appeals) quick announcement banner
+      const urgentStrip = document.getElementById('student-urgent-announcement-strip');
+      if (urgentStrip) {
+        if (activeList.length > 0) {
+          urgentStrip.classList.remove('hidden');
+          urgentStrip.innerHTML = `
+            <div class="p-3.5 rounded-2xl bg-gradient-to-r from-blue-950/70 via-indigo-950/50 to-slate-900 border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+              <div class="flex items-center gap-2.5">
+                <span class="flex h-2.5 w-2.5 relative">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                </span>
+                <span class="text-xs text-slate-200">Registrator ofisidan <b>${activeList.length} ta</b> yangi rasmiy e'lon mavjud.</span>
+              </div>
+              <button type="button" onclick="switchStudentTab('announcements')" class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition cursor-pointer shadow-sm shadow-blue-600/30 self-start sm:self-auto">
+                <span>E'lonlar markaziga o'tish</span>
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+          `;
+        } else {
+          urgentStrip.classList.add('hidden');
+          urgentStrip.innerHTML = '';
+        }
+      }
 
       const currentList = currentAnnouncementFilter === 'active' ? activeList : archivedList;
 
