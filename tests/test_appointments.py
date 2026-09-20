@@ -178,3 +178,62 @@ async def test_today_and_my_appointments_endpoints(client: AsyncClient, test_db:
     assert del_resp.json()["status"] == "cancelled"
 
 
+async def test_kunduzgi_student_advance_and_past_queue_restrictions(client: AsyncClient, test_db: AsyncSession, seed_test_data):
+    """Kunduzgi ta'lim talabasi kelgusi kunlarga va o'tib ketgan soatlarga navbat ololmasligini tekshirish."""
+    service = seed_test_data["service"]
+
+    # 1. Kunduzgi talaba yaratish
+    kunduzgi_student = User(
+        username="student_kunduzgi_test",
+        hashed_password=seed_test_data["student"].hashed_password,
+        full_name="Dilshod Karimov",
+        role=UserRole.STUDENT,
+        hemis_student_id="HEMIS-KUNDUZGI-99",
+        education_form="Kunduzgi"
+    )
+    test_db.add(kunduzgi_student)
+    await test_db.commit()
+    await test_db.refresh(kunduzgi_student)
+
+    kunduzgi_token = create_token_for_user(kunduzgi_student.id, UserRole.STUDENT)
+
+    # 2. Kunduzgi talaba kelgusi kunga (oldindan) navbat olmoqchi bo'lganda 400 qaytishi shart!
+    future_resp = await client.post(
+        "/api/v1/appointments/book",
+        headers={"Authorization": f"Bearer {kunduzgi_token}"},
+        json={
+            "service_id": service.id,
+            "appointment_date": "2026-09-25",
+            "time_slot": "10:00 - 10:15"
+        }
+    )
+    assert future_resp.status_code == 400
+    assert "faqat joriy kun (bugun) uchun" in future_resp.json()["detail"]
+    assert "Oldindan (kelgusi sanalarga) navbat olish taqiqlangan" in future_resp.json()["detail"]
+
+    # 3. Kunduzgi talaba kelgusi sana uchun slotlarni so'raganda xabar va bo'sh slotlar qaytishi
+    slots_resp = await client.get(
+        f"/api/v1/appointments/available-slots?service_id={service.id}&appointment_date=2026-09-25&detailed=true",
+        headers={"Authorization": f"Bearer {kunduzgi_token}"}
+    )
+    assert slots_resp.status_code == 200
+    slots_data = slots_resp.json()
+    assert slots_data["is_kunduzgi"] is True
+    assert slots_data["total_available"] == 0
+    assert len(slots_data["slots"]) == 0
+    assert "faqat joriy kun (bugun) uchun" in slots_data["message"]
+
+    # 4. Kunduzgi talaba o'tib ketgan sanaga (kechagi kunga) navbat olmoqchi bo'lganda 400 qaytishi
+    past_date_resp = await client.post(
+        "/api/v1/appointments/book",
+        headers={"Authorization": f"Bearer {kunduzgi_token}"},
+        json={
+            "service_id": service.id,
+            "appointment_date": "2026-09-18",
+            "time_slot": "10:00 - 10:15"
+        }
+    )
+    assert past_date_resp.status_code == 400
+    assert "O'tib ketgan sanaga" in past_date_resp.json()["detail"]
+
+

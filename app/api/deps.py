@@ -77,3 +77,31 @@ def require_role(*roles: UserRole) -> Callable:
         return current_user
 
     return role_checker
+
+
+async def get_optional_current_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(security_scheme),
+    db: AsyncSession = Depends(get_db)
+) -> User | None:
+    """Ixtiyoriy autentifikatsiya: agar token bo'lsa foydalanuvchini, bo'lmasa None qaytaradi."""
+    if not credentials or not credentials.credentials:
+        return None
+    token = credentials.credentials
+    payload = decode_access_token(token)
+    if not payload:
+        return None
+    user_id_str = payload.get("sub")
+    if not user_id_str:
+        return None
+    try:
+        user_id = int(user_id_str)
+    except ValueError:
+        return None
+
+    query = (
+        select(User)
+        .options(selectinload(User.department), selectinload(User.assigned_services))
+        .where(User.id == user_id, User.is_active == True)
+    )
+    result = await db.execute(query)
+    return result.scalar_one_or_none()

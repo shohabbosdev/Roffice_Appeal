@@ -1526,11 +1526,22 @@
         if (roleEl) roleEl.innerText = role.toUpperCase();
       }
 
-      const d = new Date();
-      d.setDate(d.getDate() + 1);
-      if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+      function getTashkentTodayStr() {
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const tashkentDate = new Date(utc + (3600000 * 5));
+        const year = tashkentDate.getFullYear();
+        const month = String(tashkentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(tashkentDate.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      }
+
+      const todayStr = getTashkentTodayStr();
       const qd = document.getElementById('queue-date');
-      if (qd) qd.value = d.toISOString().split('T')[0];
+      if (qd) {
+        qd.min = todayStr;
+        qd.value = todayStr;
+      }
 
       await loadEducationPolicy();
       await loadServices();
@@ -2274,25 +2285,31 @@
       try {
         const resp = await fetch(`/api/v1/appointments/available-slots?service_id=${serviceId}&appointment_date=${dateVal}&detailed=true`);
         const data = await resp.json();
+        const isKunduzgi = Boolean(data.is_kunduzgi);
 
         if (!data.is_working_day) {
           const nextDate = data.next_available_date || '';
           container.innerHTML = `
             <div style="padding: 12px; border-radius: 8px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; font-size: 0.8rem;">
               <strong>Qabul mavjud emas:</strong> ${data.message || "Dam olish kuni."}
-              ${nextDate ? `<div style="margin-top: 6px;"><a href="javascript:void(0)" onclick="document.getElementById('queue-date').value='${nextDate}'; loadAvailableSlots();" style="color: #60a5fa; text-decoration: underline;">Keyingi ish kuniga o'tish (${nextDate}) ➜</a></div>` : ''}
+              ${!isKunduzgi && nextDate ? `<div style="margin-top: 6px;"><a href="javascript:void(0)" onclick="document.getElementById('queue-date').value='${nextDate}'; loadAvailableSlots();" style="color: #60a5fa; text-decoration: underline;">Keyingi ish kuniga o'tish (${nextDate}) ➜</a></div>` : (isKunduzgi ? '<div style="margin-top: 6px; font-size: 0.75rem; color: #fbbf24;">Kunduzgi talabalar navbat talonini navbatdagi ish kuni ertalab 08:30 dan olishlari mumkin.</div>' : '')}
             </div>
           `;
           return;
         }
 
         // Agar bugungi vaqtlar to'liq o'tgan bo'lsa
-        if (data.is_today && data.total_available === 0 && data.next_available_date) {
-          const nextDate = data.next_available_date;
-          document.getElementById('queue-date').value = nextDate;
-          container.innerHTML = `<p style="color: #60a5fa; font-size: 0.8rem;">Bugungi qabul yakunlangan. Eng yaqin sana (${nextDate}) yuklanmoqda...</p>`;
-          setTimeout(() => loadAvailableSlots(), 600);
-          return;
+        if (data.is_today && data.total_available === 0) {
+          if (isKunduzgi) {
+            container.innerHTML = `<div style="padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: #fbbf24; font-size: 0.8rem;">Bugungi barcha qabul vaqtlari yakunlangan (qabul 09:00 dan 17:00 gacha). Ertangi qabul uchun navbatni ertaga ertalab olishingiz mumkin.</div>`;
+            return;
+          } else if (data.next_available_date) {
+            const nextDate = data.next_available_date;
+            document.getElementById('queue-date').value = nextDate;
+            container.innerHTML = `<p style="color: #60a5fa; font-size: 0.8rem;">Bugungi qabul yakunlangan. Eng yaqin sana (${nextDate}) yuklanmoqda...</p>`;
+            setTimeout(() => loadAvailableSlots(), 600);
+            return;
+          }
         }
 
         const slots = data.slots || [];
@@ -2302,7 +2319,7 @@
           container.innerHTML = `
             <div style="padding: 12px; border-radius: 8px; background: rgba(255, 255, 255, 0.05); color: var(--text-muted); font-size: 0.8rem;">
               Ushbu kunga bo'sh qabul vaqtlari qolmagan.
-              ${data.next_available_date ? `<div style="margin-top: 6px;"><a href="javascript:void(0)" onclick="document.getElementById('queue-date').value='${data.next_available_date}'; loadAvailableSlots();" style="color: #60a5fa; text-decoration: underline;">Keyingi ish kunini tanlash (${data.next_available_date}) ➜</a></div>` : ''}
+              ${!isKunduzgi && data.next_available_date ? `<div style="margin-top: 6px;"><a href="javascript:void(0)" onclick="document.getElementById('queue-date').value='${data.next_available_date}'; loadAvailableSlots();" style="color: #60a5fa; text-decoration: underline;">Keyingi ish kunini tanlash (${data.next_available_date}) ➜</a></div>` : ''}
             </div>
           `;
           return;
@@ -2316,7 +2333,9 @@
         if (morning.length > 0) {
           html += '<div style="margin-bottom: 12px;"><div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px;">🌅 Ertalabki qabul (09:00 — 13:00)</div><div style="display: flex; flex-wrap: wrap; gap: 8px;">';
           morning.forEach(s => {
-            if (!s.is_available) {
+            if (s.status === 'past') {
+              html += `<button type="button" class="slot-btn past" disabled style="opacity: 0.4; cursor: not-allowed;" title="Vaqt o'tgan">${s.time_slot} <small style="display:block; font-size: 9px;">Vaqt o'tgan</small></button>`;
+            } else if (!s.is_available) {
               html += `<button type="button" class="slot-btn booked" disabled title="Band">${s.time_slot} <small style="display:block; font-size: 9px; opacity: 0.8;">Band</small></button>`;
             } else {
               html += `<button type="button" class="slot-btn" data-slot="${s.time_slot}" onclick="selectPortalSlot(this, '${s.time_slot}')">${s.time_slot} <small style="display:block; font-size: 9px; color: #34d399;">Bo'sh</small></button>`;
@@ -2328,7 +2347,9 @@
         if (afternoon.length > 0) {
           html += '<div><div style="font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; padding-top: 6px; border-top: 1px solid var(--border);">🌇 Tushdan keyingi qabul (14:00 — 17:00)</div><div style="display: flex; flex-wrap: wrap; gap: 8px;">';
           afternoon.forEach(s => {
-            if (!s.is_available) {
+            if (s.status === 'past') {
+              html += `<button type="button" class="slot-btn past" disabled style="opacity: 0.4; cursor: not-allowed;" title="Vaqt o'tgan">${s.time_slot} <small style="display:block; font-size: 9px;">Vaqt o'tgan</small></button>`;
+            } else if (!s.is_available) {
               html += `<button type="button" class="slot-btn booked" disabled title="Band">${s.time_slot} <small style="display:block; font-size: 9px; opacity: 0.8;">Band</small></button>`;
             } else {
               html += `<button type="button" class="slot-btn" data-slot="${s.time_slot}" onclick="selectPortalSlot(this, '${s.time_slot}')">${s.time_slot} <small style="display:block; font-size: 9px; color: #34d399;">Bo'sh</small></button>`;

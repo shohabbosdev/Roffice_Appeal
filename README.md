@@ -286,12 +286,17 @@ $$\text{KPI Foizi} = \left( \frac{\text{Sof Ball}}{\text{Oylik Reja (150 ball)}}
 - *SLA buzilishi uchun jarima:* Har bir muddati o'tgan ariza uchun **-5 ball**;
 - *Talaba bahosi ko'paytiruvchisi:* Agar xodim arizalarni tez yopsa-yu, lekin sifatsiz xizmat ko'rsatib 1-2 yulduz olsa, uning umumiy KPI ko'rsatkichi avtomatik pasayadi.
 
-### Elektron Navbat Qabul Slotlari Generatori
+### Elektron Navbat Qabul Slotlari Generatori va Ta'lim Shakli Cheklovlari
 
-- Ish vaqti (09:00–17:00) 15 daqiqalik intervallarga bo'linadi (jami 28 ta slot);
-- Tushlik vaqti (13:00–14:00) avtomatik chiqarib tashlanadi;
-- O'tib ketgan soatlar, band qilingan vaqtlar va yakshanba kunlari dinamik filtrlanadi;
-- Soat 17:00 dan oshganda tizim avtomatik ravishda keyingi ish kunining ertalabki qabuliga yo'naltiradi.
+- **15 Daqiqalik Aniq Slotlar:** Ish vaqti (09:00–17:00) 15 daqiqalik intervallarga bo'linadi (jami 28 ta slot);
+- **Tushlik Tanaffusi:** 13:00–14:00 oraliqidagi tushlik vaqti avtomatik chiqarib tashlanadi va band qilib bo'lmaydi;
+- **Joriy Vaqtdan Oldingi (O'tib Ketgan) Vaqtlarni Mutlaq Bloklash:** Bugungi sana uchun joriy soat va daqiqadan avvalgi barcha slotlar (`start_t <= current_time`) backend va frontend darajasida qat'iy bloklanadi (`status = 'past'`, `is_available = False`). O'tib ketgan vaqtga talon olishga urinilganda `400 Bad Request` qaytariladi;
+- **Kunduzgi Ta'lim Shakli Talabalari Uchun Qat'iy Qoida (Same-Day Queue Rule):**
+  - Kunduzgi ta'lim shakli talabalari universitetda bevosita tahsil olganliklari sababli, elektron navbat taloni **FAQAT JORIY ISH KUNI (BUGUN)** uchun beriladi;
+  - Ertangi kunga yoki kelgusi haftaga oldindan navbat band qilish (advance booking) taqiqlanadi (backendda `400: Kunduzgi ta'lim shakli talabalari elektron navbatni faqat joriy kun uchun olishlari mumkin`);
+  - Frontendda sana maydoni faqat bugungi kun bilan cheklanadi (`min = today`, `max = today`);
+  - Agar bugungi qabul soatlari yakunlangan bo'lsa (soat 17:00 dan keyin) yoki bugun dam olish kuni bo'lsa: tizim sanani yashirincha ertangi kunga o'tkazib yubormaydi, balki talabaga qabul vaqti yakunlanganini va navbatdagi ish kuni soat 08:30 dan boshlab navbat ochilishini tushunarli bildirishnoma orqali ko'rsatadi;
+- **Sirtqi va Masofaviy Talabalar:** Nizom bo'yicha onlayn murojaat tizimidan foydalanadi, bevosita kelganda esa 14 kungacha bo'lgan sanani tanlashlari mumkin, ammo o'tib ketgan vaqt oralig'i ularga ham mutlaq taqiqlanadi.
 
 ---
 

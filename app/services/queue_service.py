@@ -103,21 +103,30 @@ class QueueService:
 
     @classmethod
     async def get_available_slots(
-        cls, db: AsyncSession, appointment_date: str, service_id: int
+        cls,
+        db: AsyncSession,
+        appointment_date: str,
+        service_id: int,
+        student_id: Optional[int] = None
     ) -> List[str]:
         """Mavjud bo'sh vaqt slotlari (stringlar ro'yxati, backward-compatible)."""
-        res = await cls.get_detailed_slots(db, appointment_date, service_id)
+        res = await cls.get_detailed_slots(db, appointment_date, service_id, student_id=student_id)
         if not res.get("is_working_day"):
             return []
         return [s["time_slot"] for s in res.get("slots", []) if s.get("is_available")]
 
     @classmethod
     async def get_detailed_slots(
-        cls, db: AsyncSession, appointment_date: str, service_id: int
+        cls,
+        db: AsyncSession,
+        appointment_date: str,
+        service_id: int,
+        student_id: Optional[int] = None
     ) -> Dict[str, Any]:
         """
         Belgilangan sana uchun qabul vaqtlarini to'liq va tabiiy tahlil qiladi.
         O'tgan vaqtlar va band qilingan vaqtlar aniq holat bilan qaytariladi.
+        Kunduzgi ta'lim shaklidagi talabalar uchun kelgusi kunlarga oldindan navbat olish cheklanadi.
         """
         now = cls.get_now()
         today = now.date()
@@ -128,14 +137,43 @@ class QueueService:
         except ValueError:
             raise HTTPException(status_code=400, detail="Sana formati noto'g'ri (YYYY-MM-DD bo'lishi kerak).")
 
+        # Talabaning ta'lim shaklini aniqlash (Kunduzgi / Sirtqi / Masofaviy)
+        is_kunduzgi = False
+        if student_id:
+            st_user = await db.get(User, student_id)
+            if st_user and st_user.education_form and st_user.education_form.strip().lower() == "kunduzgi":
+                is_kunduzgi = True
+
+        # Kunduzgi talaba uchun: agar kelgusi sana so'ralsa, darhol cheklov bildirishnomasi qaytariladi
+        if is_kunduzgi and target_date > today:
+            return {
+                "date": appointment_date,
+                "is_working_day": False,
+                "is_today": False,
+                "is_kunduzgi": True,
+                "current_time": now.strftime("%H:%M"),
+                "total_available": 0,
+                "morning_available": 0,
+                "afternoon_available": 0,
+                "message": "Kunduzgi ta'lim shakli talabalari elektron navbatni faqat joriy kun (bugun) uchun olishlari mumkin. Oldindan (kelgusi sanalarga) navbat olish taqiqlangan.",
+                "next_available_date": None,
+                "slots": []
+            }
+
         # Ish kuni tekshiruvi
         is_work, holiday_msg = await cls.is_working_day(db, target_date)
         if not is_work:
             return {
                 "date": appointment_date,
                 "is_working_day": False,
+                "is_today": (target_date == today),
+                "is_kunduzgi": is_kunduzgi,
+                "current_time": now.strftime("%H:%M"),
+                "total_available": 0,
+                "morning_available": 0,
+                "afternoon_available": 0,
                 "message": holiday_msg,
-                "next_available_date": (await cls.find_next_available_date(db, target_date + timedelta(days=1))).strftime("%Y-%m-%d"),
+                "next_available_date": None if is_kunduzgi else (await cls.find_next_available_date(db, target_date + timedelta(days=1))).strftime("%Y-%m-%d"),
                 "slots": []
             }
 
@@ -211,15 +249,17 @@ class QueueService:
         next_date_str = None
         if is_past_day:
             message = "O'tib ketgan sana uchun navbat olib bo'lmaydi."
-            next_date_str = (await cls.find_next_available_date(db, today)).strftime("%Y-%m-%d")
+            next_date_str = None if is_kunduzgi else (await cls.find_next_available_date(db, today)).strftime("%Y-%m-%d")
         elif is_today and available_count == 0:
-            message = "Bugungi kun uchun barcha qabul vaqtlari yakunlangan (qabul soatlari 09:00 dan 17:00 gacha)."
-            next_date_str = (await cls.find_next_available_date(db, today + timedelta(days=1))).strftime("%Y-%m-%d")
+            message = "Bugungi kun uchun barcha qabul vaqtlari yakunlangan (qabul soatlari dushanba-shanba 09:00 dan 17:00 gacha)."
+            next_date_str = None if is_kunduzgi else (await cls.find_next_available_date(db, today + timedelta(days=1))).strftime("%Y-%m-%d")
 
         return {
             "date": appointment_date,
             "is_working_day": True,
             "is_today": is_today,
+            "is_kunduzgi": is_kunduzgi,
+            "current_time": now.strftime("%H:%M"),
             "total_available": available_count,
             "morning_available": morning_available,
             "afternoon_available": afternoon_available,
@@ -250,6 +290,27 @@ class QueueService:
 
         if target_date < today:
             raise HTTPException(status_code=400, detail="O'tib ketgan sanaga navbat olib bo'lmaydi.")
+
+        # Talaba profilini tekshirish
+        student = await db.get(User, student_id)
+        if not student:
+            raise HTTPException(status_code=404, detail="Talaba foydalanuvchisi topilmadi.")
+
+        is_kunduzgi = bool(student.education_form and student.education_form.strip().lower() == "kunduzgi")
+
+        # Kunduzgi ta'lim talabasi uchun qat'iy cheklov: navbat faqat joriy kun (bugun) uchun olinishi lozim!
+        if is_kunduzgi and target_date != today:
+            raise HTTPException(
+                status_code=400,
+                detail="Kunduzgi ta'lim shakli talabalari elektron navbatni faqat joriy kun (bugun) uchun olishlari mumkin. Oldindan (kelgusi sanalarga) navbat olish taqiqlangan."
+            )
+
+        # Har qanday talaba uchun uzoq kelajak sanalarini cheklash (maksimal 14 kun)
+        if target_date > today + timedelta(days=14):
+            raise HTTPException(
+                status_code=400,
+                detail="Navbatni ko'pi bilan 14 kun oldindan band qilish mumkin."
+            )
 
         # 2. Ish kuni va bayram tekshiruvi
         is_work, holiday_msg = await cls.is_working_day(db, target_date)

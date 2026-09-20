@@ -11,7 +11,7 @@ import asyncio
 from app.services.queue_service import QueueService
 from app.services.telegram_service import TelegramService
 from app.services.audit_service import AuditService
-from app.api.deps import get_current_user, require_role
+from app.api.deps import get_current_user, require_role, get_optional_current_user
 
 router = APIRouter(prefix="/appointments", tags=["Elektron navbat (Kelib / Uchrashib hal etish)"])
 
@@ -21,19 +21,23 @@ async def get_available_slots(
     appointment_date: str = Query(..., description="Sana formati: YYYY-MM-DD"),
     service_id: int = Query(..., description="Xizmat turi ID"),
     detailed: bool = Query(False, description="To'liq slot holatlari (o'tib ketgan, bloklangan, band) bilan olish"),
+    current_user: Optional[User] = Depends(get_optional_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """Tanlangan xizmat va sana bo'yicha bo'sh yoki batafsil slot holatlarini qaytaradi."""
+    student_id = current_user.id if (current_user and current_user.role == UserRole.STUDENT) else None
     if detailed:
         return await QueueService.get_detailed_slots(
             db=db,
             appointment_date=appointment_date,
-            service_id=service_id
+            service_id=service_id,
+            student_id=student_id
         )
     return await QueueService.get_available_slots(
         db=db,
         appointment_date=appointment_date,
-        service_id=service_id
+        service_id=service_id,
+        student_id=student_id
     )
 
 

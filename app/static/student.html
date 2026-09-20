@@ -435,6 +435,13 @@
                   onchange="loadAvailableSlots()"
                   class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition"
                 >
+                <div id="kunduzgi-queue-note" class="hidden mt-2 p-3 rounded-xl bg-blue-500/10 border border-blue-500/25 text-xs text-blue-300 flex items-start gap-2.5">
+                  <i class="ph ph-info text-base text-blue-400 shrink-0 mt-0.5"></i>
+                  <div class="leading-relaxed">
+                    <span class="font-semibold text-blue-200">Kunduzgi ta'lim qabul tartibi:</span>
+                    Siz universitetda bevosita tahsil olganingiz sababli, elektron navbat taloni faqat <b>joriy ish kuni (bugun)</b> uchun beriladi. Oldindan (ertangi yoki kelasi kunlarga) navbat olish taqiqlangan.
+                  </div>
+                </div>
               </div>
 
               <div>
@@ -713,17 +720,23 @@
       if (h) switchStudentTab(h, false);
     });
 
+    function getTashkentTodayStr() {
+      const now = new Date();
+      const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+      const tashkentDate = new Date(utc + (3600000 * 5));
+      const year = tashkentDate.getFullYear();
+      const month = String(tashkentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(tashkentDate.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
       initNotifications();
 
-      const todayIso = new Date().toISOString().split('T')[0];
+      const todayStr = getTashkentTodayStr();
       const qDateInput = document.getElementById('queue-date');
-      qDateInput.min = todayIso;
-
-      const d = new Date();
-      d.setDate(d.getDate() + 1);
-      if (d.getDay() === 0) d.setDate(d.getDate() + 1);
-      qDateInput.value = d.toISOString().split('T')[0];
+      qDateInput.min = todayStr;
+      qDateInput.value = todayStr; // Har doim bugungi kun bilan initsializatsiya qilinadi
 
       await fetchUserProfile();
       await loadEducationPolicy();
@@ -754,6 +767,24 @@
 
         const eduForm = currentUser.education_form || "Kunduzgi";
         document.getElementById('student-eduform').innerText = eduForm;
+
+        // Kunduzgi talaba bo'lsa navbat sanasini faqat bugun bilan cheklash
+        const isKunduzgi = currentUser.education_form && currentUser.education_form.trim().toLowerCase() === 'kunduzgi';
+        const qDateInput = document.getElementById('queue-date');
+        const todayStr = getTashkentTodayStr();
+        if (isKunduzgi) {
+          qDateInput.min = todayStr;
+          qDateInput.max = todayStr;
+          qDateInput.value = todayStr;
+          const note = document.getElementById('kunduzgi-queue-note');
+          if (note) note.classList.remove('hidden');
+        } else {
+          qDateInput.min = todayStr;
+          // Sirtqi/masofaviy talabalar uchun 14 kunlik cheklov
+          const maxD = new Date();
+          maxD.setDate(maxD.getDate() + 14);
+          qDateInput.max = maxD.toISOString().split('T')[0];
+        }
 
         // Profile tab fields
         document.getElementById('prof-name').innerText = currentUser.full_name;
@@ -1141,6 +1172,11 @@
     }
 
     function selectNextAvailableDate() {
+      const isKunduzgi = currentUser && currentUser.education_form && currentUser.education_form.trim().toLowerCase() === 'kunduzgi';
+      if (isKunduzgi) {
+        showToast("Kunduzgi ta'lim talabalari elektron navbatni faqat joriy kun (bugun) uchun olishlari mumkin.", "warning");
+        return;
+      }
       const qDateInput = document.getElementById('queue-date');
       const d = new Date();
       d.setDate(d.getDate() + 1);
@@ -1162,6 +1198,8 @@
         const resp = await fetch(`/api/v1/appointments/available-slots?service_id=${serviceId}&appointment_date=${dateVal}&detailed=true`);
         const data = await resp.json();
 
+        const isKunduzgi = (currentUser && currentUser.education_form && currentUser.education_form.trim().toLowerCase() === 'kunduzgi') || Boolean(data.is_kunduzgi);
+
         // 1. Agar dam olish yoki bayram bo'lsa
         if (!data.is_working_day) {
           const nextDate = data.next_available_date || '';
@@ -1171,31 +1209,44 @@
                 <i class="ph ph-warning-circle text-base"></i> Qabul mavjud emas
               </div>
               <p class="text-slate-300 leading-relaxed">${data.message || "Dam olish yoki bayram kuni."}</p>
-              ${nextDate ? `
+              ${!isKunduzgi && nextDate ? `
                 <button type="button" onclick="document.getElementById('queue-date').value='${nextDate}'; loadAvailableSlots();" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold cursor-pointer transition">
                   Keyingi ish kuniga o'tish (${nextDate}) ➜
                 </button>
-              ` : ''}
+              ` : (isKunduzgi ? `<p class="text-[11px] text-amber-400/90 pt-1 font-medium">Navbatdagi ish kuni ertalab soat 08:30 dan boshlab navbat olishingiz mumkin.</p>` : '')}
             </div>
           `;
           return;
         }
 
-        // 2. Agar bugungi ish vaqtlari to'liq yakunlangan bo'lsa -> Avtomatik ertangi kunga o'tish
-        if (data.is_today && data.total_available === 0 && data.next_available_date) {
-          const nextDate = data.next_available_date;
-          document.getElementById('queue-date').value = nextDate;
-          
-          container.innerHTML = `
-            <div class="w-full p-3.5 mb-2 rounded-xl bg-blue-500/10 border border-blue-500/25 text-blue-300 text-xs space-y-1">
-              <div class="font-semibold flex items-center gap-1.5 text-blue-400">
-                <i class="ph ph-info text-base"></i> Eng yaqin qabul kuni
+        // 2. Agar bugungi ish vaqtlari to'liq yakunlangan bo'lsa
+        if (data.is_today && data.total_available === 0) {
+          if (isKunduzgi) {
+            container.innerHTML = `
+              <div class="w-full p-4 rounded-xl bg-slate-900/90 border border-slate-800 text-center space-y-2">
+                <div class="font-bold text-amber-400 text-xs flex items-center justify-center gap-1.5">
+                  <i class="ph ph-clock-countdown text-base"></i> Bugungi qabul soatlari yakunlangan
+                </div>
+                <p class="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+                  Registrator ofisi qabul soatlari dushanba-shanba kunlari <b>09:00 dan 17:00 gacha</b>. Kunduzgi ta'lim talabalari navbat talonini navbatdagi ish kuni ertalab soat 08:30 dan boshlab olishlari mumkin.
+                </p>
               </div>
-              <p class="text-slate-300 leading-relaxed">Bugungi barcha qabul soatlari yakunlangan. Sizga eng yaqin qabul kuni (<b>${nextDate}</b>) ochilmoqda...</p>
-            </div>
-          `;
-          setTimeout(() => loadAvailableSlots(), 600);
-          return;
+            `;
+            return;
+          } else if (data.next_available_date) {
+            const nextDate = data.next_available_date;
+            document.getElementById('queue-date').value = nextDate;
+            container.innerHTML = `
+              <div class="w-full p-3.5 mb-2 rounded-xl bg-blue-500/10 border border-blue-500/25 text-blue-300 text-xs space-y-1">
+                <div class="font-semibold flex items-center gap-1.5 text-blue-400">
+                  <i class="ph ph-info text-base"></i> Eng yaqin qabul kuni
+                </div>
+                <p class="text-slate-300 leading-relaxed">Bugungi barcha qabul soatlari yakunlangan. Sizga eng yaqin qabul kuni (<b>${nextDate}</b>) ochilmoqda...</p>
+              </div>
+            `;
+            setTimeout(() => loadAvailableSlots(), 600);
+            return;
+          }
         }
 
         const slots = data.slots || [];
@@ -1205,7 +1256,7 @@
           container.innerHTML = `
             <div class="w-full p-4 text-center text-xs text-slate-400 bg-slate-950/60 rounded-xl border border-slate-800">
               Ushbu kunga bo'sh qabul vaqtlari qolmagan.
-              ${data.next_available_date ? `
+              ${!isKunduzgi && data.next_available_date ? `
                 <div class="mt-2">
                   <button type="button" onclick="document.getElementById('queue-date').value='${data.next_available_date}'; loadAvailableSlots();" class="text-blue-400 hover:text-blue-300 font-semibold underline cursor-pointer">
                     Keyingi ish kunini tanlash (${data.next_available_date}) ➜
@@ -1281,6 +1332,14 @@
     }
 
     function renderSlotItem(s) {
+      if (s.status === 'past') {
+        return `
+          <div title="Ushbu vaqt oralig'i o'tib ketgan" class="px-2.5 py-2.5 rounded-xl border border-slate-800 bg-slate-950/40 text-slate-500 text-xs font-mono text-center opacity-40 cursor-not-allowed select-none">
+            ${s.time_slot}
+            <span class="block text-[10px] font-sans text-slate-500 font-normal">Vaqt o'tgan</span>
+          </div>
+        `;
+      }
       if (!s.is_available) {
         return `
           <div title="Ushbu vaqt band qilingan" class="px-2.5 py-2.5 rounded-xl border border-rose-950/40 bg-rose-950/20 text-rose-400 text-xs font-mono text-center opacity-60 cursor-not-allowed select-none">
@@ -1300,6 +1359,16 @@
     async function bookQueueTicket() {
       const serviceId = document.getElementById('queue-service-select').value;
       const dateVal = document.getElementById('queue-date').value;
+      const todayStr = getTashkentTodayStr();
+
+      const isKunduzgi = currentUser && currentUser.education_form && currentUser.education_form.trim().toLowerCase() === 'kunduzgi';
+      if (isKunduzgi && dateVal !== todayStr) {
+        showToast("Kunduzgi ta'lim talabalari elektron navbatni faqat joriy kun (bugun) uchun olishlari mumkin.", "error");
+        document.getElementById('queue-date').value = todayStr;
+        loadAvailableSlots();
+        return;
+      }
+
       if (!selectedSlot) {
         showToast("Iltimos, qabul vaqt oralig'ini tanlang.", "warning");
         return;

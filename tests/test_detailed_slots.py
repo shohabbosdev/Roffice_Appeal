@@ -25,22 +25,25 @@ async def test_get_detailed_slots_past_and_today(test_db):
 
     tashkent_tz = timezone(timedelta(hours=5))
     now = datetime.now(tashkent_tz)
-    today_str = now.strftime("%Y-%m-%d")
+    
+    # Agar bugun yakshanba bo'lsa, eng yaqin ish kunini olamiz
+    work_date = await QueueService.find_next_available_date(test_db, now.date())
+    work_date_str = work_date.strftime("%Y-%m-%d")
 
-    # Bugungi kun uchun detailed slotlarni olish
-    res_today = await QueueService.get_detailed_slots(
+    # Ish kuni uchun detailed slotlarni olish
+    res_work = await QueueService.get_detailed_slots(
         db=test_db,
-        appointment_date=today_str,
+        appointment_date=work_date_str,
         service_id=srv.id
     )
 
-    assert res_today["date"] == today_str
-    assert res_today["is_working_day"] is True
-    assert "slots" in res_today
-    assert len(res_today["slots"]) == len(QueueService.DEFAULT_SLOTS)
+    assert res_work["date"] == work_date_str
+    assert res_work["is_working_day"] is True
+    assert "slots" in res_work
+    assert len(res_work["slots"]) == len(QueueService.DEFAULT_SLOTS)
 
     # Har bir slotda to'g'ri maydonlar mavjudligini tekshirish
-    for s in res_today["slots"]:
+    for s in res_work["slots"]:
         assert "time_slot" in s
         assert "is_available" in s
         assert "status" in s
