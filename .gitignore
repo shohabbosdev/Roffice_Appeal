@@ -65,3 +65,7 @@ scratch/
 uploads/*
 !uploads/.gitkeep
 
+# System Backups
+backups/*
+!backups/.gitkeep
+
