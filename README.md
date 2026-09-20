@@ -22,6 +22,8 @@ Mirzo Ulug'bek nomidagi O'zbekiston Milliy universiteti Jizzax filialining Regis
    - [4.8. Tizim Xavfsizligi va Markaziy Audit Jurnali](#48-tizim-xavfsizligi-va-markaziy-audit-jurnali)
    - [4.9. Ma'lumotlar Bazasini Avtomatik Zaxiralash (Disaster Recovery) va Tizim Salomatligi](#49-malumotlar-bazasini-avtomatik-zaxiralash-disaster-recovery-va-tizim-salomatligi)
    - [4.10. Rasmiy QR-kodli Elektron Ma'lumotnomalar va Ochiq Verifikatsiya (Public Verification)](#410-rasmiy-qr-kodli-elektron-malumotnomalar-va-ochiq-verifikatsiya-public-verification)
+   - [4.11. Majburiy Fikr Devori (Blocking Feedback Wall)](#411-majburiy-fikr-devori-blocking-feedback-wall)
+   - [4.12. Segmentatsiyalangan E'lonlar Markazi va O'qilganlik Auditi (Targeted Announcements)](#412-segmentatsiyalangan-elonlar-markazi-va-oqilganlik-auditi-targeted-announcements)
 5. [Biznes Mantiq, Formula va Algoritmlar](#5-biznes-mantiq-formula-va-algoritmlar)
    - [SLA Ish Vaqti Hisoblash](#sla-ish-vaqti-hisoblash)
    - [Xodimlar KPI Samaradorlik Formulasi](#xodimlar-kpi-samaradorlik-formulasi)
@@ -254,6 +256,21 @@ Oliy ta'lim muassasalarida qog'ozbozlik va navbatlarni bartaraf etish, soxta ma'
 3. **Murojaatlarni Yopishda Avtomatik Generatsiya:**
    - Xodim murojaatni qanoatlantirganda (`resolve_appeal`), agar xodim o'z faylini yuklamagan bo'lsa, tizim avtomatik ravishda rasmiy ma'lumotnoma yoki ijro blankasini PDF formatda yaratadi va talabaga taqdim etadi;
    - Talaba portali (`portal.html`, `student.html`) va Xodim ish stoli (`staff.html`) da bir marta bosish bilan "📄 Rasmiy PDF ma'lumotnoma" hamda "🔍 QR-kod verifikatsiyasi" havolalari taqdim etiladi.
+
+### 4.11. Majburiy Fikr Devori (Blocking Feedback Wall)
+
+Xizmat ko'rsatilgandan so'ng talaba tomonidan baholanmasligi yoki natijani tasdiqlamasligi holatlarining oldini olish maqsadida:
+1. **Qat'iy Backend Blokirovkasi:** Hal etilgan (`RESOLVED`), lekin talaba tomonidan tasdiqlanmagan yoki e'tiroz bildirilmagan arizasi bor talabaga yangi ariza yuborish (`POST /api/v1/appeals`) hamda yangi qabul navbati olish (`POST /api/v1/appointments/book`) qat'iyan man etiladi (`400 Bad Request`).
+2. **Yopib Bo'lmaydigan Modal Devor:** Talaba shaxsiy portaliga kirishi bilan to'liq ekranli baholash modali ochiladi. Unda xodimning xizmati, unga ilova qilingan rasmiy PDF hujjati bilan tanishib, 1 dan 5 gacha baholash yoki e'tiroz bildirish (`DISPUTED`) talab etiladi.
+3. **Xodimlarni Himoyalash (72 Soatlik Avto-tasdiqlash):** Agar talaba umuman platformaga kirmasa, 72 soatdan so'ng foniy tizim arizani xolis yakunlaydi va xodimning KPI ballari muzlab qolishining oldi olinadi.
+
+### 4.12. Segmentatsiyalangan E'lonlar Markazi va O'qilganlik Auditi (Targeted Announcements)
+
+Registrator ofisi rahbariyati tomonidan talabalarga ommaviy xabar va topshiriqlarni tezkor hamda yuridik asosda yetkazish mexanizmi:
+1. **Auditoriyani Segmentatsiyalash:** E'lonlar ta'lim shakli (`Kunduzgi`, `Sirtqi`, `Kechki`, `Masofaviy`, `Barchasi`), fakultet va kurs bo'yicha saralangan holda yo'llanadi.
+2. **Huquqiy O'qilganlik Fiksatsiyasi (`AnnouncementRead`):** Talaba shaxsiy kabinetida e'lon bilan tanishib "Tanishdim" tugmasini bosganda uning IP manzili, aniq vaqti va brauzer ma'lumotlari qayd etiladi.
+3. **Jonli Analitika va CSV Eksport:** Xodimlar boshqaruv panelida har bir e'lon bo'yicha qamrov foizi ko'rinadi va e'lon bilan tanishmagan talabalar ro'yxatini bir marta bosish orqali CSV formatida yuklab olish mumkin.
+4. **Yengil Xabarnoma Siyosati:** Telegram faqat signalizatsiya va portalga kirish havolasi uchun xizmat qiladi; og'ir PDF fayllar bot orqali tarqatilmaydi.
 
 ---
 
