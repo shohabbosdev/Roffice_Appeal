@@ -250,8 +250,40 @@ let token = localStorage.getItem('roffice_token');
 
     // 1. Core Tab Router with URL Hash and LocalStorage Persistence
     function switchStaffTab(tabId, updateHash = true) {
-      if (tabId === 'system' && userRole !== 'admin') {
+      if (tabId === 'system' && !hasPerm('system:metrics') && !hasPerm('system:backups_manage') && userRole !== 'admin') {
         showToast("Tizim va zaxiralar bo'limi faqat Administrator uchun ochiq!", "warning");
+        return;
+      }
+      if (tabId === 'audit' && !hasPerm('audit:view')) {
+        showToast("Tizim audit jurnali bo'limiga kirish huquqingiz yo'q!", "warning");
+        return;
+      }
+      if (tabId === 'analytics' && !hasPerm('analytics:view')) {
+        showToast("Rahbariyat tahliliy hisobotlari bo'limiga kirish huquqingiz yo'q!", "warning");
+        return;
+      }
+      if (tabId === 'users' && !hasPerm('users:view') && !hasPerm('users:create') && !hasPerm('users:edit') && !hasPerm('roles:manage')) {
+        showToast("Xodimlarni boshqarish bo'limiga kirish huquqingiz yo'q!", "warning");
+        return;
+      }
+      if (tabId === 'roles' && !hasPerm('roles:manage')) {
+        showToast("Rollar va huquqlar matritsasiga kirish huquqingiz yo'q!", "warning");
+        return;
+      }
+      if (tabId === 'policy' && !hasPerm('services:manage') && userRole !== 'office_head') {
+        showToast("Ta'lim shakli cheklovlari bo'limiga kirish huquqingiz yo'q!", "warning");
+        return;
+      }
+      if (tabId === 'queue' && !hasPerm('queue:call') && !hasPerm('queue:complete') && !hasPerm('queue:manage_windows') && !hasPerm('queue:view_board')) {
+        showToast("Elektron navbat bo'limiga kirish huquqingiz yo'q!", "warning");
+        return;
+      }
+      if (tabId === 'services' && !hasPerm('services:view') && !hasPerm('services:manage')) {
+        showToast("Xizmatlar katalogi bo'limiga kirish huquqingiz yo'q!", "warning");
+        return;
+      }
+      if (tabId === 'calendar' && !hasPerm('calendar:manage') && !['admin', 'office_head', 'vice_rector'].includes(userRole)) {
+        showToast("Bayramlar taqvimi bo'limiga kirish huquqingiz yo'q!", "warning");
         return;
       }
 
@@ -748,79 +780,87 @@ let token = localStorage.getItem('roffice_token');
       if (b) b.classList.add('hidden');
     }
 
+    // === PBAC: FOYDALANUVCHIDA HUQUQ MAVJUDLIGINI TEKSHIRISH ===
+    function hasPerm(permCode) {
+      if (!currentUser) return false;
+      if (currentUser.role === 'admin') return true;
+      const perms = currentUser.effective_permissions || [];
+      if (perms.includes('*')) return true;
+      return perms.includes(permCode);
+    }
+    window.hasPerm = hasPerm;
+
     function applyRolePermissions(role) {
+      const appealsBtn = document.getElementById('nav-appeals-btn');
+      const servicesBtn = document.getElementById('nav-services-btn');
       const policyBtn = document.getElementById('nav-policy-btn');
-      const kpiBtn = document.getElementById('nav-kpi-btn');
-      const calendarBtn = document.getElementById('nav-calendar-btn');
       const queueBtn = document.getElementById('nav-queue-btn');
       const usersBtn = document.getElementById('nav-users-btn');
+      const kpiBtn = document.getElementById('nav-kpi-btn');
       const analyticsBtn = document.getElementById('nav-analytics-btn');
+      const calendarBtn = document.getElementById('nav-calendar-btn');
       const auditBtn = document.getElementById('nav-audit-btn');
+      const announcementsBtn = document.getElementById('nav-announcements-btn');
       const systemBtn = document.getElementById('nav-system-btn');
       const backupBtn = document.getElementById('btn-trigger-backup');
       const addServiceBtn = document.getElementById('add-service-btn');
       const addDeptBtn = document.getElementById('add-dept-btn');
+      const rolesSubtabBtn = document.getElementById('subtab-users-roles-btn');
 
-      if (role === 'front_staff') {
-        if (policyBtn) policyBtn.style.display = 'none';
-        if (kpiBtn) kpiBtn.style.display = 'flex';
-        if (calendarBtn) calendarBtn.style.display = 'none';
-        if (queueBtn) queueBtn.style.display = 'flex';
-        if (usersBtn) usersBtn.style.display = 'none';
-        if (analyticsBtn) analyticsBtn.style.display = 'none';
-        if (auditBtn) auditBtn.style.display = 'none';
-        if (systemBtn) systemBtn.style.display = 'none';
-        if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
-        if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
-      } else if (role === 'back_staff') {
-        if (policyBtn) policyBtn.style.display = 'none';
-        if (kpiBtn) kpiBtn.style.display = 'flex';
-        if (calendarBtn) calendarBtn.style.display = 'none';
-        if (queueBtn) queueBtn.style.display = 'none';
-        if (usersBtn) usersBtn.style.display = 'none';
-        if (analyticsBtn) analyticsBtn.style.display = 'none';
-        if (auditBtn) auditBtn.style.display = 'none';
-        if (systemBtn) systemBtn.style.display = 'none';
-        if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
-        if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
-      } else if (role === 'vice_rector') {
-        if (policyBtn) policyBtn.style.display = 'none';
-        if (kpiBtn) kpiBtn.style.display = 'flex';
-        if (calendarBtn) calendarBtn.style.display = 'flex';
-        if (queueBtn) queueBtn.style.display = 'none';
-        if (usersBtn) usersBtn.style.display = 'none';
-        if (analyticsBtn) analyticsBtn.style.display = 'flex';
-        if (auditBtn) auditBtn.style.display = 'flex';
-        if (systemBtn) systemBtn.style.display = 'none';
-        if (addServiceBtn) { addServiceBtn.classList.add('hidden'); addServiceBtn.style.display = 'none'; }
-        if (addDeptBtn) { addDeptBtn.classList.add('hidden'); addDeptBtn.style.display = 'none'; }
-      } else if (role === 'office_head') {
-        // Registrator ofisi boshlig'i
-        if (policyBtn) policyBtn.style.display = 'flex';
-        if (kpiBtn) kpiBtn.style.display = 'flex';
-        if (calendarBtn) calendarBtn.style.display = 'flex';
-        if (queueBtn) queueBtn.style.display = 'none';
-        if (usersBtn) usersBtn.style.display = 'flex';
-        if (analyticsBtn) analyticsBtn.style.display = 'flex';
-        if (auditBtn) auditBtn.style.display = 'flex';
-        if (systemBtn) systemBtn.style.display = 'none'; // Tizim va zaxiralar faqat Admin uchun
-        if (backupBtn) backupBtn.style.display = 'none';
-        if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
-        if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
-      } else {
-        // Tizim administratori (admin)
-        if (policyBtn) policyBtn.style.display = 'flex';
-        if (kpiBtn) kpiBtn.style.display = 'flex';
-        if (calendarBtn) calendarBtn.style.display = 'flex';
-        if (queueBtn) queueBtn.style.display = 'none';
-        if (usersBtn) usersBtn.style.display = 'flex';
-        if (analyticsBtn) analyticsBtn.style.display = 'flex';
-        if (auditBtn) auditBtn.style.display = 'flex';
-        if (systemBtn) systemBtn.style.display = 'flex';
-        if (backupBtn) backupBtn.style.display = 'inline-flex';
-        if (addServiceBtn) { addServiceBtn.classList.remove('hidden'); addServiceBtn.style.display = 'inline-flex'; }
-        if (addDeptBtn) { addDeptBtn.classList.remove('hidden'); addDeptBtn.style.display = 'inline-flex'; }
+      // 1. Murojaatlar - barcha xodimlar uchun ochiq
+      if (appealsBtn) appealsBtn.style.display = 'flex';
+
+      // 2. Xizmatlar va bo'limlar katalogi
+      const canViewServices = hasPerm('services:view') || hasPerm('services:manage');
+      if (servicesBtn) servicesBtn.style.display = canViewServices ? 'flex' : 'none';
+      const canManageServices = hasPerm('services:manage');
+      if (addServiceBtn) {
+        addServiceBtn.style.display = canManageServices ? 'inline-flex' : 'none';
+        if (!canManageServices) addServiceBtn.classList.add('hidden');
+        else addServiceBtn.classList.remove('hidden');
       }
+      if (addDeptBtn) {
+        addDeptBtn.style.display = canManageServices ? 'inline-flex' : 'none';
+        if (!canManageServices) addDeptBtn.classList.add('hidden');
+        else addDeptBtn.classList.remove('hidden');
+      }
+
+      // 3. Ta'lim shakli cheklovlari
+      const canManagePolicy = hasPerm('services:manage') || role === 'office_head';
+      if (policyBtn) policyBtn.style.display = canManagePolicy ? 'flex' : 'none';
+
+      // 4. Darcha qabuli (elektron navbat)
+      const canAccessQueue = hasPerm('queue:call') || hasPerm('queue:complete') || hasPerm('queue:manage_windows') || hasPerm('queue:view_board');
+      if (queueBtn) queueBtn.style.display = canAccessQueue ? 'flex' : 'none';
+
+      // 5. Xodimlar tarkibi va rollar
+      const canViewUsers = hasPerm('users:view') || hasPerm('users:create') || hasPerm('users:edit') || hasPerm('roles:manage');
+      if (usersBtn) usersBtn.style.display = canViewUsers ? 'flex' : 'none';
+      const canManageRoles = hasPerm('roles:manage');
+      if (rolesSubtabBtn) rolesSubtabBtn.style.display = canManageRoles ? 'inline-block' : 'none';
+
+      // 6. Xodimlar KPI reytingi
+      if (kpiBtn) kpiBtn.style.display = 'flex';
+
+      // 7. Rahbariyat tahliliy infografikasi
+      const canViewAnalytics = hasPerm('analytics:view');
+      if (analyticsBtn) analyticsBtn.style.display = canViewAnalytics ? 'flex' : 'none';
+
+      // 8. Bayramlar taqvimi
+      const canManageCalendar = hasPerm('calendar:manage') || ['admin', 'office_head', 'vice_rector'].includes(role);
+      if (calendarBtn) calendarBtn.style.display = canManageCalendar ? 'flex' : 'none';
+
+      // 9. Tizim audit jurnali
+      const canViewAudit = hasPerm('audit:view');
+      if (auditBtn) auditBtn.style.display = canViewAudit ? 'flex' : 'none';
+
+      // 10. E'lonlar markazi
+      if (announcementsBtn) announcementsBtn.style.display = 'flex';
+
+      // 11. Tizim salomatligi va zaxiralar (Faqat tizim admini yoki system:* huquqlari borlar)
+      const canAccessSystem = hasPerm('system:metrics') || hasPerm('system:backups_manage') || role === 'admin';
+      if (systemBtn) systemBtn.style.display = canAccessSystem ? 'flex' : 'none';
+      if (backupBtn) backupBtn.style.display = (hasPerm('system:backups_manage') || role === 'admin') ? 'inline-flex' : 'none';
     }
 
     function handleLogout(reason = null) {
