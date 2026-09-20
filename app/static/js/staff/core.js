@@ -278,6 +278,7 @@ let token = localStorage.getItem('roffice_token');
         'policy': "Ta'lim shakli cheklovlari",
         'queue': "Darcha qabuli (elektron navbat)",
         'users': "Xodimlarni boshqarish va rollar biriktirish",
+        'roles': "Rollar va Granulyar Huquqlar Matritsasi (PBAC)",
         'kpi': "Xodimlar KPI reytingi",
         'calendar': "Bayramlar taqvimi",
         'analytics': "Rahbariyat tahliliy infografikasi",
@@ -300,6 +301,9 @@ let token = localStorage.getItem('roffice_token');
       if (tabId === 'queue') loadQueueAppointments();
       if (tabId === 'policy') loadEducationPolicy();
       if (tabId === 'users') loadStaffUsers();
+      if (tabId === 'roles') {
+        if (typeof loadRolesAndCatalog === 'function') loadRolesAndCatalog();
+      }
       if (tabId === 'kpi') loadKPIOverview();
       if (tabId === 'calendar') loadHolidays();
       if (tabId === 'analytics') loadExecutiveAnalytics();

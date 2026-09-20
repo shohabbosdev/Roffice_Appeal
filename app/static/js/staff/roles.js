@@ -7,15 +7,34 @@ let permissionsCatalog = [];
 let currentEditingRoleId = null;
 let currentEditingStaffId = null;
 
+function getStaffToken() {
+  if (typeof token !== 'undefined' && token) return token;
+  return localStorage.getItem('roffice_token') || '';
+}
+
 // Ruxsatlar katalogini va rollarni yuklash
 async function loadRolesAndCatalog() {
+  const container = document.getElementById('roles-cards-container');
+  if (container) {
+    container.innerHTML = `
+      <div class="col-span-full p-8 text-center bg-slate-900/60 border border-slate-800 rounded-2xl text-slate-400 text-xs flex items-center justify-center gap-2">
+        <svg class="animate-spin h-4 w-4 text-blue-500" viewBox="0 0 24 24" fill="none">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span>Rollar va huquqlar matritsasi yuklanmoqda...</span>
+      </div>
+    `;
+  }
+
   try {
+    const curToken = getStaffToken();
     const [rolesResp, catalogResp] = await Promise.all([
-      fetch('/api/v1/roles', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      fetch(apiUrl('/api/v1/roles'), {
+        headers: { 'Authorization': `Bearer ${curToken}` }
       }),
-      fetch('/api/v1/roles/catalog', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      fetch(apiUrl('/api/v1/roles/catalog'), {
+        headers: { 'Authorization': `Bearer ${curToken}` }
       })
     ]);
 
@@ -28,13 +47,30 @@ async function loadRolesAndCatalog() {
         });
       }
       populateRolesDropdowns(rolesList);
+    } else {
+      const err = await rolesResp.json().catch(() => ({}));
+      if (container) {
+        container.innerHTML = `
+          <div class="col-span-full p-6 text-center bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-xs">
+            Rollar ma'lumotlarini yuklab bo'lmadi: ${escapeHtml(err.detail || rolesResp.statusText)}
+          </div>
+        `;
+      }
     }
+
     if (catalogResp.ok) {
       const catData = await catalogResp.json();
       permissionsCatalog = catData.catalog || [];
     }
   } catch (err) {
     console.error("Rollar va katalog ma'lumotlarini yuklashda xatolik:", err);
+    if (container) {
+      container.innerHTML = `
+        <div class="col-span-full p-6 text-center bg-rose-500/10 border border-rose-500/20 rounded-2xl text-rose-400 text-xs">
+          Server bilan aloqa uzildi. Iltimos qayta urinib ko'ring.
+        </div>
+      `;
+    }
   }
 }
 
@@ -45,7 +81,7 @@ function populateRolesDropdowns(roles) {
 
   const optionsHtml = roles
     .filter(r => r.code !== 'student')
-    .map(r => `<option value="${r.code}">${escapeHtml(r.name)}</option>`)
+    .map(r => `<option value="${r.code}">${escapeHtml(r.name)} (${r.code})</option>`)
     .join('');
 
   if (newRoleSel) newRoleSel.innerHTML = optionsHtml;
@@ -191,7 +227,6 @@ async function openRoleModal(roleId = null) {
 
   const role = roleId ? rolesList.find(r => r.id === roleId) : null;
   const isImmutable = role ? (role.is_immutable || role.code === 'admin') : false;
-  const isSystem = role ? role.is_system : false;
 
   document.getElementById('role-modal-title').innerText = role
     ? (isImmutable ? "Bosh Administrator Huquqlari (Daxlsiz)" : `Rolni tahrirlash: ${role.name}`)
@@ -211,7 +246,7 @@ async function openRoleModal(roleId = null) {
   nameInput.value = role ? role.name : '';
   descInput.value = role ? (role.description || '') : '';
 
-  // Agar admin bo'lsa yoki shablon bo'lsa kod tahrirlanmaydi
+  // Agar admin bo'lsa yoki mavjud rol bo'lsa kod tahrirlanmaydi
   codeInput.disabled = !!role;
   nameInput.disabled = isImmutable;
   descInput.disabled = isImmutable;
@@ -255,7 +290,6 @@ function renderPermissionsMatrix(selectedCodes = [], disabled = false) {
   let html = '';
   for (const [catName, perms] of Object.entries(groups)) {
     const catId = `cat_${Math.abs(catName.split('').reduce((a,b)=>{a=((a<<5)-a)+b.charCodeAt(0);return a&a},0))}`;
-    const allChecked = perms.every(p => isAll || selectedCodes.includes(p.code));
 
     html += `
       <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-3">
@@ -322,16 +356,17 @@ async function handleSaveRole(e) {
   }
 
   const selectedPerms = Array.from(document.querySelectorAll('input[name="role_perm_checkbox"]:checked')).map(cb => cb.value);
+  const curToken = getStaffToken();
 
   try {
     let resp;
     if (currentEditingRoleId) {
       // Update
-      resp = await fetch(`/api/v1/roles/${currentEditingRoleId}`, {
+      resp = await fetch(apiUrl(`/api/v1/roles/${currentEditingRoleId}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${curToken}`
         },
         body: JSON.stringify({
           name: name,
@@ -345,11 +380,11 @@ async function handleSaveRole(e) {
         showToast("Rol kodini kiritish majburiy (masalan, yurist).", "warning");
         return;
       }
-      resp = await fetch('/api/v1/roles', {
+      resp = await fetch(apiUrl('/api/v1/roles'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${curToken}`
         },
         body: JSON.stringify({
           code: code,
@@ -381,10 +416,11 @@ async function deleteRole(roleId) {
 
   if (!confirm(`Haqiqatan ham '${role.name}' rolini o'chirmoqchimisiz?`)) return;
 
+  const curToken = getStaffToken();
   try {
-    const resp = await fetch(`/api/v1/roles/${roleId}`, {
+    const resp = await fetch(apiUrl(`/api/v1/roles/${roleId}`), {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'Authorization': `Bearer ${curToken}` }
     });
     const data = await resp.json();
     if (resp.ok) {
@@ -412,9 +448,10 @@ async function openStaffPermissionsModal(userId) {
     await loadRolesAndCatalog();
   }
 
+  const curToken = getStaffToken();
   try {
-    const resp = await fetch(`/api/v1/roles/staff/${userId}/permissions`, {
-      headers: { 'Authorization': `Bearer ${token}` }
+    const resp = await fetch(apiUrl(`/api/v1/roles/staff/${userId}/permissions`), {
+      headers: { 'Authorization': `Bearer ${curToken}` }
     });
     if (!resp.ok) {
       const err = await resp.json();
@@ -424,7 +461,7 @@ async function openStaffPermissionsModal(userId) {
 
     const data = await resp.json();
     document.getElementById('staff-override-name').innerText = data.full_name;
-    document.getElementById('staff-override-role').innerText = roleNameMap[data.role] || data.role;
+    document.getElementById('staff-override-role').innerText = (typeof roleNameMap !== 'undefined' && roleNameMap[data.role]) ? roleNameMap[data.role] : data.role;
 
     renderStaffOverrideMatrix(data.role_permissions || [], data.custom_permissions || []);
     modal.classList.remove('hidden');
@@ -513,13 +550,14 @@ async function handleSaveStaffPermissions(e) {
 
   const checkedBoxes = Array.from(document.querySelectorAll('input[name="staff_override_checkbox"]:checked'));
   const customPermissions = checkedBoxes.map(cb => cb.value);
+  const curToken = getStaffToken();
 
   try {
-    const resp = await fetch(`/api/v1/roles/staff/${currentEditingStaffId}/permissions`, {
+    const resp = await fetch(apiUrl(`/api/v1/roles/staff/${currentEditingStaffId}/permissions`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${curToken}`
       },
       body: JSON.stringify({ custom_permissions: customPermissions })
     });
@@ -527,7 +565,7 @@ async function handleSaveStaffPermissions(e) {
     if (resp.ok) {
       showToast("Xodim huquqlari muvaffaqiyatli saqlandi!", "success");
       closeStaffPermissionsModal();
-      loadStaffUsers();
+      if (typeof loadStaffUsers === 'function') loadStaffUsers();
     } else {
       showToast(data.detail || "Xatolik yuz berdi.", "error");
     }
