@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any, Set
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, cast, String
 from fastapi import HTTPException, status
 
 from app.models import CustomRole, User, UserRole
@@ -44,12 +44,13 @@ class RoleService:
         result = await db.execute(select(CustomRole).order_by(CustomRole.id.asc()))
         roles = result.scalars().all()
         
+        counts_res = await db.execute(
+            select(cast(User.role, String), func.count(User.id)).group_by(cast(User.role, String))
+        )
+        counts_map = dict(counts_res.all())
+        
         output = []
         for r in roles:
-            count_res = await db.execute(
-                select(func.count()).select_from(User).where(User.role == r.code)
-            )
-            user_count = count_res.scalar() or 0
             output.append({
                 "id": r.id,
                 "code": r.code,
@@ -58,7 +59,7 @@ class RoleService:
                 "permissions": r.permissions or [],
                 "is_system": r.is_system,
                 "is_immutable": r.is_immutable,
-                "user_count": user_count,
+                "user_count": counts_map.get(r.code, 0),
                 "created_at": r.created_at,
                 "updated_at": r.updated_at,
             })
@@ -149,7 +150,7 @@ class RoleService:
 
         # Ushbu rolga foydalanuvchilar biriktirilganmi tekshirish
         count_res = await db.execute(
-            select(func.count()).select_from(User).where(User.role == role.code)
+            select(func.count()).select_from(User).where(cast(User.role, String) == role.code)
         )
         attached_users = count_res.scalar() or 0
         if attached_users > 0:

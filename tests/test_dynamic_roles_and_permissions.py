@@ -87,6 +87,11 @@ async def test_dynamic_roles_and_permissions_full_flow():
         assert updated_role["name"] == "Yetakchi Huquqshunos"
         assert set(updated_role["permissions"]) == {"appeals:view_all", "appeals:resolve", "appeals:reject"}
 
+        # 6.1 List roles after custom role creation (must not 500 on non-enum role codes)
+        list_after_custom = await ac.get("/api/v1/roles", headers=admin_headers)
+        assert list_after_custom.status_code == 200
+        assert any(r["code"] == custom_code for r in list_after_custom.json())
+
         # 7. Staff individual override permissions
         # Find a staff user (e.g. malika_front or another staff)
         staff_login = await ac.post("/api/v1/auth/login", json={
