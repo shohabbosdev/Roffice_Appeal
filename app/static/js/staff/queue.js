@@ -191,72 +191,7 @@ async function loadQueueAppointments() {
       }
     }
 
-    // 5. FIRST LOGIN PASSWORD CHANGE
-    async function handleFirstLoginPasswordChange(e) {
-      e.preventDefault();
-      const cur = document.getElementById('fl-current-password').value;
-      const newU = document.getElementById('fl-new-username').value.trim() || null;
-      const newP = document.getElementById('fl-new-password').value;
-      const conf = document.getElementById('fl-confirm-password').value;
-      const alertBox = document.getElementById('first-login-alert');
-
-      if (newP !== conf) {
-        alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
-        alertBox.innerText = "Yangi parol va tasdiqlovchi parol bir-biriga mos kelmadi.";
-        return;
-      }
-
-      try {
-        const resp = await fetch('/api/v1/users/me/credentials', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            current_password: cur,
-            new_username: newU,
-            new_password: newP
-          })
-        });
-        const data = await resp.json();
-        if (resp.ok) {
-          token = data.access_token;
-          localStorage.setItem('roffice_token', token);
-          localStorage.setItem('roffice_must_change_password', 'false');
-          closeFirstLoginModal();
-          showToast("Parolingiz muvaffaqiyatli o'zgartirildi. Tizimga xush kelibsiz!", "success");
-          loadCurrentUserProfile();
-        } else {
-          alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
-          alertBox.innerText = data.detail || "Parolni o'zgartirishda xatolik yuz berdi.";
-        }
-      } catch (err) {
-        showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");
-      }
-    }
-
-    function openFirstLoginModal() {
-      const modal = document.getElementById('first-login-modal');
-      if (modal && !modal.firstElementChild) {
-        const tmpl = document.getElementById('first-login-template');
-        if (tmpl) modal.appendChild(tmpl.content.cloneNode(true));
-      }
-      if (modal) {
-        modal.style.display = 'flex';
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-      }
-    }
-
-    function closeFirstLoginModal() {
-      const modal = document.getElementById('first-login-modal');
-      if (modal) {
-        modal.style.display = 'none';
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-      }
-    }
+    // 5. FIRST LOGIN PASSWORD CHANGE moved to core.js for global reliability
 
     // 6. VOLUNTARY CREDENTIALS MODAL
     function openCredentialsModal() {
