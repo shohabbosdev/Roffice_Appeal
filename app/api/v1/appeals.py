@@ -10,10 +10,12 @@ from app.schemas import (
     AppealCreate, AppealAssign, AppealReassign, AppealClarify,
     AppealProvideClarify, AppealResolve, AppealConfirm, AppealDispute,
     AppealEscalateProrektor, ProrektorFinalDecision, AppealOut,
-    EducationFormPolicyOut, EducationFormPolicyUpdate
+    EducationFormPolicyOut, EducationFormPolicyUpdate,
+    AppealTrackInfoOut, AppealPublicTrackOut
 )
 import asyncio
 from app.services.appeal_service import AppealService
+from app.services.appeal_tracker_service import AppealTrackerService
 from app.services.policy_service import PolicyService
 from app.services.telegram_service import TelegramService
 from app.services.kpi_service import KPIService
@@ -212,6 +214,21 @@ async def get_appeals(
     return result.scalars().all()
 
 
+@router.get("/track/public", response_model=AppealPublicTrackOut, summary="Chipta raqami bo'yicha ommaviy trek ko'rish (Autentifikatsiyasiz)")
+async def track_appeal_public(
+    ticket_number: str = Query(..., description="Murojaat chipta raqami, masalan: #RO-2026-00012"),
+    db: AsyncSession = Depends(get_db)
+):
+    """Talaba yoki fuqaro tizimga kirmasdan o'z arizasining holatini kuzatishi mumkin (Shaxsiy ma'lumotlar maskalanadi)."""
+    track_info = await AppealTrackerService.get_public_appeal_track(db=db, ticket_number=ticket_number)
+    if not track_info:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"'{ticket_number}' raqamli murojaat topilmadi. Raqamni to'g'ri kiritganingizni tekshiring."
+        )
+    return track_info
+
+
 @router.get("/{appeal_id}", response_model=AppealOut, summary="Murojaatning to'liq holati va tarixi")
 async def get_appeal_detail(
     appeal_id: int,
@@ -231,6 +248,23 @@ async def get_appeal_detail(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Siz faqat o'zingizning murojaatingizni ko'ra olasiz.")
 
     return appeal
+
+
+@router.get("/{appeal_id}/track", response_model=AppealTrackInfoOut, summary="Talaba uchun murojaatning to'liq vizual treki")
+async def get_appeal_track(
+    appeal_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Murojaatning barcha 5 bosqichi, mas'ul xodim, ish vaqti va taxminiy tayyor bo'lish vaqti."""
+    track_data = await AppealTrackerService.get_appeal_track_info(
+        db=db,
+        appeal_id=appeal_id,
+        current_user=current_user
+    )
+    if not track_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Murojaat topilmadi yoki ko'rish uchun ruxsat yo'q.")
+    return track_data
 
 
 @router.post("/{appeal_id}/assign", response_model=AppealOut, summary="Murojaatni ijrochiga biriktirish (Boshliq / Admin)")

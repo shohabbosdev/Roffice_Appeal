@@ -265,6 +265,56 @@ class AppealOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class AppealTrackStep(BaseModel):
+    step_key: str  # "submitted", "assigned", "escalated", "resolved", "completed"
+    title: str
+    description: str
+    status: str    # "completed", "current", "pending", "rejected"
+    timestamp: Optional[datetime] = None
+    actor_name: Optional[str] = None
+    actor_role: Optional[str] = None
+    icon: Optional[str] = None
+
+
+class AppealTrackInfoOut(BaseModel):
+    id: int
+    ticket_number: str
+    subject: str
+    service_title: str
+    service_department: Optional[str] = None
+    status: AppealStatus
+    status_label: str
+    progress_percentage: int
+    created_at: datetime
+    sla_deadline_at: Optional[datetime] = None
+    estimated_completion_text: str
+    queue_ahead_count: int
+    is_working_hours: bool
+    assigned_staff_name: Optional[str] = None
+    assigned_staff_window: Optional[str] = None
+    resolution_text: Optional[str] = None
+    result_file_url: Optional[str] = None
+    qr_hash: Optional[str] = None
+    rating: Optional[int] = None
+    rating_comment: Optional[str] = None
+    steps: List[AppealTrackStep]
+
+
+class AppealPublicTrackOut(BaseModel):
+    ticket_number: str
+    subject: str
+    service_title: str
+    student_masked_name: str
+    status: AppealStatus
+    status_label: str
+    progress_percentage: int
+    created_at: datetime
+    estimated_completion_text: str
+    is_working_hours: bool
+    steps: List[AppealTrackStep]
+
+
+
 # Appointment Schemas (Kelib hal etish)
 class AppointmentBook(BaseModel):
     service_id: int

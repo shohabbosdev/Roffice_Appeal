@@ -1134,18 +1134,25 @@
 
             ${ratingStarsHtml}
 
-            ${app.status === 'resolved' ? `
-              <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
-                <button type="button" onclick="openRatingModal(${app.id})" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-md shadow-emerald-600/20">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                  <span>Natijani tasdiqlash va baholash</span>
-                </button>
-                <button type="button" onclick="openDisputeModal(${app.id})" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-500/40 hover:bg-rose-500/10 text-rose-400 text-xs font-semibold transition cursor-pointer">
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                  <span>E'tiroz bildirish</span>
-                </button>
-              </div>
-            ` : ''}
+            <div class="flex items-center justify-between flex-wrap gap-2 pt-2.5 border-t border-slate-800/80">
+              <button type="button" onclick="openAppealTracker(${app.id})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-xs font-medium transition cursor-pointer">
+                <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                <span>📍 Bosqichlar va kutish vaqti</span>
+              </button>
+
+              ${app.status === 'resolved' ? `
+                <div class="flex items-center gap-2">
+                  <button type="button" onclick="openRatingModal(${app.id})" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition cursor-pointer shadow-md shadow-emerald-600/20">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>Tasdiqlash</span>
+                  </button>
+                  <button type="button" onclick="openDisputeModal(${app.id})" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-rose-500/40 hover:bg-rose-500/10 text-rose-400 text-xs font-semibold transition cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <span>E'tiroz</span>
+                  </button>
+                </div>
+              ` : ''}
+            </div>
           </div>
         `;
       });
@@ -1726,6 +1733,124 @@
       openDisputeModal(pendingFwAppeal.id);
     }
 
+    // --- APPEAL LIVE TRACKER (Vizual kuzatish va kutish vaqti) ---
+    async function openAppealTracker(appealId) {
+      const modal = document.getElementById('modal-appeal-tracker');
+      if (!modal) return;
+
+      const ticketBadge = document.getElementById('tracker-ticket-badge');
+      const statusBadge = document.getElementById('tracker-status-badge');
+      const titleEl = document.getElementById('tracker-title');
+      const progText = document.getElementById('tracker-progress-text');
+      const progBar = document.getElementById('tracker-progress-bar');
+      const estTimeEl = document.getElementById('tracker-est-time');
+      const staffInfoEl = document.getElementById('tracker-staff-info');
+      const stepsContainer = document.getElementById('tracker-steps-container');
+      const resBox = document.getElementById('tracker-resolution-box');
+      const resText = document.getElementById('tracker-resolution-text');
+      const resFiles = document.getElementById('tracker-result-files');
+
+      // Loading holati
+      stepsContainer.innerHTML = '<div class="p-6 text-center text-xs text-slate-400">Yuklanmoqda...</div>';
+      modal.classList.remove('hidden');
+
+      try {
+        const resp = await fetch(apiUrl(`/api/v1/appeals/${appealId}/track`), {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!resp.ok) {
+          showToast("Murojaat ma'lumotlarini yuklab bo'lmadi", "error");
+          closeAppealTracker();
+          return;
+        }
+        const data = await resp.json();
+
+        ticketBadge.innerText = '#' + (data.ticket_number || '').replace('#', '');
+        statusBadge.innerText = data.status_label || data.status;
+        titleEl.innerText = data.subject || data.service_title;
+        progText.innerText = data.progress_percentage + '%';
+        progBar.style.width = data.progress_percentage + '%';
+        estTimeEl.innerText = data.estimated_completion_text || "Ma'lumot yo'q";
+
+        if (data.assigned_staff_name) {
+          staffInfoEl.innerText = data.assigned_staff_name + (data.assigned_staff_window ? ` (${data.assigned_staff_window})` : '');
+        } else {
+          staffInfoEl.innerText = "Hali biriktirilmagan";
+        }
+
+        // Qadamlarni render qilish
+        let stepsHtml = '';
+        (data.steps || []).forEach((step, idx) => {
+          let circleStyle = "bg-slate-800 border-slate-700 text-slate-400";
+          let pulseEffect = "";
+
+          if (step.status === 'completed') {
+            circleStyle = "bg-emerald-500/20 border-emerald-500 text-emerald-400";
+          } else if (step.status === 'current') {
+            circleStyle = "bg-indigo-600 border-indigo-400 text-white shadow-lg shadow-indigo-500/40 ring-4 ring-indigo-500/20";
+            pulseEffect = '<span class="absolute -top-1 -right-1 flex h-3 w-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span></span>';
+          } else if (step.status === 'rejected') {
+            circleStyle = "bg-rose-500/20 border-rose-500 text-rose-400";
+          }
+
+          const timeStr = step.timestamp ? new Date(step.timestamp).toLocaleString('uz-UZ', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) : '';
+
+          stepsHtml += `
+            <div class="relative flex items-start gap-3.5 pl-1 group">
+              <div class="relative z-10 w-7 h-7 rounded-full border flex items-center justify-center text-xs font-bold shrink-0 transition-all ${circleStyle}">
+                ${step.status === 'completed' ? '✓' : (step.status === 'rejected' ? '✕' : (idx + 1))}
+                ${pulseEffect}
+              </div>
+              <div class="flex-1 pb-4 border-b border-slate-800/60 group-last:border-none">
+                <div class="flex items-center justify-between flex-wrap gap-1">
+                  <span class="text-xs font-bold text-white">${step.title}</span>
+                  ${timeStr ? `<span class="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">${timeStr}</span>` : ''}
+                </div>
+                <p class="text-[11px] text-slate-300 mt-1 leading-relaxed">${step.description}</p>
+                ${step.actor_name ? `<span class="text-[10px] text-indigo-400/90 font-medium block mt-1">Ijrochi: ${step.actor_name} (${step.actor_role || 'Xodim'})</span>` : ''}
+              </div>
+            </div>
+          `;
+        });
+        stepsContainer.innerHTML = stepsHtml;
+
+        // Xulosa qismi
+        if (data.resolution_text) {
+          resBox.classList.remove('hidden');
+          resText.innerText = data.resolution_text;
+          let filesHtml = '';
+          if (data.result_file_url) {
+            filesHtml += `
+              <a href="${apiUrl(data.result_file_url)}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-xs font-medium transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <span>Rasmiy PDF ma'lumotnoma</span>
+              </a>
+            `;
+          }
+          if (data.qr_hash) {
+            filesHtml += `
+              <a href="${apiUrl('/verify/' + data.qr_hash)}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-blue-500/40 bg-blue-500/15 hover:bg-blue-500/25 text-blue-300 text-xs font-medium transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M4 8h16M4 16h4m4 0h4"/></svg>
+                <span>QR-kod verifikatsiyasi</span>
+              </a>
+            `;
+          }
+          resFiles.innerHTML = filesHtml;
+        } else {
+          resBox.classList.add('hidden');
+        }
+
+      } catch (e) {
+        showToast("Xatolik yuz berdi: " + e.message, "error");
+        closeAppealTracker();
+      }
+    }
+
+    function closeAppealTracker() {
+      const modal = document.getElementById('modal-appeal-tracker');
+      if (modal) modal.classList.add('hidden');
+    }
+
     // --- REGISTRATOR OFISI E'LONLARI ---
     async function loadStudentAnnouncements() {
       if (!token) return;
@@ -2255,6 +2380,83 @@
         <button type="button" onclick="openFwDispute()" class="w-full py-2.5 rounded-xl bg-slate-950 hover:bg-rose-950/30 text-rose-400 border border-slate-800 hover:border-rose-500/40 text-xs font-semibold transition cursor-pointer flex items-center justify-center gap-1.5">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
           <span>Muammo hal bo'lmadi (E'tiroz bildirish)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Appeal Live Tracker Modal (Murojaatni vizual kuzatish va kutish vaqti) -->
+  <div id="modal-appeal-tracker" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200">
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/60">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="tracker-ticket-badge" class="font-mono text-xs font-bold text-indigo-400 bg-indigo-950/50 px-2 py-0.5 rounded border border-indigo-800/50">#RO-2026-XXXXX</span>
+              <span id="tracker-status-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold border bg-blue-500/10 text-blue-400 border-blue-500/30">Jarayonda</span>
+            </div>
+            <h3 id="tracker-title" class="text-sm font-bold text-white mt-1">Murojaat harakati va ijro monitoringi</h3>
+          </div>
+        </div>
+        <button type="button" onclick="closeAppealTracker()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-6 flex-1 text-slate-200">
+        <!-- Progress Bar & Forecast Card -->
+        <div class="p-4 rounded-2xl bg-gradient-to-br from-indigo-950/40 via-slate-900 to-slate-950 border border-indigo-500/20 space-y-3 shadow-inner">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-400 font-medium">Bajarilish darajasi:</span>
+            <span id="tracker-progress-text" class="font-mono font-bold text-indigo-400">55%</span>
+          </div>
+          <div class="w-full bg-slate-950 rounded-full h-2.5 border border-slate-800 overflow-hidden">
+            <div id="tracker-progress-bar" class="bg-gradient-to-r from-indigo-500 to-teal-400 h-2.5 rounded-full transition-all duration-500" style="width: 55%"></div>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Kutilayotgan ijro vaqti:</span>
+              <span id="tracker-est-time" class="font-semibold text-white mt-0.5 block">Bugun 17:00 gacha</span>
+            </div>
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800/80">
+              <span class="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Mas'ul xodim & Darcha:</span>
+              <span id="tracker-staff-info" class="font-semibold text-white mt-0.5 block">Biriktirilmoqda</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stepper Timeline -->
+        <div>
+          <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span>Ijro bosqichlari xronologiyasi</span>
+          </h4>
+          <div id="tracker-steps-container" class="space-y-4 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-800">
+            <!-- Dinamik qadamlar shu yerga yuklanadi -->
+          </div>
+        </div>
+
+        <!-- Natija va Fayllar (agar RESOLVED yoki COMPLETED bo'lsa) -->
+        <div id="tracker-resolution-box" class="hidden p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 space-y-2.5">
+          <span class="text-[11px] uppercase font-bold text-emerald-400 tracking-wider flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>Rasmiy ijro xulosasi:</span>
+          </span>
+          <p id="tracker-resolution-text" class="text-xs text-slate-200 leading-relaxed"></p>
+          <div id="tracker-result-files" class="pt-1 flex flex-wrap items-center gap-2"></div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-800 bg-slate-950/60 flex items-center justify-end">
+        <button type="button" onclick="closeAppealTracker()" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-medium transition cursor-pointer">
+          Yopish
         </button>
       </div>
     </div>
