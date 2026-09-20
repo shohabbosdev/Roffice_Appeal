@@ -15,6 +15,7 @@ from app.schemas import (
 )
 from app.api.deps import require_role, get_current_user
 from app.services.audit_service import AuditService
+from app.services.role_service import RoleService
 
 router = APIRouter(prefix="/users", tags=["Foydalanuvchilar va rollar boshqaruvi"])
 
@@ -163,9 +164,16 @@ async def get_nizom_duties(current_user: User = Depends(get_current_user)):
 
 
 @router.get("/me", response_model=UserOut, summary="Joriy foydalanuvchi profili")
-async def get_my_profile(current_user: User = Depends(get_current_user)):
-    """Joriy avtorizatsiyadan o'tgan foydalanuvchining shaxsiy ma'lumotlari."""
-    return current_user
+async def get_my_profile(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Joriy avtorizatsiyadan o'tgan foydalanuvchining shaxsiy ma'lumotlari va huquqlari."""
+    effective = await RoleService.get_effective_permissions(current_user, db)
+    user_out = UserOut.model_validate(current_user)
+    user_out.effective_permissions = effective
+    user_out.custom_permissions = current_user.custom_permissions or []
+    return user_out
 
 
 @router.get("/staff", response_model=List[UserOut], summary="Barcha xodimlar va ularning joriy rollari ro'yxati")

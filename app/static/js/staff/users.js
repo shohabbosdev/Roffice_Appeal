@@ -181,21 +181,31 @@ async function loadDepartmentsDropdown() {
                   <span>🛡️</span> <span>Tizim Admini (Himoyalangan)</span>
                 </span>
               ` : `
-                <button onclick="openStaffServicesModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Xizmatlarni biriktirish">
-                  Xizmatlar (${servicesCount})
-                </button>
-                <button onclick="openStaffPermissionsModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Individual huquqlar ustamasi">
-                  Huquqlar
-                </button>
-                <button onclick="openEditStaffModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-medium transition cursor-pointer">
-                  Tahrirlash
-                </button>
-                <button onclick="openKpiAwardModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
-                  KPI & Vazifa
-                </button>
-                <button onclick="deleteStaffMember(${u.id})" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
-                  O'chirish
-                </button>
+                ${(typeof hasPerm === 'function' ? hasPerm('users:assign_services') : true) ? `
+                  <button onclick="openStaffServicesModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-sky-600/20 hover:bg-sky-600 text-sky-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Xizmatlarni biriktirish">
+                    Xizmatlar (${servicesCount})
+                  </button>
+                ` : ''}
+                ${(typeof hasPerm === 'function' ? hasPerm('roles:manage') : userRole === 'admin') ? `
+                  <button onclick="openStaffPermissionsModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-purple-600/20 hover:bg-purple-600 text-purple-300 hover:text-white text-xs font-medium transition cursor-pointer" title="Individual huquqlar ustamasi">
+                    Huquqlar
+                  </button>
+                ` : ''}
+                ${(typeof hasPerm === 'function' ? hasPerm('users:edit') : true) ? `
+                  <button onclick="openEditStaffModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                    Tahrirlash
+                  </button>
+                ` : ''}
+                ${(typeof hasPerm === 'function' && hasPerm('kpi:award') || ['admin', 'office_head'].includes(userRole)) ? `
+                  <button onclick="openKpiAwardModal(${u.id})" class="px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-medium transition cursor-pointer">
+                    KPI & Vazifa
+                  </button>
+                ` : ''}
+                ${(typeof hasPerm === 'function' ? hasPerm('users:delete') : true) ? `
+                  <button onclick="deleteStaffMember(${u.id})" class="px-2 py-1 rounded-lg border border-slate-800 hover:border-rose-500/40 hover:bg-rose-500/10 text-slate-400 hover:text-rose-400 text-xs transition cursor-pointer">
+                    O'chirish
+                  </button>
+                ` : ''}
               `}
             </td>
           </tr>

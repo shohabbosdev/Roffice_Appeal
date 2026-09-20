@@ -860,10 +860,15 @@ let token = localStorage.getItem('roffice_token');
       if (queueBtn) queueBtn.style.display = canAccessQueue ? 'flex' : 'none';
 
       // 5. Xodimlar tarkibi va rollar
-      const canViewUsers = hasPerm('users:view') || hasPerm('users:create') || hasPerm('users:edit') || hasPerm('roles:manage');
+      const canViewUsers = hasPerm('users:view') || hasPerm('users:create') || hasPerm('users:edit') || hasPerm('roles:manage') || ['admin', 'office_head'].includes(role);
       if (usersBtn) usersBtn.style.display = canViewUsers ? 'flex' : 'none';
-      const canManageRoles = hasPerm('roles:manage');
+      const canManageRoles = hasPerm('roles:manage') || role === 'admin';
       if (rolesSubtabBtn) rolesSubtabBtn.style.display = canManageRoles ? 'inline-block' : 'none';
+      const addStaffBtn = document.getElementById('btn-toggle-add-staff');
+      if (addStaffBtn) {
+        const canCreateStaff = hasPerm('users:create') || ['admin', 'office_head'].includes(role);
+        addStaffBtn.style.display = canCreateStaff ? 'inline-block' : 'none';
+      }
 
       // 6. Xodimlar KPI reytingi
       if (kpiBtn) kpiBtn.style.display = 'flex';

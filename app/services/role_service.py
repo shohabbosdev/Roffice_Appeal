@@ -177,6 +177,13 @@ class RoleService:
             if "*" in role_obj.permissions:
                 return ["*"]
             base_permissions.update(role_obj.permissions)
+        else:
+            # Standart shablon katalogidan zaxira huquqlarni olish
+            tpl = next((r for r in DEFAULT_TEMPLATE_ROLES if r["code"] == role_val), None)
+            if tpl and tpl.get("permissions"):
+                if "*" in tpl["permissions"]:
+                    return ["*"]
+                base_permissions.update(tpl["permissions"])
 
         # Agar individual qo'shimcha huquqlar berilgan bo'lsa
         if user.custom_permissions:
