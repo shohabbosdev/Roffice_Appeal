@@ -9,8 +9,18 @@
     (function() {
       const _origWarn = console.warn;
       console.warn = function(...args) {
-        if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com')) return;
+        if (args[0] && typeof args[0] === 'string') {
+          if (args[0].includes('cdn.tailwindcss.com')) return;
+          if (args[0].includes('[DOM]') || args[0].includes('Password field') || args[0].includes('Password forms') || args[0].includes('Multiple forms')) return;
+        }
         _origWarn.apply(console, args);
+      };
+      const _origError = console.error;
+      console.error = function(...args) {
+        if (args[0] && typeof args[0] === 'string') {
+          if (args[0].includes('[DOM]') || args[0].includes('Password field') || args[0].includes('Password forms') || args[0].includes('Multiple forms') || args[0].includes('beacon.min.js')) return;
+        }
+        _origError.apply(console, args);
       };
 
       const isSub = window.location.pathname.startsWith('/roffice-appeal');
@@ -1541,8 +1551,8 @@
 
   </div>
 
-  <!-- MODAL: MANDATORY FIRST-LOGIN PASSWORD CHANGE -->
-  <div id="first-login-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+  <!-- TEMPLATE: MANDATORY FIRST-LOGIN PASSWORD CHANGE -->
+  <template id="first-login-template">
     <div class="bg-slate-900 border border-emerald-500/40 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <div class="flex items-center gap-3">
         <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center font-bold text-lg">
@@ -1560,33 +1570,36 @@
 
       <div id="first-login-alert" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
 
-      <div id="first-login-box" class="space-y-3">
+      <form id="first-login-form" action="javascript:void(0);" method="post" onsubmit="handleFirstLoginPasswordChange(event)" class="space-y-3">
+        <!-- Accessibility / Chrome autofill username field -->
+        <input type="text" name="username" autocomplete="username" class="hidden" style="display:none;" value="staff_user" tabindex="-1" aria-hidden="true">
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Amaldagi (bir martalik) parol</label>
-          <input type="password" id="fl-current-password" onkeydown="if(event.key==='Enter') handleFirstLoginPasswordChange(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+          <input type="password" id="fl-current-password" name="current-password" autocomplete="current-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi login (ixtiyoriy)</label>
-          <input type="text" id="fl-new-username" onkeydown="if(event.key==='Enter') handleFirstLoginPasswordChange(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Bo'sh qoldirilsa joriy login saqlanadi">
+          <input type="text" id="fl-new-username" name="custom_new_username" autocomplete="off" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" placeholder="Bo'sh qoldirilsa joriy login saqlanadi">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi maxfiy parol (kamida 6 belgi)</label>
-          <input type="password" id="fl-new-password" onkeydown="if(event.key==='Enter') handleFirstLoginPasswordChange(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+          <input type="password" id="fl-new-password" name="new-password" autocomplete="new-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi parolni tasdiqlang</label>
-          <input type="password" id="fl-confirm-password" onkeydown="if(event.key==='Enter') handleFirstLoginPasswordChange(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
+          <input type="password" id="fl-confirm-password" name="confirm-new-password" autocomplete="new-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required>
         </div>
 
-        <button type="button" onclick="handleFirstLoginPasswordChange(event)" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer shadow-lg shadow-emerald-600/20">
+        <button type="submit" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs transition cursor-pointer shadow-lg shadow-emerald-600/20">
           Parolni saqlash va tizimga o'tish
         </button>
-      </div>
+      </form>
     </div>
-  </div>
+  </template>
+  <div id="first-login-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4"></div>
 
-  <!-- MODAL: SELF-PROFILE / SECURITY (CHANGE USERNAME & PASSWORD) -->
-  <div id="self-profile-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+  <!-- TEMPLATE: SELF-PROFILE / SECURITY (CHANGE USERNAME & PASSWORD) -->
+  <template id="self-profile-template">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2">
@@ -1597,40 +1610,43 @@
           </div>
           <h3 class="text-sm font-bold text-white tracking-tight">Xavfsizlik va parol sozlamalari</h3>
         </div>
-        <button onclick="closeCredentialsModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
+        <button type="button" onclick="closeCredentialsModal()" class="text-slate-400 hover:text-white text-xs cursor-pointer">✕</button>
       </div>
 
       <div id="self-cred-alert" class="hidden p-3 rounded-xl text-xs font-medium border"></div>
 
-      <div id="self-profile-box" class="space-y-3">
+      <form id="self-profile-form" action="javascript:void(0);" method="post" onsubmit="handleSelfCredentialUpdate(event)" class="space-y-3">
+        <!-- Accessibility / Chrome autofill username field -->
+        <input type="text" name="username" autocomplete="username" class="hidden" style="display:none;" value="staff_user" tabindex="-1" aria-hidden="true">
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Amaldagi maxfiy parol</label>
-          <input type="password" id="self-current-password" onkeydown="if(event.key==='Enter') handleSelfCredentialUpdate(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" required>
+          <input type="password" id="self-current-password" name="current-password" autocomplete="current-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" required>
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi foydalanuvchi logini (ixtiyoriy)</label>
-          <input type="text" id="self-new-username" onkeydown="if(event.key==='Enter') handleSelfCredentialUpdate(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Joriy login o'rniga yangisi">
+          <input type="text" id="self-new-username" name="custom_new_username" autocomplete="off" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Joriy login o'rniga yangisi">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi parol (kamida 6 belgi)</label>
-          <input type="password" id="self-new-password" onkeydown="if(event.key==='Enter') handleSelfCredentialUpdate(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="O'zgartirish kerak bo'lsa kiriting">
+          <input type="password" id="self-new-password" name="new-password" autocomplete="new-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="O'zgartirish kerak bo'lsa kiriting">
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Yangi parolni takrorlang</label>
-          <input type="password" id="self-confirm-password" onkeydown="if(event.key==='Enter') handleSelfCredentialUpdate(event)" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Yangi parolni takrorlang">
+          <input type="password" id="self-confirm-password" name="confirm-new-password" autocomplete="new-password" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-blue-500" placeholder="Yangi parolni takrorlang">
         </div>
 
         <div class="flex gap-2 pt-2">
-          <button type="button" onclick="handleSelfCredentialUpdate(event)" class="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition cursor-pointer">
+          <button type="submit" class="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs transition cursor-pointer">
             O'zgarishlarni saqlash
           </button>
           <button type="button" onclick="closeCredentialsModal()" class="px-4 py-2 rounded-xl border border-slate-800 hover:border-slate-700 text-slate-300 text-xs font-medium transition cursor-pointer">
             Bekor qilish
           </button>
         </div>
-      </div>
+      </form>
     </div>
-  </div>
+  </template>
+  <div id="self-profile-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4"></div>
 
   <!-- MODAL: TEMPORARY PASSWORD GENERATED (AFTER ADMIN CREATES STAFF) -->
   <div id="temp-password-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -2975,8 +2991,7 @@
 
           // Majburiy birinchi parolni o'zgartirish
           if (currentUser.must_change_password) {
-            const firstLoginEl = document.getElementById('first-login-modal');
-            if (firstLoginEl) firstLoginEl.classList.remove('hidden');
+            openFirstLoginModal();
           }
         }
       } catch (e) {
@@ -4118,14 +4133,30 @@
       }
     }
 
+    function openFirstLoginModal() {
+      const modal = document.getElementById('first-login-modal');
+      if (modal && !modal.firstElementChild) {
+        const tmpl = document.getElementById('first-login-template');
+        if (tmpl) modal.appendChild(tmpl.content.cloneNode(true));
+      }
+      if (modal) modal.classList.remove('hidden');
+    }
+
     // 6. VOLUNTARY CREDENTIALS MODAL
     function openCredentialsModal() {
-      document.getElementById('self-profile-modal').classList.remove('hidden');
-      document.getElementById('self-cred-alert').classList.add('hidden');
+      const modal = document.getElementById('self-profile-modal');
+      if (modal && !modal.firstElementChild) {
+        const tmpl = document.getElementById('self-profile-template');
+        if (tmpl) modal.appendChild(tmpl.content.cloneNode(true));
+      }
+      if (modal) modal.classList.remove('hidden');
+      const alertBox = document.getElementById('self-cred-alert');
+      if (alertBox) alertBox.classList.add('hidden');
     }
 
     function closeCredentialsModal() {
-      document.getElementById('self-profile-modal').classList.add('hidden');
+      const modal = document.getElementById('self-profile-modal');
+      if (modal) modal.classList.add('hidden');
     }
 
     async function handleSelfCredentialUpdate(e) {
