@@ -654,13 +654,31 @@ let token = localStorage.getItem('roffice_token');
             openFirstLoginModal();
           } else {
             localStorage.setItem('roffice_must_change_password', 'false');
-            closeFirstLoginModal();
+            closeFirstLoginModal(true);
           }
         }
       } catch (e) {
         console.error("Profil yuklash xatosi:", e);
       }
     }
+
+    // === KO'ZCHA (PAROLNI KO'RSATISH/YASHIRISH) HELPERI ===
+    function toggleFieldPassword(inputId, eyeOpenId, eyeSlashId) {
+      const input = document.getElementById(inputId);
+      const eyeOpen = document.getElementById(eyeOpenId);
+      const eyeSlash = document.getElementById(eyeSlashId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (eyeOpen) eyeOpen.classList.add('hidden');
+        if (eyeSlash) eyeSlash.classList.remove('hidden');
+      } else {
+        input.type = 'password';
+        if (eyeOpen) eyeOpen.classList.remove('hidden');
+        if (eyeSlash) eyeSlash.classList.add('hidden');
+      }
+    }
+    window.toggleFieldPassword = toggleFieldPassword;
 
     // === MAJBURIY BIRINCHI PAROLNI O'ZGARTIRISH (FIRST LOGIN PASSWORD CHANGE) ===
     function openFirstLoginModal() {
@@ -673,7 +691,11 @@ let token = localStorage.getItem('roffice_token');
     }
     window.openFirstLoginModal = openFirstLoginModal;
 
-    function closeFirstLoginModal() {
+    function closeFirstLoginModal(force = false) {
+      if (!force && localStorage.getItem('roffice_must_change_password') === 'true') {
+        // Ushbu oyna majburiy: yangi parol o'rnatilmaguncha yopib bo'lmaydi
+        return;
+      }
       const modal = document.getElementById('first-login-modal');
       if (modal) {
         modal.classList.add('hidden');
@@ -682,6 +704,14 @@ let token = localStorage.getItem('roffice_token');
       }
     }
     window.closeFirstLoginModal = closeFirstLoginModal;
+
+    // ESC tugmasi orqali modalni yopilishidan himoya qilish
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && localStorage.getItem('roffice_must_change_password') === 'true') {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    }, true);
 
     async function handleFirstLoginPasswordChange(e) {
       if (e) e.preventDefault();
@@ -742,7 +772,7 @@ let token = localStorage.getItem('roffice_token');
             localStorage.setItem('roffice_token', token);
           }
           localStorage.setItem('roffice_must_change_password', 'false');
-          closeFirstLoginModal();
+          closeFirstLoginModal(true);
           showToast("Parolingiz muvaffaqiyatli o'zgartirildi. Tizimga xush kelibsiz!", "success");
           await loadCurrentUserProfile();
         } else {
