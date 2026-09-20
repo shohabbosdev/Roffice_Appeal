@@ -1916,11 +1916,11 @@
       });
       if (resp.ok) {
         currentUser = await resp.json();
-        document.getElementById('student-name').innerText = currentUser.full_name;
-        document.getElementById('student-id').innerText = currentUser.hemis_student_id || currentUser.username;
-        document.getElementById('student-fac').innerText = currentUser.faculty || "Axborot texnologiyalari";
-        document.getElementById('student-grp').innerText = currentUser.group_name || "M07-25";
-        document.getElementById('student-spec').innerText = currentUser.specialty || "Dasturiy injiniring";
+        document.getElementById('student-name').innerText = currentUser.full_name || "-";
+        document.getElementById('student-id').innerText = currentUser.hemis_student_id || currentUser.username || "-";
+        document.getElementById('student-fac').innerText = currentUser.faculty || "-";
+        document.getElementById('student-grp').innerText = currentUser.group_name || "-";
+        document.getElementById('student-spec').innerText = currentUser.specialty || "-";
 
         const eduForm = currentUser.education_form || "Kunduzgi";
         const formTag = document.getElementById('student-eduform');

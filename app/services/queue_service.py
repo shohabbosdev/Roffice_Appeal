@@ -455,19 +455,27 @@ class QueueService:
 
     @classmethod
     async def auto_expire_no_show_appointments(cls, db: AsyncSession) -> int:
-        """O'tib ketgan sanalardagi kelinmagan (BOOKED) navbatlarni NO_SHOW holatiga o'tkazish."""
+        """Yangi kunga o'tilganda o'tib ketgan barcha sanalardagi (appointment_date < today) navbatlarni tozalash."""
         now = cls.get_now()
         today_str = now.date().strftime("%Y-%m-%d")
 
-        stmt = select(Appointment).where(
-            Appointment.status == AppointmentStatus.BOOKED,
+        count = 0
+
+        # O'tgan sanalar (appointment_date < today_str): barcha faol navbatlar (BOOKED, CHECKED_IN, IN_SERVICE)
+        stmt_past = select(Appointment).where(
+            Appointment.status.in_([AppointmentStatus.BOOKED, AppointmentStatus.CHECKED_IN, AppointmentStatus.IN_SERVICE]),
             Appointment.appointment_date < today_str
         )
-        expired_appointments = (await db.execute(stmt)).scalars().all()
-        count = len(expired_appointments)
-        for app in expired_appointments:
-            app.status = AppointmentStatus.NO_SHOW
-            app.notes = (app.notes or "") + " [Avto-yopildi: Talaba belgilangan kunda kelmadi (No-Show)]"
+        past_appointments = (await db.execute(stmt_past)).scalars().all()
+        for app in past_appointments:
+            if app.status == AppointmentStatus.IN_SERVICE:
+                app.status = AppointmentStatus.COMPLETED
+                app.completed_at = app.completed_at or app.called_at or datetime.now(timezone.utc)
+                app.notes = (app.notes or "") + " [Avto-yakunlandi: Ish kuni tugagani sababli tizim tomonidan yakunlandi]"
+            else:
+                app.status = AppointmentStatus.NO_SHOW
+                app.notes = (app.notes or "") + " [Avto-yopildi: Talaba belgilangan kunda kelmadi (No-Show)]"
+            count += 1
 
         if count > 0:
             await db.commit()
@@ -514,6 +522,12 @@ class QueueService:
         """Kutish zali katta ekrani (TV Display) uchun jonli navbat ma'lumotlarini to'plash."""
         now_tz = cls.get_now()
         today_str = now_tz.date().strftime("%Y-%m-%d")
+
+        # Eskirgan yoki o'tib ketgan navbatlarni yangi kunda tozalash
+        try:
+            await cls.auto_expire_no_show_appointments(db)
+        except Exception:
+            pass
 
         # 1. Bugungi barcha faol navbatlar
         stmt = (

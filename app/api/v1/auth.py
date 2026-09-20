@@ -193,7 +193,7 @@ async def hemis_login(credentials: HemisStudentLogin, db: AsyncSession = Depends
                 user_id=local_user.id,
                 full_name=local_user.full_name,
                 expires_in_minutes=expire_minutes,
-                hemis_token="mock-hemis-token",
+                hemis_token=None,
                 hemis_refresh_token=local_user.hemis_refresh_token
             )
         raise http_exc

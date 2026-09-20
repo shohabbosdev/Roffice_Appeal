@@ -128,7 +128,12 @@ async def get_today_appointments(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Bugungi kun bo'yicha barcha faol navbatlar (live badge va monitoring uchun)."""
+    # Eskirgan yoki o'tib ketgan navbatlarni tozalash
+    try:
+        await QueueService.auto_expire_no_show_appointments(db)
+    except Exception:
+        pass
+
     now = QueueService.get_now()
     today_str = now.strftime("%Y-%m-%d")
     result = await db.execute(

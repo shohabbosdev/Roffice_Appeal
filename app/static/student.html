@@ -792,12 +792,14 @@
         }
 
         // Profile tab fields
-        document.getElementById('prof-name').innerText = currentUser.full_name;
-        document.getElementById('prof-id').innerText = currentUser.hemis_student_id || currentUser.username;
-        document.getElementById('prof-faculty').innerText = currentUser.faculty || "Axborot texnologiyalari fakulteti";
-        document.getElementById('prof-specialty').innerText = currentUser.specialty || "Dasturiy injiniring";
-        document.getElementById('prof-group').innerText = `${currentUser.group_name || 'M07-25'}, ${currentUser.course || 1}-kurs`;
-        document.getElementById('prof-eduform').innerText = `${eduForm} (${currentUser.education_type || "Bakalavr"})`;
+        document.getElementById('prof-name').innerText = currentUser.full_name || "-";
+        document.getElementById('prof-id').innerText = currentUser.hemis_student_id || currentUser.username || "-";
+        document.getElementById('prof-faculty').innerText = currentUser.faculty || "-";
+        document.getElementById('prof-specialty').innerText = currentUser.specialty || "-";
+        const groupPart = currentUser.group_name || "-";
+        const coursePart = currentUser.course ? `${currentUser.course}-kurs` : "";
+        document.getElementById('prof-group').innerText = coursePart ? `${groupPart}, ${coursePart}` : groupPart;
+        document.getElementById('prof-eduform').innerText = currentUser.education_type ? `${eduForm} (${currentUser.education_type})` : eduForm;
 
         // Telegram holatini tekshirish
         const tgStatusEl = document.getElementById('student-tg-status');
