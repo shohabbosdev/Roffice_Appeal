@@ -84,6 +84,58 @@ async def test_staff_otp_generation_and_first_login_flow():
 
 
 @pytest.mark.asyncio
+async def test_first_login_password_change_without_current_password():
+    """Xodim birinchi marta kirganda (must_change_password=True) eski parolsiz ham faqat yangi parol bilan yangilashi mumkin."""
+    unique_user = f"first_login_{uuid.uuid4().hex[:6]}"
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        # 1. Admin login
+        admin_login = await ac.post("/api/v1/auth/login", json={
+            "username": "admin",
+            "password": "AdminPass123!"
+        })
+        assert admin_login.status_code == 200
+        admin_token = admin_login.json()["access_token"]
+        admin_headers = {"Authorization": f"Bearer {admin_token}"}
+
+        # 2. Yangi xodim yaratish
+        resp = await ac.post("/api/v1/users/staff", headers=admin_headers, json={
+            "username": unique_user,
+            "full_name": "First Login Test User",
+            "role": "back_staff",
+            "department_id": 1
+        })
+        assert resp.status_code == 201
+        temp_pass = resp.json()["temporary_password"]
+
+        # 3. Yangi xodim sifatida login qilish
+        staff_login = await ac.post("/api/v1/auth/login", json={
+            "username": unique_user,
+            "password": temp_pass
+        })
+        assert staff_login.status_code == 200
+        assert staff_login.json()["must_change_password"] is True
+        staff_token = staff_login.json()["access_token"]
+        staff_headers = {"Authorization": f"Bearer {staff_token}"}
+
+        # 4. Eski parolsiz (faqat new_password bilan) parolni yangilash -> 200 OK
+        change_resp = await ac.put("/api/v1/users/me/credentials", headers=staff_headers, json={
+            "new_password": "NewSecretPassword2026!"
+        })
+        assert change_resp.status_code == 200
+        assert change_resp.json()["must_change_password"] is False
+
+        # 5. Yangi parol bilan kirish muvaffaqiyatli bo'lishi kerak
+        fresh_login = await ac.post("/api/v1/auth/login", json={
+            "username": unique_user,
+            "password": "NewSecretPassword2026!"
+        })
+        assert fresh_login.status_code == 200
+        assert fresh_login.json()["must_change_password"] is False
+
+
+
+@pytest.mark.asyncio
 async def test_student_credential_change_blocked():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:

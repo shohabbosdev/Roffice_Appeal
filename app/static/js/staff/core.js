@@ -715,25 +715,15 @@ let token = localStorage.getItem('roffice_token');
 
     async function handleFirstLoginPasswordChange(e) {
       if (e) e.preventDefault();
-      const cur = document.getElementById('fl-current-password')?.value || '';
-      const newU = document.getElementById('fl-new-username')?.value.trim() || null;
       const newP = document.getElementById('fl-new-password')?.value || '';
       const conf = document.getElementById('fl-confirm-password')?.value || '';
       const alertBox = document.getElementById('first-login-alert');
       const submitBtn = document.getElementById('fl-submit-btn');
 
-      if (!cur) {
+      if (!newP) {
         if (alertBox) {
           alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
-          alertBox.innerText = "Amaldagi bir martalik parolni kiriting.";
-        }
-        return;
-      }
-
-      if (newP !== conf) {
-        if (alertBox) {
-          alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
-          alertBox.innerText = "Yangi parol va tasdiqlovchi parol bir-biriga mos kelmadi.";
+          alertBox.innerText = "Yangi maxfiy parolni kiriting.";
         }
         return;
       }
@@ -742,6 +732,14 @@ let token = localStorage.getItem('roffice_token');
         if (alertBox) {
           alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
           alertBox.innerText = "Yangi parol kamida 6 ta belgidan iborat bo'lishi shart.";
+        }
+        return;
+      }
+
+      if (newP !== conf) {
+        if (alertBox) {
+          alertBox.className = 'p-3 rounded-xl text-xs font-medium border bg-rose-500/10 border-rose-500/30 text-rose-400 block';
+          alertBox.innerText = "Yangi parol va tasdiqlovchi parol bir-biriga mos kelmadi.";
         }
         return;
       }
@@ -760,8 +758,6 @@ let token = localStorage.getItem('roffice_token');
             'Authorization': `Bearer ${curToken}`
           },
           body: JSON.stringify({
-            current_password: cur,
-            new_username: newU,
             new_password: newP
           })
         });

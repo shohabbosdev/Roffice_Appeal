@@ -557,12 +557,23 @@ async def update_my_credentials(
             detail="Talabalar login va paroli HEMIS tizimi orqali boshqariladi. O'zgartirish talabaning shaxsiy HEMIS kabinetida amalga oshiriladi."
         )
 
-    # 1. Joriy parolni tekshirish
-    if not verify_password(data.current_password, current_user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Amaldagi maxfiy parol noto'g'ri kiritildi."
-        )
+    # 1. Joriy parolni tekshirish:
+    # Agar foydalanuvchida must_change_password=True bo'lsa (boshlang'ich bir martalik parol bilan kirgan),
+    # u tizimga muvaffaqiyatli kirganligi sababli yangi parolni joriy parolsiz ham o'rnatishi mumkin.
+    # Agar data.current_password kiritilgan bo'lsa, u to'g'ri ekanligi tekshiriladi.
+    # Agar must_change_password=False bo'lsa, joriy parol kiritilishi va to'g'ri bo'lishi shart.
+    if data.current_password:
+        if not verify_password(data.current_password, current_user.hashed_password):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Amaldagi maxfiy parol noto'g'ri kiritildi."
+            )
+    else:
+        if not current_user.must_change_password:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Amaldagi maxfiy parolni kiritish majburiy."
+            )
 
     # 2. Yangi login tekshiruvi (agar ko'rsatilgan bo'lsa)
     if data.new_username and data.new_username.strip():

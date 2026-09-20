@@ -150,7 +150,7 @@ class StaffServiceAssignRequest(BaseModel):
 
 
 class UpdateCredentialsRequest(BaseModel):
-    current_password: str
+    current_password: Optional[str] = None
     new_username: Optional[str] = None
     new_password: Optional[str] = None
 
