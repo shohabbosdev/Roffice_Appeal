@@ -103,7 +103,7 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
-    role: Mapped[UserRole] = mapped_column(SQLEnum(UserRole), default=UserRole.STUDENT, nullable=False)
+    role: Mapped[str] = mapped_column(String(50), default="student", nullable=False)
     custom_permissions: Mapped[Optional[List[str]]] = mapped_column(JSON, default=list, nullable=True)
     
     # Department / Staff assignment

@@ -72,7 +72,7 @@ class UserOut(BaseModel):
     full_name: str
     email: Optional[str] = None
     phone: Optional[str] = None
-    role: UserRole
+    role: str
     department_id: Optional[int] = None
     department: Optional[DepartmentOut] = None
     assigned_services: List[ServiceOut] = []
@@ -104,13 +104,13 @@ class TelegramConnectInfo(BaseModel):
 
 
 class UserRoleUpdate(BaseModel):
-    role: UserRole
+    role: str
 
 
 class StaffCreate(BaseModel):
     username: str
     full_name: str
-    role: UserRole
+    role: str
     department_id: Optional[int] = None
     email: Optional[str] = None
     phone: Optional[str] = None
@@ -131,7 +131,7 @@ class StaffUpdate(BaseModel):
     email: Optional[str] = None
     phone: Optional[str] = None
     department_id: Optional[int] = None
-    role: Optional[UserRole] = None
+    role: Optional[str] = None
     is_active: Optional[bool] = None
     assigned_duties: Optional[str] = None
     reset_password: Optional[bool] = False  # If True, generates new 8-char OTP

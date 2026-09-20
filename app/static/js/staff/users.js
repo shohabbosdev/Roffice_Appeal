@@ -78,7 +78,10 @@ async function loadDepartmentsDropdown() {
           showToast("Yangi xodim muvaffaqiyatli qo'shildi!", "success");
           loadStaffUsers();
         } else {
-          showToast(data.detail || "Xodim qo'shishda xatolik yuz berdi.", "error");
+          const errDetail = Array.isArray(data.detail)
+            ? data.detail.map(d => `${d.loc ? d.loc.slice(-1) + ': ' : ''}${d.msg}`).join(', ')
+            : (typeof data.detail === 'object' && data.detail !== null ? (data.detail.msg || data.detail.detail || JSON.stringify(data.detail)) : (data.detail || "Xodim qo'shishda xatolik yuz berdi."));
+          showToast(errDetail, "error");
         }
       } catch (err) {
         showToast("Server bilan aloqa o'rnatib bo'lmadi.", "error");

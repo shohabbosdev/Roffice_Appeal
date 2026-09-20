@@ -95,6 +95,13 @@ let token = localStorage.getItem('roffice_token');
       const container = document.getElementById('app-toast-container');
       if (!container) return;
 
+      let msgText = message;
+      if (Array.isArray(message)) {
+        msgText = message.map(m => (typeof m === 'object' ? (m.msg || m.detail || JSON.stringify(m)) : String(m))).join(', ');
+      } else if (typeof message === 'object' && message !== null) {
+        msgText = message.detail || message.message || message.msg || JSON.stringify(message);
+      }
+
       const toast = document.createElement('div');
       const typeStyles = {
         success: 'bg-emerald-950/95 border-emerald-500/40 text-emerald-200',
@@ -115,7 +122,7 @@ let token = localStorage.getItem('roffice_token');
       toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-xl backdrop-blur-md text-xs font-medium pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 ${styleCls}`;
       toast.innerHTML = `
         <span class="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center font-bold text-[11px] flex-shrink-0">${icon}</span>
-        <span class="flex-1 leading-snug">${message}</span>
+        <span class="flex-1 leading-snug">${escapeHtml(String(msgText))}</span>
       `;
 
       container.appendChild(toast);

@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 from app.core.database import get_db
 from app.core.security import hash_password, verify_password, create_access_token
 from app.core.config import settings
-from app.models import User, UserRole, Service, Appeal, Appointment, EmployeeKPITarget
+from app.models import User, UserRole, Service, Appeal, Appointment, EmployeeKPITarget, CustomRole
 from app.schemas import (
     UserOut, UserRoleUpdate, StaffCreate, StaffCreateResponse,
     StaffUpdate, StaffUpdateResponse, UpdateCredentialsRequest, ServiceOut, StaffServiceAssignRequest
@@ -281,11 +281,22 @@ async def create_staff(
     Xodim uchun avtomatik ravishda 8 belgili bir martalik parol (OTP) generatsiya qilinadi.
     Xodim birinchi marta tizimga kirganida ushbu parolni yangi shaxsiy paroliga almashtirishi shart.
     """
-    if data.role == UserRole.ADMIN:
+    role_val = data.role.value if hasattr(data.role, "value") else str(data.role).strip()
+    if role_val == "admin" or data.role == UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Administrator rolidagi yangi foydalanuvchi yaratish taqiqlanadi. Tizimda faqat yagona bosh administrator mavjud."
         )
+
+    # Rolning mavjudligini tekshirish
+    role_check = await db.execute(select(CustomRole).where(CustomRole.code == role_val))
+    if not role_check.scalar_one_or_none():
+        valid_standard_codes = {r.value for r in UserRole}
+        if role_val not in valid_standard_codes:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"'{role_val}' nomli rol tizimda mavjud emas."
+            )
 
     existing = await db.execute(select(User).where(User.username == data.username))
     if existing.scalar_one_or_none():
@@ -302,7 +313,7 @@ async def create_staff(
         username=data.username,
         hashed_password=hash_password(temporary_password),
         full_name=data.full_name,
-        role=data.role,
+        role=role_val,
         department_id=data.department_id,
         email=data.email,
         phone=data.phone,
@@ -320,13 +331,14 @@ async def create_staff(
     db.add(new_staff)
     await db.commit()
 
+    role_desc = new_staff.role.value if hasattr(new_staff.role, "value") else str(new_staff.role)
     await AuditService.log(
         db=db,
         entity_type="staff",
         entity_id=new_staff.id,
         action="staff_created",
         user_id=current_user.id,
-        details=f"Yangi xodim qo'shildi: {new_staff.full_name} ({new_staff.role.value})"
+        details=f"Yangi xodim qo'shildi: {new_staff.full_name} ({role_desc})"
     )
 
     query = (
@@ -335,9 +347,13 @@ async def create_staff(
         .where(User.id == new_staff.id)
     )
     reloaded_user = (await db.execute(query)).scalar_one()
+    effective = await RoleService.get_effective_permissions(reloaded_user, db)
+    user_out = UserOut.model_validate(reloaded_user)
+    user_out.effective_permissions = effective
+    user_out.custom_permissions = reloaded_user.custom_permissions or []
 
     return StaffCreateResponse(
-        user=reloaded_user,
+        user=user_out,
         temporary_password=temporary_password,
         must_change_password=True
     )
@@ -389,7 +405,21 @@ async def update_staff(
     if data.department_id is not None:
         user.department_id = data.department_id
     if data.role is not None:
-        user.role = data.role
+        role_val = data.role.value if hasattr(data.role, "value") else str(data.role).strip()
+        if role_val == "admin" or data.role == UserRole.ADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Boshqa xodimlarga Administrator rolini berish taqiqlanadi."
+            )
+        role_check = await db.execute(select(CustomRole).where(CustomRole.code == role_val))
+        if not role_check.scalar_one_or_none():
+            valid_standard_codes = {r.value for r in UserRole}
+            if role_val not in valid_standard_codes:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"'{role_val}' nomli rol tizimda mavjud emas."
+                )
+        user.role = role_val
     if data.is_active is not None:
         user.is_active = data.is_active
     if data.assigned_duties is not None:
@@ -456,13 +486,23 @@ async def update_user_role(
             detail="Administrator rolini o'zgartirish qat'iyan taqiqlanadi."
         )
 
-    if data.role == UserRole.ADMIN:
+    role_val = data.role.value if hasattr(data.role, "value") else str(data.role).strip()
+    if role_val == "admin" or data.role == UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Administrator rolini boshqa foydalanuvchiga berish taqiqlanadi."
         )
 
-    user.role = data.role
+    role_check = await db.execute(select(CustomRole).where(CustomRole.code == role_val))
+    if not role_check.scalar_one_or_none():
+        valid_standard_codes = {r.value for r in UserRole}
+        if role_val not in valid_standard_codes:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"'{role_val}' nomli rol tizimda mavjud emas."
+            )
+
+    user.role = role_val
     await db.commit()
     await db.refresh(user)
 
@@ -472,7 +512,7 @@ async def update_user_role(
         entity_id=user.id,
         action="role_updated",
         user_id=current_user.id,
-        details=f"Xodim roli yangilandi: {user.full_name} -> {data.role.value}"
+        details=f"Xodim roli yangilandi: {user.full_name} -> {role_val}"
     )
 
     return user
