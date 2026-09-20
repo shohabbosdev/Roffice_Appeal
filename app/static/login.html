@@ -394,8 +394,21 @@
       }
     }
 
-    // Sahifa ochilganda Captcha yuklash
-    document.addEventListener('DOMContentLoaded', loadCaptcha);
+    // Sahifa ochilganda Captcha yuklash va sessiya yopilish sababini tekshirish
+    document.addEventListener('DOMContentLoaded', () => {
+      loadCaptcha();
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('reason') === 'idle_timeout') {
+        const alertBox = document.getElementById('login-alert');
+        if (alertBox) {
+          alertBox.className = 'mb-5 p-3.5 rounded-xl text-xs font-medium border bg-amber-500/10 border-amber-500/30 text-amber-300 flex items-center gap-2';
+          alertBox.innerHTML = `
+            <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <span>Xavfsizlik yuzasidan 30 daqiqalik harakatsizlik tufayli sessiyangiz yakunlandi. Iltimos, qaytadan kiring.</span>
+          `;
+        }
+      }
+    });
   </script>
 </body>
 </html>

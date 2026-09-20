@@ -294,6 +294,7 @@ let currentAnalyticsAnnId = null;
     // 19. Page Initialization with Hash Recovery
     window.addEventListener('DOMContentLoaded', async () => {
       initNotifications();
+      initIdleSessionTimeout();
       await loadCurrentUserProfile();
       startLiveBadgesPolling();
 

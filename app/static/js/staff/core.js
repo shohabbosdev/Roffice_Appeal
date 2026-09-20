@@ -582,13 +582,95 @@ let token = localStorage.getItem('roffice_token');
       }
     }
 
-    function handleLogout() {
+    function handleLogout(reason = null) {
       localStorage.removeItem('roffice_token');
       localStorage.removeItem('roffice_role');
       localStorage.removeItem('roffice_fullname');
       localStorage.removeItem('roffice_user_id');
       localStorage.removeItem('roffice_must_change_password');
-      window.location.href = pageUrl('/login');
+      const target = reason ? pageUrl(`/login?reason=${encodeURIComponent(reason)}`) : pageUrl('/login');
+      window.location.href = target;
+    }
+
+    // === 30 DAQIQALIK HARAKATSIZLIK BO'YICHA AVTOMATIK LOGOUT TIZIMI ===
+    const IDLE_TIMEOUT_MS = 30 * 60 * 1000; // 30 daqiqa
+    const WARNING_TIME_MS = 28 * 60 * 1000; // 28 daqiqa (yopilishdan 2 daqiqa oldin ogohlantirish)
+    let lastUserActivityTime = Date.now();
+    let idleCheckIntervalId = null;
+    let countdownTimerId = null;
+    let isIdleWarningShown = false;
+
+    function resetIdleTimer() {
+      if (isIdleWarningShown) return;
+      lastUserActivityTime = Date.now();
+    }
+
+    function initIdleSessionTimeout() {
+      let throttleTimer = false;
+      const activityEvents = ['mousemove', 'mousedown', 'keydown', 'scroll', 'touchstart', 'click'];
+      
+      activityEvents.forEach(evt => {
+        window.addEventListener(evt, () => {
+          if (!throttleTimer) {
+            resetIdleTimer();
+            throttleTimer = true;
+            setTimeout(() => { throttleTimer = false; }, 2000);
+          }
+        }, { passive: true });
+      });
+
+      if (idleCheckIntervalId) clearInterval(idleCheckIntervalId);
+      idleCheckIntervalId = setInterval(checkSessionIdleState, 5000);
+    }
+
+    function checkSessionIdleState() {
+      const elapsed = Date.now() - lastUserActivityTime;
+      
+      if (elapsed >= IDLE_TIMEOUT_MS) {
+        if (countdownTimerId) clearInterval(countdownTimerId);
+        if (idleCheckIntervalId) clearInterval(idleCheckIntervalId);
+        handleLogout('idle_timeout');
+        return;
+      }
+
+      if (elapsed >= WARNING_TIME_MS && !isIdleWarningShown) {
+        showIdleWarningModal(Math.max(1, Math.round((IDLE_TIMEOUT_MS - elapsed) / 1000)));
+      }
+    }
+
+    function showIdleWarningModal(remainingSeconds) {
+      isIdleWarningShown = true;
+      const modal = document.getElementById('session-timeout-modal');
+      const countEl = document.getElementById('session-countdown-seconds');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      let currentRemaining = remainingSeconds;
+      if (countEl) countEl.innerText = currentRemaining;
+
+      if (countdownTimerId) clearInterval(countdownTimerId);
+      countdownTimerId = setInterval(() => {
+        currentRemaining--;
+        if (countEl) countEl.innerText = currentRemaining;
+        if (currentRemaining <= 0) {
+          clearInterval(countdownTimerId);
+          handleLogout('idle_timeout');
+        }
+      }, 1000);
+    }
+
+    function extendSessionActivity() {
+      isIdleWarningShown = false;
+      lastUserActivityTime = Date.now();
+      if (countdownTimerId) clearInterval(countdownTimerId);
+      const modal = document.getElementById('session-timeout-modal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      showToast("Sessiya xavfsiz davom ettirildi", "success");
     }
 
     function toggleSidebar() {
