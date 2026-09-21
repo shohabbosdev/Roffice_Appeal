@@ -240,7 +240,8 @@ class AppealTrackerService:
             return None
 
         # Ruxsat tekshiruvi: faqat murojaat egasi yoki xodimlar ko'ra oladi
-        if current_user.role.value == "student" and appeal.student_id != current_user.id:
+        user_role = getattr(current_user.role, "value", str(current_user.role))
+        if user_role == "student" and appeal.student_id != current_user.id:
             return None
 
         now = datetime.now(timezone.utc)

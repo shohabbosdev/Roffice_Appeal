@@ -29,7 +29,7 @@ class CaptchaOut(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-    role: UserRole
+    role: str
     user_id: int
     full_name: str
     expires_in_minutes: int
@@ -421,7 +421,7 @@ class HolidayOut(BaseModel):
 class HemisTokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-    role: UserRole
+    role: str
     user_id: int
     full_name: str
     expires_in_minutes: int
@@ -472,7 +472,7 @@ class AuditLogOut(BaseModel):
     @computed_field
     @property
     def user_role(self) -> Optional[str]:
-        return self.user.role.value if (self.user and self.user.role) else None
+        return getattr(self.user.role, "value", str(self.user.role)) if (self.user and self.user.role) else None
 
 
 # E'lonlar va Bildirishnomalar Sxemalari

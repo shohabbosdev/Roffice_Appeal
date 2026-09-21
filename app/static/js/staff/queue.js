@@ -283,13 +283,3 @@ async function loadQueueAppointments() {
       'vice_rector': "bg-amber-500/10 text-amber-400 border-amber-500/20",
       'admin': "bg-rose-500/10 text-rose-400 border-rose-500/20"
     };
-
-    function toggleAddStaffForm() {
-      const f = document.getElementById('add-staff-form-wrap');
-      if (f) {
-        f.classList.toggle('hidden');
-        if (!f.classList.contains('hidden')) {
-          loadDepartmentsDropdown();
-        }
-      }
-    }

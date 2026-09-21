@@ -54,11 +54,12 @@ async def handle_telegram_update(update: dict):
                         user.telegram_connected_at = datetime.now(timezone.utc)
                         await db.commit()
 
+                        role_name = getattr(user.role, "value", str(user.role))
                         msg = (
                             f"Assalomu alaykum, <b>{user.full_name}</b>!\n\n"
                             f"Registrator ofisi axborot tizimidagi profilingiz botga muvaffaqiyatli bog'landi! ✅\n\n"
                             f"• <b>Foydalanuvchi logini:</b> {user.username}\n"
-                            f"• <b>Rolingiz:</b> {user.role.value}\n"
+                            f"• <b>Rolingiz:</b> {role_name}\n"
                             f"• <b>Bog'langan vaqt:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}\n\n"
                             f"Endi barcha arizalar, ijro holatlari va elektron navbat talonlari "
                             f"to'g'ridan-to'g'ri ushbu bot orqali yetkaziladi."
@@ -147,12 +148,13 @@ async def handle_telegram_update(update: dict):
                     local_user.phone = formatted_phone
                 await db.commit()
 
+                local_role = getattr(local_user.role, "value", str(local_user.role))
                 success_msg = (
                     f"🎉 <b>Hurmatli {local_user.full_name}!</b>\n\n"
                     f"Registrator ofisi axborot tizimidagi profilingiz telefon raqamingiz orqali "
                     f"muvaffaqiyatli tasdiqlandi va botga ulandi! ✅\n\n"
                     f"• <b>Foydalanuvchi logini:</b> {local_user.username}\n"
-                    f"• <b>Tizimdagi rolingiz:</b> {local_user.role.value}\n"
+                    f"• <b>Tizimdagi rolingiz:</b> {local_role}\n"
                     f"• <b>Tasdiqlangan telefon:</b> {formatted_phone}\n\n"
                     f"Endi barcha xizmat xabarnomalari, yangi murojaatlar, ijro statuslari va "
                     f"navbat talonlari to'g'ridan-to'g'ri ushbu bot orqali yetkaziladi."
@@ -194,12 +196,13 @@ async def handle_telegram_update(update: dict):
                     matched_user.phone = formatted_phone
                     await db.commit()
 
+                    matched_role = getattr(matched_user.role, "value", str(matched_user.role))
                     success_msg = (
                         f"🎉 <b>Hurmatli {matched_user.full_name}!</b>\n\n"
                         f"Universitet HEMIS tizimi orqali telefon raqamingiz muvaffaqiyatli tasdiqlandi va "
                         f"profilingiz botga ulandi! ✅\n\n"
                         f"• <b>Foydalanuvchi:</b> {matched_user.username}\n"
-                        f"• <b>Rol:</b> {matched_user.role.value}\n"
+                        f"• <b>Rol:</b> {matched_role}\n"
                         f"• <b>Telefon:</b> {formatted_phone}\n\n"
                         f"Endi har bir murojaatingiz ko'rib chiqilishi, javob matni va "
                         f"darcha qabuli talonlari shu yerga yetkaziladi."

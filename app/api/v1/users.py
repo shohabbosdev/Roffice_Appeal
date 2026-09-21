@@ -664,7 +664,7 @@ async def update_my_credentials(
     # Yangi token generatsiya qilish
     expire_minutes = settings.STAFF_TOKEN_EXPIRE_MINUTES
     new_token = create_access_token(
-        data={"sub": str(current_user.id), "role": current_user.role.value},
+        data={"sub": str(current_user.id), "role": getattr(current_user.role, "value", str(current_user.role))},
         expires_delta=None
     )
 

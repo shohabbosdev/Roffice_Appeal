@@ -120,7 +120,8 @@ async def get_staff_permissions(
             detail="Foydalanuvchi topilmadi."
         )
 
-    role_res = await db.execute(select(CustomRole).where(CustomRole.code == user.role.value))
+    role_str = getattr(user.role, "value", str(user.role))
+    role_res = await db.execute(select(CustomRole).where(CustomRole.code == role_str))
     role_obj = role_res.scalar_one_or_none()
     role_permissions = role_obj.permissions if role_obj else []
 
@@ -129,7 +130,7 @@ async def get_staff_permissions(
     return {
         "user_id": user.id,
         "full_name": user.full_name,
-        "role": user.role.value,
+        "role": role_str,
         "role_permissions": role_permissions,
         "custom_permissions": user.custom_permissions or [],
         "effective_permissions": effective,

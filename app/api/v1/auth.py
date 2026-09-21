@@ -59,13 +59,14 @@ async def login(credentials: UserLogin, request: Request, db: AsyncSession = Dep
     user = result.scalar_one_or_none()
 
     if user and verify_password(credentials.password, user.hashed_password):
+        role_str = getattr(user.role, "value", str(user.role))
         expire_minutes = (
             settings.STUDENT_TOKEN_EXPIRE_MINUTES
-            if user.role == UserRole.STUDENT
+            if role_str == UserRole.STUDENT
             else settings.STAFF_TOKEN_EXPIRE_MINUTES
         )
         token = create_access_token(
-            data={"sub": str(user.id), "role": user.role.value},
+            data={"sub": str(user.id), "role": role_str},
             expires_delta=timedelta(minutes=expire_minutes)
         )
         await AuditService.log(
@@ -74,14 +75,14 @@ async def login(credentials: UserLogin, request: Request, db: AsyncSession = Dep
             entity_id=user.id,
             action="login",
             user_id=user.id,
-            details=f"Tizimga muvaffaqiyatli kirdi: {user.full_name} ({user.role.value})"
+            details=f"Tizimga muvaffaqiyatli kirdi: {user.full_name} ({role_str})"
         )
         await db.commit()
         perms = await RoleService.get_effective_permissions(user, db)
         return TokenResponse(
             access_token=token,
             token_type="bearer",
-            role=user.role,
+            role=role_str,
             user_id=user.id,
             full_name=user.full_name,
             expires_in_minutes=expire_minutes,
@@ -145,7 +146,7 @@ async def login(credentials: UserLogin, request: Request, db: AsyncSession = Dep
 
         expire_minutes = settings.STUDENT_TOKEN_EXPIRE_MINUTES
         token = create_access_token(
-            data={"sub": str(user_to_respond.id), "role": user_to_respond.role.value},
+            data={"sub": str(user_to_respond.id), "role": getattr(user_to_respond.role, "value", str(user_to_respond.role))},
             expires_delta=timedelta(minutes=expire_minutes)
         )
         perms = await RoleService.get_effective_permissions(user_to_respond, db)
@@ -213,13 +214,13 @@ async def hemis_login(credentials: HemisStudentLogin, request: Request, db: Asyn
         if local_user and verify_password(credentials.password, local_user.hashed_password):
             expire_minutes = settings.STUDENT_TOKEN_EXPIRE_MINUTES
             token = create_access_token(
-                data={"sub": str(local_user.id), "role": local_user.role.value},
+                data={"sub": str(local_user.id), "role": getattr(local_user.role, "value", str(local_user.role))},
                 expires_delta=timedelta(minutes=expire_minutes)
             )
             return HemisTokenResponse(
                 access_token=token,
                 token_type="bearer",
-                role=local_user.role,
+                role=getattr(local_user.role, "value", str(local_user.role)),
                 user_id=local_user.id,
                 full_name=local_user.full_name,
                 expires_in_minutes=expire_minutes,
@@ -275,7 +276,7 @@ async def hemis_login(credentials: HemisStudentLogin, request: Request, db: Asyn
     # 5. Tizimimizning 2 kunlik JWT tokenini generatsiya qilish
     expire_minutes = settings.STUDENT_TOKEN_EXPIRE_MINUTES
     token = create_access_token(
-        data={"sub": str(user.id), "role": user.role.value},
+        data={"sub": str(user.id), "role": getattr(user.role, "value", str(user.role))},
         expires_delta=timedelta(minutes=expire_minutes)
     )
 

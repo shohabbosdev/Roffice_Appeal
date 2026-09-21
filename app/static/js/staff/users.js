@@ -1,16 +1,49 @@
-async function loadDepartmentsDropdown() {
-      try {
-        const resp = await fetch('/api/v1/services/departments');
-        departmentsList = await resp.json();
-        const sel = document.getElementById('new-staff-department');
-        if (sel) {
-          sel.innerHTML = '<option value="">Bo\'limni tanlang (ixtiyoriy)</option>' +
-            departmentsList.map(d => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('');
-        }
-      } catch (e) {
-        console.error("Bo'limlarni yuklab bo'lmadi:", e);
-      }
+function openAddStaffModal() {
+  const modal = document.getElementById('add-staff-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+    loadDepartmentsDropdown();
+    if (typeof loadRoles === 'function') {
+      loadRoles();
     }
+  }
+}
+
+function closeAddStaffModal() {
+  const modal = document.getElementById('add-staff-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+}
+
+function toggleAddStaffForm() {
+  const modal = document.getElementById('add-staff-modal');
+  if (modal) {
+    if (modal.classList.contains('hidden')) {
+      openAddStaffModal();
+    } else {
+      closeAddStaffModal();
+    }
+  }
+}
+
+window.openAddStaffModal = openAddStaffModal;
+window.closeAddStaffModal = closeAddStaffModal;
+window.toggleAddStaffForm = toggleAddStaffForm;
+
+async function loadDepartmentsDropdown() {
+  try {
+    const resp = await fetch('/api/v1/services/departments');
+    departmentsList = await resp.json();
+    const sel = document.getElementById('new-staff-department');
+    if (sel) {
+      sel.innerHTML = '<option value="">Bo\'limni tanlang (ixtiyoriy)</option>' +
+        departmentsList.map(d => `<option value="${d.id}">${d.name} (${d.code})</option>`).join('');
+    }
+  } catch (e) {
+    console.error("Bo'limlarni yuklab bo'lmadi:", e);
+  }
+}
 
     async function loadNizomDutiesForCreate() {
       try {
@@ -67,7 +100,7 @@ async function loadDepartmentsDropdown() {
         });
         const data = await resp.json();
         if (resp.ok) {
-          toggleAddStaffForm();
+          closeAddStaffModal();
           e.target.reset();
 
           // Show generated temporary OTP modal

@@ -64,6 +64,10 @@ async def lifespan(app: FastAPI):
             await conn.execute(text("ALTER TABLE users ADD COLUMN custom_permissions JSON DEFAULT '[]'"))
         except Exception:
             pass
+        try:
+            await conn.execute(text("UPDATE users SET role = LOWER(role)"))
+        except Exception:
+            pass
 
     # Initialize integration settings defaults (Telegram Bot & Admin ID) in DB
     try:

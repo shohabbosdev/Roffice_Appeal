@@ -135,6 +135,10 @@ class User(Base):
     appointments = relationship("Appointment", foreign_keys="Appointment.student_id", back_populates="student")
     assigned_services = relationship("Service", secondary=user_services, back_populates="assigned_users", lazy="selectin")
 
+    @property
+    def role_value(self) -> str:
+        return self.role.value if hasattr(self.role, "value") else str(self.role)
+
 
 # 3. Service Model
 class Service(Base):
